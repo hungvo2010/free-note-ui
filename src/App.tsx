@@ -1,8 +1,15 @@
-import TestRough from "./components/test/TestRough";
 import "./App.css";
+import TestRough from "./components/test/TestRough";
+import Toolbar from "./components/toolbar/Toolbar";
+import "./styles/global.scss";
 
 function App() {
-  return <TestRough />;
+  return (
+    <>
+      <Toolbar />
+      <TestRough />
+    </>
+  );
 }
 
 export default App;

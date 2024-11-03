@@ -1,0 +1,167 @@
+@import "./variables.scss";
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  margin: 0;
+  // -webkit-font-smoothing: antialiased;
+  // -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+:root {
+  --main-color: #e0dfff;
+  --black-color: #000;
+  --white-color: #fff;
+  --button-hover-bg: #f1f0ff;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+.text-low-opacity {
+  opacity: 0.5;
+  font-size: 1.4rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+button,
+input,
+[tabindex] {
+  outline: none;
+}
+
+.text-black {
+  color: #000;
+}
+
+a,
+a[href] {
+  // color: var(--text-color);
+  text-decoration: none !important;
+}
+
+// a:hover {
+//   color: var(--white-color) !important;
+// }
+
+img {
+  overflow-clip-margin: content-box;
+  overflow: clip;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: fill;
+}
+
+.fade-enter {
+  opacity: 0;
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transition: opacity 300ms ease-in;
+}
+
+.fade-exit {
+  opacity: 1;
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transition: opacity 300ms ease-out;
+}
+
+.spinner {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.custom-message {
+  padding: 30px 15px;
+}
+
+.fw-600 {
+  font-weight: 600 !important;
+}
+
+.text-main-color {
+  color: var(--main-color) !important;
+  word-break: break-word;
+}
+
+hr {
+  overflow: visible;
+}
+
+.fadeOut {
+  opacity: 0;
+  transition: opacity 4s ease-out;
+}
+
+.text-area {
+  overflow-y: scroll;
+}
+
+.custom-message {
+  font-family: "Space Grotesk, sans-serif";
+  font-weight: bold;
+}
+
+.ant-btn-default:not(:disabled):hover {
+  color: var(--white-color) !important;
+  border-color: #4096ff;
+  opacity: 0.8;
+}
+
+.card_var {
+  box-shadow: 0 0 5px 1px #ddd;
+  display: block;
+}
+
+.card__title--tour {
+  font-size: 1.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wrapContentOnlyOneLine {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: normal;
+}
+
+.img_round {
+  border-radius: 50px;
+  width: 25px;
+  height: 25px;
+  object-fit: cover;
+}
+
+.dropdown-toggle {
+  &.dropdownToggle {
+    margin-top: 1em;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 38px;
+    font-size: 16px;
+    background-color: var(--white-color) !important;
+    color: var(--black-color) !important;
+  }
+}

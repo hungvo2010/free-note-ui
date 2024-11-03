@@ -1,0 +1,59 @@
+.toolbar {
+  display: flex;
+  margin: 0 auto;
+  max-width: fit-content;
+  border-radius: 5px;
+  padding: 3px;
+  box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
+    0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
+    0px 7px 14px 0px rgba(0, 0, 0, 0.05);
+}
+
+.toolLists {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  > li {
+    padding: 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+
+    &:active {
+      background-color: var(--main-color);
+    }
+
+    &:hover {
+      background-color: var(--button-hover-bg);
+    }
+
+    &.selected {
+      background-color: var(--button-hover-bg);
+    }
+
+    &:first-child {
+      &:after {
+        content: "";
+        display: inline-block;
+        border-left: 1px solid #000; // Vertical line with set width and color
+        height: 20px; // Adjust height as needed
+        margin-left: 10px;
+        position: relative;
+        // top: 3px; // Adjust position if necessary to align with text
+      }
+    }
+
+    &:last-child {
+      &:before {
+        content: "";
+        display: inline-block;
+        border-left: 1px solid #000;
+        height: 20px;
+        margin-right: 10px;
+        position: relative;
+        // top: 3px;
+      }
+    }
+  }
+}
