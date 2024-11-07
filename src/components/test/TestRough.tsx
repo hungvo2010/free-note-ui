@@ -13,6 +13,8 @@ export default function TestRough() {
 
   useEffect(() => {
     const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+    // myCanvas.width = myCanvas.clientWidth;
+    // myCanvas.height = myCanvas.clientHeight;
     setCanvas(myCanvas);
     setRoughCanvas(rough.canvas(myCanvas));
 
@@ -21,12 +23,12 @@ export default function TestRough() {
       const { x, y } = getCanvasCoordinates(e);
       console.log(x, y);
       setStartPosition({ x, y });
-      setDrawing(true); // Begin drawing
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       // console.log(e.clientX, e.clientY);
       // console.log("mouse move");
+      setDrawing(true); // Begin drawing
     };
 
     const getCanvasCoordinates = (e: MouseEvent) => {
@@ -39,8 +41,13 @@ export default function TestRough() {
     const handleMouseUp = (e: MouseEvent) => {
       if (!drawing) return;
       console.log("mouse up");
+      // console.log(e.clientX, e.clientY);
       const { x, y } = getCanvasCoordinates(e);
       console.log(x, y, startPosition);
+      console.log(Math.abs(x - startPosition.x), Math.abs(y - startPosition.y));
+      // roughCanvas?.line(startPosition.x, startPosition.y, x, y, {
+      //   roughness: 0,
+      // });
       roughCanvas?.rectangle(
         startPosition.x,
         startPosition.y,
@@ -65,8 +72,7 @@ export default function TestRough() {
 
   return (
     <>
-      <canvas className="full-canvas" id="myCanvas"></canvas>
-      <br />
+      <canvas id="myCanvas" width={1200} height={500}></canvas>
       {/* <button
         onClick={() => {
           if (!roughCanvas) return;
