@@ -81,6 +81,45 @@ export default function TestRough(props: DrawTypeProps) {
     });
   };
 
+  const drawDiamond = (x1: number, y1: number, x2: number, y2: number) => {
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const mainPoint = {
+      x: (x1 + x2) / 2,
+      y: (y1 + y2) / 2,
+    };
+    const distanceInY = (Math.sin(angle) * distance(x1, y1, x2, y2)) / 2;
+    const left = {
+      x: x1,
+      y: y1 + distanceInY,
+    };
+    const top = {
+      x: mainPoint.x,
+      y: mainPoint.y - distanceInY,
+    };
+    const right = {
+      x: x2,
+      y: y2 - distanceInY,
+    };
+    const bottom = {
+      x: mainPoint.x,
+      y: mainPoint.y + distanceInY,
+    };
+    console.log(left, top, right, bottom);
+    roughCanvas?.linearPath(
+      [
+        [left.x, left.y],
+        [top.x, top.y],
+        [right.x, right.y],
+        [bottom.x, bottom.y],
+        [left.x, left.y],
+      ],
+      {
+        roughness: 1,
+        stroke: "black",
+      }
+    );
+  };
+
   const drawArrow = (x1: number, y1: number, x2: number, y2: number) => {
     drawLine(x1, y1, x2, y2);
     if (distance(x1, y1, x2, y2) < 20) return;
@@ -123,6 +162,9 @@ export default function TestRough(props: DrawTypeProps) {
         break;
       case "circle":
         drawCircle(startPosition.x, startPosition.y, x, y);
+        break;
+      case "diam":
+        drawDiamond(startPosition.x, startPosition.y, x, y);
         break;
     }
 
