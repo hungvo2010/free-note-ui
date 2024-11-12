@@ -20,7 +20,7 @@ var options = [
 ];
 
 function App() {
-  const [selected, setSelected] = useState(0);
+  const [selected, setSelected] = useState(3);
   const handleSelected = (val: number) => {
     setSelected(val);
   };
