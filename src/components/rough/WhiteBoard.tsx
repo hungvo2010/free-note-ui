@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import rough from "roughjs";
 import { RoughCanvas } from "roughjs/bin/canvas";
 
-import "./TestRough.scss";
+import "./WhiteBoard.scss";
 
 type DrawTypeProps = {
   type: string;
 };
 
-export default function TestRough(props: DrawTypeProps) {
+export default function WhiteBoard(props: DrawTypeProps) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const canvasRef = useRef(null);
   const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();

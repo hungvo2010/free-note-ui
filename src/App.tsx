@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./App.css";
-import TestRough from "./components/test/TestRough";
+import WhiteBoard from "./components/rough/WhiteBoard";
 import Toolbar from "./components/toolbar/Toolbar";
 import "./styles/global.scss";
 var options = [
@@ -31,7 +31,7 @@ function App() {
         selected={selected}
         handleSelected={handleSelected}
       />
-      <TestRough type={options[selected]} />
+      <WhiteBoard type={options[selected]} />
     </>
   );
 }
