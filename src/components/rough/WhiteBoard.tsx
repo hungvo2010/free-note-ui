@@ -61,8 +61,9 @@ export default function WhiteBoard(props: DrawTypeProps) {
       ctx.lineWidth = 1;
       ctx.stroke();
     } else {
+      console.log("start drawWorld position: ", startPosition);
       const ctx = canvas?.getContext("2d");
-      ctx?.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
+      ctx?.clearRect(startPosition.x, 0, canvas?.width || 0, canvas?.height || 0);
       // ctx?.clearRect(10, 10, 120, 100);
     }
   }, [isCaretVisible]);
@@ -111,6 +112,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
       canvas.focus();
       setCurrentText("");
     }
+    console.log("start drawWord: ", { x, y });
     clearInterval(caretInterval.current);
     caretInterval.current = setInterval(() => {
       setIsCaretVisible((prev) => !prev);
