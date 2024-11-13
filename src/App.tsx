@@ -24,6 +24,8 @@ function App() {
   const handleSelected = (val: number) => {
     setSelected(val);
   };
+  console.log("selected: ", options[selected]);
+
   return (
     <>
       <Toolbar
