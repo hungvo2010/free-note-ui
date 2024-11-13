@@ -55,18 +55,17 @@ export default function WhiteBoard(props: DrawTypeProps) {
     if (isCaretVisible && ctx) {
       const textWidth = ctx.measureText(currentText).width;
       ctx.beginPath();
-      ctx.moveTo(startPosition.x + textWidth, startPosition.y - 12); // Adjust height as needed
-      ctx.lineTo(startPosition.x + textWidth, startPosition.y + 4); // Adjust height as needed
+      ctx.moveTo(startPosition.x + textWidth, startPosition.y - 12);
+      ctx.lineTo(startPosition.x + textWidth, startPosition.y + 4);
       ctx.strokeStyle = "black";
       ctx.lineWidth = 1;
       ctx.stroke();
     } else {
       const ctx = canvas?.getContext("2d");
       ctx?.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
+      // ctx?.clearRect(10, 10, 120, 100);
     }
   }, [isCaretVisible]);
-
-  
 
   const handleMouseDown = (e: MouseEvent) => {
     console.log("mouse down");
@@ -149,7 +148,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
       x: mainPoint.x,
       y: mainPoint.y + distanceInY,
     };
-    console.log(left, top, right, bottom);
     roughCanvas?.linearPath(
       [
         [left.x, left.y],
@@ -191,13 +189,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
     const { x, y } = getCanvasCoordinates(e);
     switch (props.type) {
       case "rect":
-        roughCanvas?.rectangle(
-          startPosition.x,
-          startPosition.y,
-          x - startPosition.x,
-          y - startPosition.y,
-          { roughness: 1, stroke: "black" }
-        ); // x, y, width, height, e.clientY);
+        drawRect(roughCanvas, startPosition, x, y);
         break;
       case "line":
         drawLine(startPosition.x, startPosition.y, x, y);
@@ -224,6 +216,21 @@ export default function WhiteBoard(props: DrawTypeProps) {
       tabIndex={0}
       onKeyDown={handleKeyDown}
     ></canvas>
+  );
+}
+
+function drawRect(
+  roughCanvas: RoughCanvas | undefined,
+  startPosition: { x: number; y: number },
+  x: number,
+  y: number
+) {
+  roughCanvas?.rectangle(
+    startPosition.x,
+    startPosition.y,
+    x - startPosition.x,
+    y - startPosition.y,
+    { roughness: 1, stroke: "black" }
   );
 }
 
