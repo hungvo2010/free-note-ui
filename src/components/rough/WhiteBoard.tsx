@@ -18,16 +18,62 @@ export default function WhiteBoard(props: DrawTypeProps) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const canvasRef = useRef(null);
   const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();
-  const [drawing, setDrawing] = useState(false);
+  const [drawing, setDrawing] = useState<boolean>(false);
   const [currentText, setCurrentText] = useState("");
   const [isCaretVisible, setIsCaretVisible] = useState(true);
   const caretInterval = useRef(-1);
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
+  const positionRef = useRef(startPosition);
+  const roughCanvasRef = useRef(roughCanvas);
 
-  useEffect(() => {
-    console.log("Drawing value:", drawing);
-    // Additional logic based on type change
-  }, [drawing]);
+  const handleMouseDown = useCallback(
+    (e: MouseEvent) => {
+      const { x, y } = getCanvasCoordinates(e);
+      setStartPosition({ x, y });
+      positionRef.current = { x, y };
+      console.log("handleMouseDown: ", { x, y });
+      switch (props.type) {
+        case "word":
+          drawWord(x, y);
+          break;
+      }
+    },
+    [props.type]
+  );
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    // console.log("handle mouse move: ", drawing);
+    setDrawing(true); // Begin drawing
+  }, []);
+
+  const handleMouseUp = useCallback(
+    (e: MouseEvent) => {
+      // if (!drawing) return;
+      const { x, y } = getCanvasCoordinates(e);
+      console.log("handleMouseUp: ", { x, y }, props.type);
+      // console.log(positionRef.current);
+      switch (props.type) {
+        case "rect":
+          drawRect(positionRef.current.x, positionRef.current.y, x, y);
+          break;
+        case "line":
+          drawLine(positionRef.current.x, positionRef.current.y, x, y);
+          break;
+        case "arrow":
+          drawArrow(positionRef.current.x, positionRef.current.y, x, y);
+          break;
+        case "circle":
+          drawCircle(positionRef.current.x, positionRef.current.y, x, y);
+          break;
+        case "diam":
+          drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
+          break;
+      }
+
+      setDrawing(false);
+    },
+    [props.type]
+  );
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -44,12 +90,13 @@ export default function WhiteBoard(props: DrawTypeProps) {
   useEffect(() => {
     const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;
     const ctx = myCanvas.getContext("2d");
-    // console.log(myCanvas, ctx);
     if (myCanvas && ctx) {
       ctx.font = "Just Another Hand, cursive";
     }
+    const newRoughCanvas = rough.canvas(myCanvas);
     setCanvas(myCanvas);
-    setRoughCanvas(rough.canvas(myCanvas));
+    setRoughCanvas(newRoughCanvas);
+    roughCanvasRef.current = newRoughCanvas;
 
     myCanvas.addEventListener("mousedown", handleMouseDown);
     myCanvas.addEventListener("mousemove", handleMouseMove);
@@ -61,7 +108,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
       myCanvas.removeEventListener("mouseup", handleMouseUp);
       // clearInterval(caretInterval.current);
     };
-  }, []);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 
   useEffect(() => {
     const ctx = canvas?.getContext("2d");
@@ -80,25 +127,8 @@ export default function WhiteBoard(props: DrawTypeProps) {
     }
   }, [isCaretVisible]);
 
-  const handleMouseDown = (e: MouseEvent) => {
-    console.log("mouse down with type: ", props.type);
-    const { x, y } = getCanvasCoordinates(e);
-    console.log("handleMouseDown: ", x, y);
-    setStartPosition({ x, y });
-    switch (props.type) {
-      case "word":
-        drawWord(x, y);
-        break;
-    }
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
     setCurrentText((val) => val + e.key);
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    console.log("handle mouse move: ", drawing);
-    setDrawing(true); // Begin drawing
   };
 
   const getCanvasCoordinates = useCallback((e: MouseEvent) => {
@@ -123,7 +153,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
   const drawWord = (x: number, y: number) => {
     const ctx = canvas?.getContext("2d");
     if (ctx && canvas) {
-      console.log(ctx, canvas);
       canvas.focus();
       setCurrentText("");
     }
@@ -139,6 +168,13 @@ export default function WhiteBoard(props: DrawTypeProps) {
       roughness: 1,
       stroke: "black",
       curveFitting: 0.2,
+    });
+  };
+
+  const drawRect = (x: number, y: number, x1: number, y1: number) => {
+    roughCanvasRef.current?.rectangle(x, y, x1 - x, y1 - y, {
+      roughness: 1,
+      stroke: "black",
     });
   };
 
@@ -200,37 +236,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
     );
   };
 
-  const handleMouseUp = useCallback(
-    (e: MouseEvent) => {
-      console.log("handleMouseUp");
-      if (!drawing) return;
-      console.log("mouse up");
-      const { x, y } = getCanvasCoordinates(e);
-      switch (props.type) {
-        case "rect":
-          drawRect(roughCanvas, startPosition, x, y);
-          break;
-        case "line":
-          drawLine(startPosition.x, startPosition.y, x, y);
-          break;
-        case "arrow":
-          drawArrow(startPosition.x, startPosition.y, x, y);
-          break;
-        case "circle":
-          drawCircle(startPosition.x, startPosition.y, x, y);
-          break;
-        case "diam":
-          drawDiamond(startPosition.x, startPosition.y, x, y);
-          break;
-      }
-
-      setDrawing(false);
-    },
-    [drawing]
-  );
-
-  console.log("re render");
-
   return (
     <canvas
       id="myCanvas"
@@ -239,21 +244,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
       tabIndex={0}
       onKeyDown={handleKeyDown}
     ></canvas>
-  );
-}
-
-function drawRect(
-  roughCanvas: RoughCanvas | undefined,
-  startPosition: { x: number; y: number },
-  x: number,
-  y: number
-) {
-  roughCanvas?.rectangle(
-    startPosition.x,
-    startPosition.y,
-    x - startPosition.x,
-    y - startPosition.y,
-    { roughness: 1, stroke: "black" }
   );
 }
 
