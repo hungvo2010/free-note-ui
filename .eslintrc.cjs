@@ -15,5 +15,11 @@ module.exports = {
       { allowConstantExport: true },
     ],
     "@typescript-eslint/no-unused-vars": "off",
+    "prefer-const": "warn",
+    "no-unused-vars": "warn",
+    "handle-callback-err": "warn",
+    // "react/jsx-no-bind": "warn",
+    "no-sequences": "warn",
+    "eqeqeq": "warn"
   },
 };

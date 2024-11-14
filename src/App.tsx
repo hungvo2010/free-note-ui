@@ -3,7 +3,7 @@ import "./App.css";
 import WhiteBoard from "./components/rough/WhiteBoard";
 import Toolbar from "./components/toolbar/Toolbar";
 import "./styles/global.scss";
-var options = [
+const options = [
   "lock",
   "hand",
   "mouse",
