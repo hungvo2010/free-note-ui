@@ -20,6 +20,12 @@ module.exports = {
     "handle-callback-err": "warn",
     // "react/jsx-no-bind": "warn",
     "no-sequences": "warn",
-    "eqeqeq": "warn"
+    eqeqeq: "warn",
+  },
+  parserOptions: {
+    ecmaVersion: "latest",
+    sourceType: "module",
+    project: ["./tsconfig.json", "./tsconfig.node.json"],
+    tsconfigRootDir: __dirname,
   },
 };
