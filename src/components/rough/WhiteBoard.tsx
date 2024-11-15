@@ -25,6 +25,16 @@ export default function WhiteBoard(props: DrawTypeProps) {
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
   const positionRef = useRef(startPosition);
   const roughCanvasRef = useRef(roughCanvas);
+  const [curvePoints, setCurvePoints] = useState<[number, number][]>([[0, 0]]);
+
+  const drawPen = useCallback(
+    (x2: number, y2: number) => {
+      roughCanvas?.curve([...curvePoints, [x2, y2]], {
+        roughness: 1,
+      });
+    },
+    [curvePoints]
+  );
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
@@ -32,6 +42,9 @@ export default function WhiteBoard(props: DrawTypeProps) {
       setStartPosition({ x, y });
       positionRef.current = { x, y };
       console.log("handleMouseDown: ", { x, y });
+      if (props.type === "pen") {
+        setCurvePoints([[x, y]]);
+      }
       switch (props.type) {
         case "word":
           drawWord(x, y);
@@ -41,10 +54,18 @@ export default function WhiteBoard(props: DrawTypeProps) {
     [props.type]
   );
 
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    // console.log("handle mouse move: ", drawing);
-    setDrawing(true); // Begin drawing
-  }, []);
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      // console.log("handle mouse move: ", drawing);
+      setDrawing(true); // Begin drawing
+      const { x, y } = getCanvasCoordinates(e);
+      // console.log("handleMouseMove: ", { x, y });
+      if (props.type === "pen") {
+        setCurvePoints((prev) => [...prev, [x, y]]);
+      }
+    },
+    [props.type]
+  );
 
   const handleMouseUp = useCallback(
     (e: MouseEvent) => {
@@ -65,6 +86,9 @@ export default function WhiteBoard(props: DrawTypeProps) {
         case "circle":
           drawCircle(positionRef.current.x, positionRef.current.y, x, y);
           break;
+        case "pen":
+          drawPen(x, y);
+          break;
         case "diam":
           drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
           break;
@@ -72,7 +96,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
 
       setDrawing(false);
     },
-    [props.type]
+    [props.type, drawPen]
   );
 
   useLayoutEffect(() => {
@@ -164,10 +188,10 @@ export default function WhiteBoard(props: DrawTypeProps) {
   };
 
   const drawCircle = (x: number, y: number, x1: number, y1: number) => {
-    roughCanvas?.circle(x, y, distance(x1, y1, x, y), {
+    roughCanvas?.circle((x + x1) / 2, (y + y1) / 2, distance(x1, y1, x, y), {
       roughness: 1,
       stroke: "black",
-      curveFitting: 0.2,
+      curveFitting: 0.95,
     });
   };
 
