@@ -43,12 +43,13 @@ export default function WhiteBoard(props: DrawTypeProps) {
       switch (props.type) {
         case "word":
           clearRect(
-            lastCaretRef.current.x - 1,
+            lastCaretRef.current.x - 2,
             lastCaretRef.current.y - 12,
             3,
             17
           );
           lastCaretRef.current = { x, y };
+          setLastCaret({ x, y });
           drawWord(x, y);
           break;
       }
@@ -65,10 +66,8 @@ export default function WhiteBoard(props: DrawTypeProps) {
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      // console.log("handle mouse move: ", drawing);
       setDrawing(true); // Begin drawing
       const { x, y } = getCanvasCoordinates(e);
-      // console.log("handleMouseMove: ", { x, y });
       if (props.type === "pen") {
         setCurvePoints((prev) => [...prev, [x, y]]);
         curvePointsRef.current = [...curvePointsRef.current, [x, y]];
@@ -111,7 +110,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
           17
         );
       }
-
       setDrawing(false);
     },
     [props.type]
@@ -133,7 +131,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
     const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;
     const ctx = myCanvas.getContext("2d");
     if (myCanvas && ctx) {
-      ctx.font = "Just Another Hand, cursive";
+      ctx.font = "20px Excalifont";
     }
     const newRoughCanvas = rough.canvas(myCanvas);
     setCanvas(myCanvas);
@@ -152,41 +150,29 @@ export default function WhiteBoard(props: DrawTypeProps) {
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 
-  useEffect(() => {
-    const ctx = canvas?.getContext("2d");
-    if (isCaretVisible && ctx && props.type === "word") {
-      const textWidth = ctx.measureText(currentText).width;
-      console.log("text width: " + textWidth);
-      clearRect(lastCaretRef.current.x - 1, lastCaretRef.current.y - 12, 3, 17);
-      lastCaretRef.current = {
-        x: lastCaretRef.current.x + textWidth,
-        y: lastCaretRef.current.y,
-      };
-      ctx.fillText(currentText, lastCaretRef.current.x, lastCaretRef.current.y);
-      ctx.beginPath();
-      ctx.moveTo(
-        lastCaretRef.current.x + textWidth,
-        lastCaretRef.current.y - 12
-      );
-      ctx.lineTo(
-        lastCaretRef.current.x + textWidth,
-        lastCaretRef.current.y + 4
-      );
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    } else {
-      clearRect(lastCaretRef.current.x - 1, lastCaretRef.current.y - 12, 3, 17);
-    }
-  }, [isCaretVisible, props.type, currentText]);
-
   const clearRect = (x: number, y: number, width: number, height: number) => {
     const ctx = canvas?.getContext("2d");
     ctx?.clearRect(x, y, width, height);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
-    console.log("handleKeyDown: " + e.key);
+    console.log("handleKeyDown: " + e.key.length);
+    const ctx = canvas?.getContext("2d");
+    if (ctx) {
+      // ctx.font = "30px Excalifont";
+      const textWidth = ctx.measureText(currentText).width;
+      clearRect(
+        positionRef.current.x,
+        positionRef.current.y - 12,
+        textWidth,
+        20
+      );
+      ctx?.fillText(
+        currentText + e.key,
+        positionRef.current.x,
+        positionRef.current.y
+      );
+    }
     setCurrentText((val) => val + e.key);
   };
 
@@ -217,6 +203,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
     }
     // console.log("start drawWord: ", { x, y });
     clearInterval(caretInterval.current);
+    setIsCaretVisible(true);
     caretInterval.current = setInterval(() => {
       setIsCaretVisible((prev) => !prev);
     }, 500);
