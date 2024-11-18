@@ -14,6 +14,8 @@ type DrawTypeProps = {
   type: string;
 };
 
+const PADDING = 10;
+
 export default function WhiteBoard(props: DrawTypeProps) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const canvasRef = useRef(null);
@@ -52,6 +54,8 @@ export default function WhiteBoard(props: DrawTypeProps) {
           setLastCaret({ x, y });
           drawWord(x, y);
           break;
+        default:
+          setDrawing(true);
       }
       setStartPosition({ x, y });
       positionRef.current = { x, y };
@@ -66,14 +70,36 @@ export default function WhiteBoard(props: DrawTypeProps) {
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      setDrawing(true); // Begin drawing
+      if (!drawing) return;
       const { x, y } = getCanvasCoordinates(e);
-      if (props.type === "pen") {
-        setCurvePoints((prev) => [...prev, [x, y]]);
-        curvePointsRef.current = [...curvePointsRef.current, [x, y]];
+      switch (props.type) {
+        case "rect":
+          const lastX =
+            curvePointsRef.current[curvePointsRef.current.length - 1][0];
+          const lastY =
+            curvePointsRef.current[curvePointsRef.current.length - 1][1];
+          const angle = Math.atan2(
+            lastY - positionRef.current.y,
+            lastX - positionRef.current.x
+          );
+          const padding = calculatePadding((angle * 180) / Math.PI, PADDING);
+          console.log(padding);
+          clearRect(
+            positionRef.current.x - padding[0],
+            positionRef.current.y - padding[1],
+            lastX - positionRef.current.x + padding[0] * 2,
+            lastY - positionRef.current.y + padding[1] * 2
+          );
+          drawRect(positionRef.current.x, positionRef.current.y, x, y);
+          break;
+        case "pen":
+          drawPen(x, y);
+          break;
       }
+      setCurvePoints((prev) => [...prev, [x, y]]);
+      curvePointsRef.current = [...curvePointsRef.current, [x, y]];
     },
-    [props.type]
+    [props.type, drawing]
   );
 
   const handleMouseUp = useCallback(
@@ -83,9 +109,9 @@ export default function WhiteBoard(props: DrawTypeProps) {
       console.log("handleMouseUp: ", { x, y }, props.type);
       // console.log(positionRef.current);
       switch (props.type) {
-        case "rect":
-          drawRect(positionRef.current.x, positionRef.current.y, x, y);
-          break;
+        // case "rect":
+        //   drawRect(positionRef.current.x, positionRef.current.y, x, y);
+        //   break;
         case "line":
           drawLine(positionRef.current.x, positionRef.current.y, x, y);
           break;
@@ -94,9 +120,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
           break;
         case "circle":
           drawCircle(positionRef.current.x, positionRef.current.y, x, y);
-          break;
-        case "pen":
-          drawPen(x, y);
           break;
         case "diam":
           drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
@@ -158,7 +181,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
     console.log("handleKeyDown: " + e.key.length);
     const ctx = canvas?.getContext("2d");
-    if (ctx) {
+    if (ctx && props.type === "word") {
       // ctx.font = "30px Excalifont";
       const textWidth = ctx.measureText(currentText).width;
       clearRect(
@@ -172,8 +195,8 @@ export default function WhiteBoard(props: DrawTypeProps) {
         positionRef.current.x,
         positionRef.current.y
       );
+      setCurrentText((val) => val + e.key);
     }
-    setCurrentText((val) => val + e.key);
   };
 
   const getCanvasCoordinates = useCallback((e: MouseEvent) => {
@@ -304,4 +327,22 @@ function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement) {
 
 function distance(x1: number, y1: number, x2: number, y2: number) {
   return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+}
+
+function calculatePadding(angle: number, lineWidth: number): [number, number] {
+  console.log("angle: " + angle);
+  if (angle >= 0 && angle <= 90) {
+    // bottom right corner
+    return [lineWidth, lineWidth];
+  } else if (angle > 90 && angle <= 180) {
+    // top right corner
+    return [-lineWidth, lineWidth];
+  } else if (angle <= -90 && angle >= -180) {
+    // top left corner
+    return [-lineWidth, -lineWidth];
+  } else if (angle >= -90 && angle < 0) {
+    // bottom left corner
+    return [lineWidth, -lineWidth];
+  }
+  return [0, 0];
 }
