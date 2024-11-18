@@ -83,7 +83,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
             lastX - positionRef.current.x
           );
           const padding = calculatePadding((angle * 180) / Math.PI, PADDING);
-          console.log(padding);
           clearRect(
             positionRef.current.x - padding[0],
             positionRef.current.y - padding[1],
@@ -91,6 +90,24 @@ export default function WhiteBoard(props: DrawTypeProps) {
             lastY - positionRef.current.y + padding[1] * 2
           );
           drawRect(positionRef.current.x, positionRef.current.y, x, y);
+          break;
+        case "diam":
+          drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
+          break;
+        case "arrow":
+          drawArrow(positionRef.current.x, positionRef.current.y, x, y);
+          break;
+        case "circle":
+          const x1 =
+            curvePointsRef.current[curvePointsRef.current.length - 1][0];
+          const y1 =
+            curvePointsRef.current[curvePointsRef.current.length - 1][1];
+          clearCircle(
+            (positionRef.current.x + x1) / 2,
+            (positionRef.current.y + y1) / 2,
+            distance(x1, y1, positionRef.current.x, positionRef.current.y) / 2
+          );
+          drawCircle(positionRef.current.x, positionRef.current.y, x, y);
           break;
         case "pen":
           drawPen(x, y);
@@ -115,15 +132,15 @@ export default function WhiteBoard(props: DrawTypeProps) {
         case "line":
           drawLine(positionRef.current.x, positionRef.current.y, x, y);
           break;
-        case "arrow":
-          drawArrow(positionRef.current.x, positionRef.current.y, x, y);
-          break;
-        case "circle":
-          drawCircle(positionRef.current.x, positionRef.current.y, x, y);
-          break;
-        case "diam":
-          drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
-          break;
+        // case "arrow":
+        //   drawArrow(positionRef.current.x, positionRef.current.y, x, y);
+        //   break;
+        // case "circle":
+        //   drawCircle(positionRef.current.x, positionRef.current.y, x, y);
+        //   break;
+        // case "diam":
+        //   drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
+        //   break;
       }
       if (props.type !== "word") {
         clearRect(
@@ -176,6 +193,18 @@ export default function WhiteBoard(props: DrawTypeProps) {
   const clearRect = (x: number, y: number, width: number, height: number) => {
     const ctx = canvas?.getContext("2d");
     ctx?.clearRect(x, y, width, height);
+  };
+
+  const clearCircle = (x: number, y: number, radius: number) => {
+    const context = canvas?.getContext("2d");
+    if (context) {
+      context.save();
+      context.globalCompositeOperation = "destination-out";
+      context.beginPath();
+      context.arc(x, y, radius, 0, 2 * Math.PI, false);
+      context.fill();
+      context.restore();
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
@@ -231,11 +260,18 @@ export default function WhiteBoard(props: DrawTypeProps) {
   };
 
   const drawCircle = (x: number, y: number, x1: number, y1: number) => {
-    roughCanvas?.circle((x + x1) / 2, (y + y1) / 2, distance(x1, y1, x, y), {
-      roughness: 1,
-      stroke: "black",
-      curveFitting: 0.95,
-    });
+    const angle = Math.atan2(y1 - y, x1 - x);
+
+    roughCanvas?.circle(
+      (x + x1) / 2,
+      (y + y1) / 2,
+      (distance(x1, y1, x, y) * Math.cos(angle)) / 2,
+      {
+        roughness: 1,
+        stroke: "black",
+        curveFitting: 0.95,
+      }
+    );
   };
 
   const drawRect = (x: number, y: number, x1: number, y1: number) => {
