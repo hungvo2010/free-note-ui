@@ -8,6 +8,9 @@ import {
 import rough from "roughjs";
 import { RoughCanvas } from "roughjs/bin/canvas";
 
+import { Rectangle } from "../../types/Rectangle";
+import { RectangleAdapter } from "../../types/RectangleAdapter";
+import { Shape } from "../../types/Shape";
 import "./WhiteBoard.scss";
 
 type DrawTypeProps = {
@@ -17,12 +20,12 @@ type DrawTypeProps = {
 const PADDING = 10;
 
 export default function WhiteBoard(props: DrawTypeProps) {
+  const shapes = useRef<Shape[]>([]);
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const canvasRef = useRef(null);
   const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();
   const [drawing, setDrawing] = useState<boolean>(false);
   const [currentText, setCurrentText] = useState("");
-  const [isCaretVisible, setIsCaretVisible] = useState(true);
   const caretInterval = useRef(-1);
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
   const [lastCaret, setLastCaret] = useState({ x: 0, y: 0 });
@@ -42,28 +45,39 @@ export default function WhiteBoard(props: DrawTypeProps) {
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
       const { x, y } = getCanvasCoordinates(e);
+      // switch (props.type) {
+      //   case "word":
+      //     clearRect(
+      //       lastCaretRef.current.x - 2,
+      //       lastCaretRef.current.y - 12,
+      //       3,
+      //       17
+      //     );
+      //     lastCaretRef.current = { x, y };
+      //     setLastCaret({ x, y });
+      //     drawWord(x, y);
+      //     break;
+      //   default:
+      //     setDrawing(true);
+      // }
       switch (props.type) {
-        case "word":
-          clearRect(
-            lastCaretRef.current.x - 2,
-            lastCaretRef.current.y - 12,
-            3,
-            17
+        case "rect":
+          shapes.current.push(
+            new RectangleAdapter(
+              new Rectangle(roughCanvas, x, y, 0, 0),
+              new Date().getMilliseconds()
+            )
           );
-          lastCaretRef.current = { x, y };
-          setLastCaret({ x, y });
-          drawWord(x, y);
           break;
-        default:
-          setDrawing(true);
       }
+      setDrawing(true);
       setStartPosition({ x, y });
       positionRef.current = { x, y };
-      console.log("handleMouseDown: ", { x, y });
-      if (props.type === "pen") {
-        setCurvePoints([[x, y]]);
-        curvePointsRef.current = [[x, y]];
-      }
+      // console.log("handleMouseDown: ", { x, y });
+      // if (props.type === "pen") {
+      //   setCurvePoints([[x, y]]);
+      //   curvePointsRef.current = [[x, y]];
+      // }
     },
     [props.type]
   );
@@ -74,22 +88,10 @@ export default function WhiteBoard(props: DrawTypeProps) {
       const { x, y } = getCanvasCoordinates(e);
       switch (props.type) {
         case "rect":
-          const lastX =
-            curvePointsRef.current[curvePointsRef.current.length - 1][0];
-          const lastY =
-            curvePointsRef.current[curvePointsRef.current.length - 1][1];
-          const angle = Math.atan2(
-            lastY - positionRef.current.y,
-            lastX - positionRef.current.x
-          );
-          const padding = calculatePadding((angle * 180) / Math.PI, PADDING);
-          clearRect(
-            positionRef.current.x - padding[0],
-            positionRef.current.y - padding[1],
-            lastX - positionRef.current.x + padding[0] * 2,
-            lastY - positionRef.current.y + padding[1] * 2
-          );
-          drawRect(positionRef.current.x, positionRef.current.y, x, y);
+          // clearLastRectangle();
+          updateLastRect(x, y);
+          // drawRect(positionRef.current.x, positionRef.current.y, x, y);
+          reDraw();
           break;
         case "diam":
           drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
@@ -121,10 +123,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
 
   const handleMouseUp = useCallback(
     (e: MouseEvent) => {
-      // if (!drawing) return;
       const { x, y } = getCanvasCoordinates(e);
-      console.log("handleMouseUp: ", { x, y }, props.type);
-      // console.log(positionRef.current);
       switch (props.type) {
         // case "rect":
         //   drawRect(positionRef.current.x, positionRef.current.y, x, y);
@@ -142,18 +141,21 @@ export default function WhiteBoard(props: DrawTypeProps) {
         //   drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
         //   break;
       }
-      if (props.type !== "word") {
-        clearRect(
-          lastCaretRef.current.x - 1,
-          lastCaretRef.current.y - 12,
-          3,
-          17
-        );
-      }
       setDrawing(false);
     },
     [props.type]
   );
+
+  const reDraw = useCallback(() => {
+    const ctx = canvas?.getContext("2d");
+    // console.log("reDraw", ctx, shapes.current);
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
+    }
+    for (const shape of shapes.current) {
+      shape.draw();
+    }
+  }, [canvas]);
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -252,11 +254,11 @@ export default function WhiteBoard(props: DrawTypeProps) {
     if (ctx && canvas) {
       setCurrentText("");
     }
-    clearInterval(caretInterval.current);
-    setIsCaretVisible(true);
-    caretInterval.current = setInterval(() => {
-      setIsCaretVisible((prev) => !prev);
-    }, 500);
+    // clearInterval(caretInterval.current);
+    // setIsCaretVisible(true);
+    // caretInterval.current = setInterval(() => {
+    //   setIsCaretVisible((prev) => !prev);
+    // }, 500);
   };
 
   const drawCircle = (x: number, y: number, x1: number, y1: number) => {
@@ -348,6 +350,38 @@ export default function WhiteBoard(props: DrawTypeProps) {
       onKeyDown={handleKeyDown}
     ></canvas>
   );
+
+  function updateLastRect(x: number, y: number) {
+    const lastRect = shapes.current[
+      shapes.current.length - 1
+    ] as RectangleAdapter;
+    shapes.current[shapes.current.length - 1] = new RectangleAdapter(
+      new Rectangle(
+        roughCanvas,
+        lastRect.getStartPoint().x,
+        lastRect.getStartPoint().y,
+        x - positionRef.current.x,
+        y - positionRef.current.y
+      ),
+      new Date().getMilliseconds()
+    );
+  }
+
+  function clearLastRectangle() {
+    const lastX = curvePointsRef.current[curvePointsRef.current.length - 1][0];
+    const lastY = curvePointsRef.current[curvePointsRef.current.length - 1][1];
+    const angle = Math.atan2(
+      lastY - positionRef.current.y,
+      lastX - positionRef.current.x
+    );
+    const padding = calculatePadding((angle * 180) / Math.PI, PADDING);
+    clearRect(
+      positionRef.current.x - padding[0],
+      positionRef.current.y - padding[1],
+      lastX - positionRef.current.x + padding[0] * 2,
+      lastY - positionRef.current.y + padding[1] * 2
+    );
+  }
 }
 
 function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement) {
