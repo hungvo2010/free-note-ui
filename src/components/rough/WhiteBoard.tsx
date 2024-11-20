@@ -8,9 +8,13 @@ import {
 import rough from "roughjs";
 import { RoughCanvas } from "roughjs/bin/canvas";
 
+import { Arrow } from "../../types/Arrow";
+import { Circle } from "../../types/Circle";
+import { CircleAdapter } from "../../types/CircleAdapter";
 import { Rectangle } from "../../types/Rectangle";
 import { RectangleAdapter } from "../../types/RectangleAdapter";
 import { Shape } from "../../types/Shape";
+import { calculatePadding, distance } from "../../utils/GeometryUtils";
 import "./WhiteBoard.scss";
 
 type DrawTypeProps = {
@@ -26,10 +30,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
   const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();
   const [drawing, setDrawing] = useState<boolean>(false);
   const [currentText, setCurrentText] = useState("");
-  const caretInterval = useRef(-1);
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
-  const [lastCaret, setLastCaret] = useState({ x: 0, y: 0 });
-  const lastCaretRef = useRef(lastCaret);
   const positionRef = useRef(startPosition);
   const roughCanvasRef = useRef(roughCanvas);
   const [curvePoints, setCurvePoints] = useState<[number, number][]>([[0, 0]]);
@@ -45,21 +46,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
       const { x, y } = getCanvasCoordinates(e);
-      // switch (props.type) {
-      //   case "word":
-      //     clearRect(
-      //       lastCaretRef.current.x - 2,
-      //       lastCaretRef.current.y - 12,
-      //       3,
-      //       17
-      //     );
-      //     lastCaretRef.current = { x, y };
-      //     setLastCaret({ x, y });
-      //     drawWord(x, y);
-      //     break;
-      //   default:
-      //     setDrawing(true);
-      // }
       switch (props.type) {
         case "rect":
           shapes.current.push(
@@ -69,15 +55,21 @@ export default function WhiteBoard(props: DrawTypeProps) {
             )
           );
           break;
+        case "circle":
+          shapes.current.push(
+            new CircleAdapter(
+              new Circle(roughCanvas, x, y, 0),
+              new Date().getMilliseconds()
+            )
+          );
+          break;
+        case "arrow":
+          shapes.current.push(new Arrow(roughCanvas, x, y));
+          break;
       }
       setDrawing(true);
       setStartPosition({ x, y });
       positionRef.current = { x, y };
-      // console.log("handleMouseDown: ", { x, y });
-      // if (props.type === "pen") {
-      //   setCurvePoints([[x, y]]);
-      //   curvePointsRef.current = [[x, y]];
-      // }
     },
     [props.type]
   );
@@ -97,19 +89,22 @@ export default function WhiteBoard(props: DrawTypeProps) {
           drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
           break;
         case "arrow":
-          drawArrow(positionRef.current.x, positionRef.current.y, x, y);
+          updateLastArrow(x, y);
+          reDraw();
           break;
         case "circle":
-          const x1 =
-            curvePointsRef.current[curvePointsRef.current.length - 1][0];
-          const y1 =
-            curvePointsRef.current[curvePointsRef.current.length - 1][1];
-          clearCircle(
-            (positionRef.current.x + x1) / 2,
-            (positionRef.current.y + y1) / 2,
-            distance(x1, y1, positionRef.current.x, positionRef.current.y) / 2
-          );
-          drawCircle(positionRef.current.x, positionRef.current.y, x, y);
+          updateLastCircle(x, y);
+          // const x1 =
+          //   curvePointsRef.current[curvePointsRef.current.length - 1][0];
+          // const y1 =
+          //   curvePointsRef.current[curvePointsRef.current.length - 1][1];
+          // clearCircle(
+          //   (positionRef.current.x + x1) / 2,
+          //   (positionRef.current.y + y1) / 2,
+          //   distance(x1, y1, positionRef.current.x, positionRef.current.y) / 2
+          // );
+          // drawCircle(positionRef.current.x, positionRef.current.y, x, y);
+          reDraw();
           break;
         case "pen":
           drawPen(x, y);
@@ -152,6 +147,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
     if (ctx) {
       ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
     }
+    console.log("reDraw", shapes.current);
     for (const shape of shapes.current) {
       shape.draw();
     }
@@ -367,6 +363,29 @@ export default function WhiteBoard(props: DrawTypeProps) {
     );
   }
 
+  function updateLastArrow(x: number, y: number) {
+    const lastArrow = shapes.current[shapes.current.length - 1] as Arrow;
+    const newArrow = new Arrow(roughCanvas, lastArrow.x1, lastArrow.y1);
+    newArrow.x2 = x;
+    newArrow.y2 = y;
+    shapes.current[shapes.current.length - 1] = newArrow;
+  }
+
+  function updateLastCircle(x: number, y: number) {
+    const lastCircle = shapes.current[
+      shapes.current.length - 1
+    ] as CircleAdapter;
+    shapes.current[shapes.current.length - 1] = new CircleAdapter(
+      new Circle(
+        roughCanvas,
+        (lastCircle.getCenterPoint().x + x) / 2,
+        (lastCircle.getCenterPoint().y + y) / 2,
+        distance(x, y, positionRef.current.x, positionRef.current.y) / 2
+      ),
+      new Date().getMilliseconds()
+    );
+  }
+
   function clearLastRectangle() {
     const lastX = curvePointsRef.current[curvePointsRef.current.length - 1][0];
     const lastY = curvePointsRef.current[curvePointsRef.current.length - 1][1];
@@ -393,26 +412,4 @@ function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement) {
     return true;
   }
   return false;
-}
-
-function distance(x1: number, y1: number, x2: number, y2: number) {
-  return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
-}
-
-function calculatePadding(angle: number, lineWidth: number): [number, number] {
-  console.log("angle: " + angle);
-  if (angle >= 0 && angle <= 90) {
-    // bottom right corner
-    return [lineWidth, lineWidth];
-  } else if (angle > 90 && angle <= 180) {
-    // top right corner
-    return [-lineWidth, lineWidth];
-  } else if (angle <= -90 && angle >= -180) {
-    // top left corner
-    return [-lineWidth, -lineWidth];
-  } else if (angle >= -90 && angle < 0) {
-    // bottom left corner
-    return [lineWidth, -lineWidth];
-  }
-  return [0, 0];
 }
