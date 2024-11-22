@@ -11,6 +11,7 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { Arrow } from "../../types/Arrow";
 import { Circle } from "../../types/Circle";
 import { CircleAdapter } from "../../types/CircleAdapter";
+import { Line } from "../../types/Line";
 import { Rectangle } from "../../types/Rectangle";
 import { RectangleAdapter } from "../../types/RectangleAdapter";
 import { Shape } from "../../types/Shape";
@@ -66,6 +67,8 @@ export default function WhiteBoard(props: DrawTypeProps) {
         case "arrow":
           shapes.current.push(new Arrow(roughCanvas, x, y));
           break;
+        case "line":
+          shapes.current.push(new Line(roughCanvas, x, y, x, y));
       }
       setDrawing(true);
       setStartPosition({ x, y });
@@ -76,6 +79,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
+      // setDrawing(true);
       if (!drawing) return;
       const { x, y } = getCanvasCoordinates(e);
       switch (props.type) {
@@ -108,6 +112,10 @@ export default function WhiteBoard(props: DrawTypeProps) {
           break;
         case "pen":
           drawPen(x, y);
+          break;
+        case "line":
+          updateLastLine(x, y);
+          reDraw();
           break;
       }
       setCurvePoints((prev) => [...prev, [x, y]]);
@@ -369,6 +377,12 @@ export default function WhiteBoard(props: DrawTypeProps) {
     newArrow.x2 = x;
     newArrow.y2 = y;
     shapes.current[shapes.current.length - 1] = newArrow;
+  }
+
+  function updateLastLine(x: number, y: number) {
+    const lastLine = shapes.current[shapes.current.length - 1] as Line;
+    const newLine = new Line(roughCanvas, lastLine.x1, lastLine.y1, x, y);
+    shapes.current[shapes.current.length - 1] = newLine;
   }
 
   function updateLastCircle(x: number, y: number) {
