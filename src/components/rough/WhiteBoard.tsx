@@ -8,13 +8,15 @@ import {
 import rough from "roughjs";
 import { RoughCanvas } from "roughjs/bin/canvas";
 
-import Arrow from "types/Arrow";
-import { Circle } from "types/Circle";
-import { CircleAdapter } from "types/CircleAdapter";
-import { Line } from "types/Line";
-import { Rectangle } from "types/Rectangle";
-import { RectangleAdapter } from "types/RectangleAdapter";
-import { Shape } from "types/Shape";
+import Arrow from "types/shape/Arrow";
+import { Circle } from "types/shape/Circle";
+import { CircleAdapter } from "types/shape/CircleAdapter";
+import { Diamond } from "types/shape/Diamond";
+import { FreeStyleShape } from "types/shape/FreeStyleShape";
+import { Line } from "types/shape/Line";
+import { Rectangle } from "types/shape/Rectangle";
+import { RectangleAdapter } from "types/shape/RectangleAdapter";
+import { Shape } from "types/shape/Shape";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { distance } from "utils/GeometryUtils";
 import "./WhiteBoard.scss";
@@ -31,16 +33,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
   const positionRef = useRef(startPosition);
   const roughCanvasRef = useRef(roughCanvas);
-  const [curvePoints, setCurvePoints] = useState<[number, number][]>([[0, 0]]);
-  const curvePointsRef = useRef(curvePoints);
   const drawingRef = useRef(false);
-
-  const drawPen = (x2: number, y2: number) => {
-    roughCanvas?.curve([...curvePointsRef.current, [x2, y2]], {
-      roughness: 0.1,
-      strokeWidth: 2,
-    });
-  };
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
@@ -67,6 +60,12 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           break;
         case "line":
           shapes.current.push(new Line(roughCanvas, x, y));
+          break;
+        case "pen":
+          shapes.current.push(new FreeStyleShape(roughCanvas, [[x, y]]));
+          break;
+        case "diam":
+          shapes.current.push(new Diamond(roughCanvas, x, y));
       }
       drawingRef.current = true;
       setStartPosition({ x, y });
@@ -82,31 +81,31 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       switch (type) {
         case "rect":
           // clearLastRectangle();
-          updateLastRect(x, y);
           // drawRect(positionRef.current.x, positionRef.current.y, x, y);
+          updateLastRect(shapes.current, x, y);
           reDraw();
           break;
         case "diam":
-          drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
+          updateLastDiamond(shapes.current, x, y);
+          reDraw();
           break;
         case "arrow":
-          updateLastArrow(x, y);
+          updateLastArrow(shapes.current, x, y);
           reDraw();
           break;
         case "circle":
-          updateLastCircle(x, y);
+          updateLastCircle(shapes.current, x, y);
           reDraw();
           break;
         case "pen":
-          drawPen(x, y);
+          updateShapePoint(shapes.current, x, y);
+          reDraw();
           break;
         case "line":
-          updateLastLine(x, y);
+          updateLastLine(shapes.current, x, y);
           reDraw();
           break;
       }
-      setCurvePoints((prev) => [...prev, [x, y]]);
-      curvePointsRef.current = [...curvePointsRef.current, [x, y]];
     },
     [type, roughCanvas]
   );
@@ -181,44 +180,6 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     return { x, y };
   }, []);
 
-  const drawDiamond = (x1: number, y1: number, x2: number, y2: number) => {
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    const mainPoint = {
-      x: (x1 + x2) / 2,
-      y: (y1 + y2) / 2,
-    };
-    const distanceInY = (Math.sin(angle) * distance(x1, y1, x2, y2)) / 2;
-    const left = {
-      x: x1,
-      y: y1 + distanceInY,
-    };
-    const top = {
-      x: mainPoint.x,
-      y: mainPoint.y - distanceInY,
-    };
-    const right = {
-      x: x2,
-      y: y2 - distanceInY,
-    };
-    const bottom = {
-      x: mainPoint.x,
-      y: mainPoint.y + distanceInY,
-    };
-    roughCanvas?.linearPath(
-      [
-        [left.x, left.y],
-        [top.x, top.y],
-        [right.x, right.y],
-        [bottom.x, bottom.y],
-        [left.x, left.y],
-      ],
-      {
-        roughness: 1,
-        stroke: "black",
-      }
-    );
-  };
-
   return (
     <canvas
       id="myCanvas"
@@ -229,11 +190,9 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     ></canvas>
   );
 
-  function updateLastRect(x: number, y: number) {
-    const lastRect = shapes.current[
-      shapes.current.length - 1
-    ] as RectangleAdapter;
-    shapes.current[shapes.current.length - 1] = new RectangleAdapter(
+  function updateLastRect(shapes: Shape[], x: number, y: number) {
+    const lastRect = shapes[shapes.length - 1] as RectangleAdapter;
+    shapes[shapes.length - 1] = new RectangleAdapter(
       new Rectangle(
         roughCanvas,
         lastRect.getStartPoint().x,
@@ -245,27 +204,42 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     );
   }
 
-  function updateLastArrow(x: number, y: number) {
-    const lastArrow = shapes.current[shapes.current.length - 1] as Arrow;
+  function updateLastArrow(shapes: Shape[], x: number, y: number) {
+    const lastArrow = shapes[shapes.length - 1] as Arrow;
     const newArrow = new Arrow(roughCanvas, lastArrow.x1, lastArrow.y1);
     newArrow.x2 = x;
     newArrow.y2 = y;
-    shapes.current[shapes.current.length - 1] = newArrow;
+    shapes[shapes.length - 1] = newArrow;
   }
 
-  function updateLastLine(x: number, y: number) {
-    const lastLine = shapes.current[shapes.current.length - 1] as Line;
+  function updateLastLine(shapes: Shape[], x: number, y: number) {
+    const lastLine = shapes[shapes.length - 1] as Line;
     const newLine = new Line(roughCanvas, lastLine.x1, lastLine.y1);
     newLine.x2 = x;
     newLine.y2 = y;
-    shapes.current[shapes.current.length - 1] = newLine;
+    shapes[shapes.length - 1] = newLine;
   }
 
-  function updateLastCircle(x: number, y: number) {
-    const lastCircle = shapes.current[
-      shapes.current.length - 1
-    ] as CircleAdapter;
-    shapes.current[shapes.current.length - 1] = new CircleAdapter(
+  function updateLastDiamond(shapes: Shape[], x: number, y: number) {
+    const lastDiamond = shapes[shapes.length - 1] as Diamond;
+    const newDiamond = new Diamond(roughCanvas, lastDiamond.x1, lastDiamond.y1);
+    newDiamond.x2 = x;
+    newDiamond.y2 = y;
+    shapes[shapes.length - 1] = newDiamond;
+  }
+
+  function updateShapePoint(shapes: Shape[], x: number, y: number) {
+    const shapePoints = shapes[shapes.length - 1] as FreeStyleShape;
+    const newFreeStyleShape = new FreeStyleShape(roughCanvas, [
+      ...shapePoints.points,
+      [x, y],
+    ]);
+    shapes[shapes.length - 1] = newFreeStyleShape;
+  }
+
+  function updateLastCircle(shapes: Shape[], x: number, y: number) {
+    const lastCircle = shapes[shapes.length - 1] as CircleAdapter;
+    shapes[shapes.length - 1] = new CircleAdapter(
       new Circle(
         roughCanvas,
         (lastCircle.getCenterPoint().x + x) / 2,

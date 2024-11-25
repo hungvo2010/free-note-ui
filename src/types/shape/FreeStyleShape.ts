@@ -1,0 +1,17 @@
+import { RoughCanvas } from "roughjs/bin/canvas";
+import { Drawable } from "roughjs/bin/core";
+import { Shape } from "./Shape";
+
+export class FreeStyleShape implements Shape {
+    private drawable: Drawable | undefined;
+    constructor(
+        public roughCanvas: RoughCanvas | undefined,
+        public points: [number, number][]) { }
+    draw(): void {
+        if (this.drawable) {
+            this.roughCanvas?.draw(this.drawable);
+            return;
+        }
+        this.drawable = this.roughCanvas?.curve(this.points, { roughness: 0.1, strokeWidth: 2 });
+    }
+}

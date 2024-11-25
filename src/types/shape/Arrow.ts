@@ -1,6 +1,6 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
-import { distance } from "../utils/GeometryUtils";
+import { distance } from "utils/GeometryUtils";
 import { Shape } from "./Shape";
 
 export default class Arrow implements Shape {
