@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Profiler, useState } from "react";
 import "./App.css";
 import WhiteBoard from "./components/rough/WhiteBoard";
 import Toolbar from "./components/toolbar/Toolbar";
@@ -32,9 +32,27 @@ function App() {
         selected={selected}
         handleSelected={handleSelected}
       />
-      <WhiteBoard type={options[selected]} />
+      <Profiler id="App" onRender={onRender}>
+        <WhiteBoard type={options[selected]} />
+      </Profiler>
     </>
   );
+}
+
+function onRender(
+  id: string,
+  phase: string,
+  actualDuration: number,
+  baseDuration: number,
+  startTime: number,
+  commitTime: number
+) {
+  // console.log("Aggregate or log render timings...", {
+  //   baseDuration,
+  //   actualDuration,
+  //   startTime,
+  //   commitTime,
+  // });
 }
 
 export default App;

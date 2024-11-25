@@ -9,7 +9,8 @@ export class Rectangle {
     private y: number,
     private width: number,
     private height: number,
-  ) { }
+  ) {
+  }
   drawRectangle() {
     if (this.drawable) {
       this.roughCanvas?.draw(this.drawable);

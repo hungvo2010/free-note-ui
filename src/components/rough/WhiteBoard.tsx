@@ -8,34 +8,32 @@ import {
 import rough from "roughjs";
 import { RoughCanvas } from "roughjs/bin/canvas";
 
-import { Arrow } from "../../types/Arrow";
-import { Circle } from "../../types/Circle";
-import { CircleAdapter } from "../../types/CircleAdapter";
-import { Line } from "../../types/Line";
-import { Rectangle } from "../../types/Rectangle";
-import { RectangleAdapter } from "../../types/RectangleAdapter";
-import { Shape } from "../../types/Shape";
-import { calculatePadding, distance } from "../../utils/GeometryUtils";
+import Arrow from "types/Arrow";
+import { Circle } from "types/Circle";
+import { CircleAdapter } from "types/CircleAdapter";
+import { Line } from "types/Line";
+import { Rectangle } from "types/Rectangle";
+import { RectangleAdapter } from "types/RectangleAdapter";
+import { Shape } from "types/Shape";
+import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
+import { distance } from "utils/GeometryUtils";
 import "./WhiteBoard.scss";
 
 type DrawTypeProps = {
   type: string;
 };
 
-const PADDING = 10;
-
-export default function WhiteBoard(props: DrawTypeProps) {
+export default function WhiteBoard({ type }: DrawTypeProps) {
   const shapes = useRef<Shape[]>([]);
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const canvasRef = useRef(null);
   const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();
-  const [drawing, setDrawing] = useState<boolean>(false);
-  const [currentText, setCurrentText] = useState("");
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
   const positionRef = useRef(startPosition);
   const roughCanvasRef = useRef(roughCanvas);
   const [curvePoints, setCurvePoints] = useState<[number, number][]>([[0, 0]]);
   const curvePointsRef = useRef(curvePoints);
+  const drawingRef = useRef(false);
 
   const drawPen = (x2: number, y2: number) => {
     roughCanvas?.curve([...curvePointsRef.current, [x2, y2]], {
@@ -47,7 +45,7 @@ export default function WhiteBoard(props: DrawTypeProps) {
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
       const { x, y } = getCanvasCoordinates(e);
-      switch (props.type) {
+      switch (type) {
         case "rect":
           shapes.current.push(
             new RectangleAdapter(
@@ -68,21 +66,20 @@ export default function WhiteBoard(props: DrawTypeProps) {
           shapes.current.push(new Arrow(roughCanvas, x, y));
           break;
         case "line":
-          shapes.current.push(new Line(roughCanvas, x, y, x, y));
+          shapes.current.push(new Line(roughCanvas, x, y));
       }
-      setDrawing(true);
+      drawingRef.current = true;
       setStartPosition({ x, y });
       positionRef.current = { x, y };
     },
-    [props.type]
+    [type, roughCanvas]
   );
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      // setDrawing(true);
-      if (!drawing) return;
+      if (!drawingRef.current) return;
       const { x, y } = getCanvasCoordinates(e);
-      switch (props.type) {
+      switch (type) {
         case "rect":
           // clearLastRectangle();
           updateLastRect(x, y);
@@ -98,16 +95,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
           break;
         case "circle":
           updateLastCircle(x, y);
-          // const x1 =
-          //   curvePointsRef.current[curvePointsRef.current.length - 1][0];
-          // const y1 =
-          //   curvePointsRef.current[curvePointsRef.current.length - 1][1];
-          // clearCircle(
-          //   (positionRef.current.x + x1) / 2,
-          //   (positionRef.current.y + y1) / 2,
-          //   distance(x1, y1, positionRef.current.x, positionRef.current.y) / 2
-          // );
-          // drawCircle(positionRef.current.x, positionRef.current.y, x, y);
           reDraw();
           break;
         case "pen":
@@ -121,41 +108,21 @@ export default function WhiteBoard(props: DrawTypeProps) {
       setCurvePoints((prev) => [...prev, [x, y]]);
       curvePointsRef.current = [...curvePointsRef.current, [x, y]];
     },
-    [props.type, drawing]
+    [type, roughCanvas]
   );
 
   const handleMouseUp = useCallback(
     (e: MouseEvent) => {
-      const { x, y } = getCanvasCoordinates(e);
-      switch (props.type) {
-        // case "rect":
-        //   drawRect(positionRef.current.x, positionRef.current.y, x, y);
-        //   break;
-        case "line":
-          drawLine(positionRef.current.x, positionRef.current.y, x, y);
-          break;
-        // case "arrow":
-        //   drawArrow(positionRef.current.x, positionRef.current.y, x, y);
-        //   break;
-        // case "circle":
-        //   drawCircle(positionRef.current.x, positionRef.current.y, x, y);
-        //   break;
-        // case "diam":
-        //   drawDiamond(positionRef.current.x, positionRef.current.y, x, y);
-        //   break;
-      }
-      setDrawing(false);
+      drawingRef.current = false;
     },
-    [props.type]
+    [type]
   );
 
   const reDraw = useCallback(() => {
     const ctx = canvas?.getContext("2d");
-    // console.log("reDraw", ctx, shapes.current);
     if (ctx) {
       ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
     }
-    console.log("reDraw", shapes.current);
     for (const shape of shapes.current) {
       shape.draw();
     }
@@ -183,7 +150,10 @@ export default function WhiteBoard(props: DrawTypeProps) {
     setCanvas(myCanvas);
     setRoughCanvas(newRoughCanvas);
     roughCanvasRef.current = newRoughCanvas;
+  }, []);
 
+  useEffect(() => {
+    const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;
     myCanvas.addEventListener("mousedown", handleMouseDown);
     myCanvas.addEventListener("mousemove", handleMouseMove);
     myCanvas.addEventListener("mouseup", handleMouseUp);
@@ -192,46 +162,11 @@ export default function WhiteBoard(props: DrawTypeProps) {
       myCanvas.removeEventListener("mousedown", handleMouseDown);
       myCanvas.removeEventListener("mousemove", handleMouseMove);
       myCanvas.removeEventListener("mouseup", handleMouseUp);
-      // clearInterval(caretInterval.current);
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 
-  const clearRect = (x: number, y: number, width: number, height: number) => {
-    const ctx = canvas?.getContext("2d");
-    ctx?.clearRect(x, y, width, height);
-  };
-
-  const clearCircle = (x: number, y: number, radius: number) => {
-    const context = canvas?.getContext("2d");
-    if (context) {
-      context.save();
-      context.globalCompositeOperation = "destination-out";
-      context.beginPath();
-      context.arc(x, y, radius, 0, 2 * Math.PI, false);
-      context.fill();
-      context.restore();
-    }
-  };
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
     console.log("handleKeyDown: " + e.key.length);
-    const ctx = canvas?.getContext("2d");
-    if (ctx && props.type === "word") {
-      // ctx.font = "30px Excalifont";
-      const textWidth = ctx.measureText(currentText).width;
-      clearRect(
-        positionRef.current.x,
-        positionRef.current.y - 12,
-        textWidth,
-        20
-      );
-      ctx?.fillText(
-        currentText + e.key,
-        positionRef.current.x,
-        positionRef.current.y
-      );
-      setCurrentText((val) => val + e.key);
-    }
   };
 
   const getCanvasCoordinates = useCallback((e: MouseEvent) => {
@@ -245,47 +180,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
     const y = e.clientY - rect.top;
     return { x, y };
   }, []);
-
-  const drawLine = (x1: number, y1: number, x2: number, y2: number) => {
-    roughCanvas?.line(x1, y1, x2, y2, {
-      roughness: 1,
-      stroke: "black",
-    });
-  };
-
-  const drawWord = (x: number, y: number) => {
-    const ctx = canvas?.getContext("2d");
-    if (ctx && canvas) {
-      setCurrentText("");
-    }
-    // clearInterval(caretInterval.current);
-    // setIsCaretVisible(true);
-    // caretInterval.current = setInterval(() => {
-    //   setIsCaretVisible((prev) => !prev);
-    // }, 500);
-  };
-
-  const drawCircle = (x: number, y: number, x1: number, y1: number) => {
-    const angle = Math.atan2(y1 - y, x1 - x);
-
-    roughCanvas?.circle(
-      (x + x1) / 2,
-      (y + y1) / 2,
-      (distance(x1, y1, x, y) * Math.cos(angle)) / 2,
-      {
-        roughness: 1,
-        stroke: "black",
-        curveFitting: 0.95,
-      }
-    );
-  };
-
-  const drawRect = (x: number, y: number, x1: number, y1: number) => {
-    roughCanvasRef.current?.rectangle(x, y, x1 - x, y1 - y, {
-      roughness: 1,
-      stroke: "black",
-    });
-  };
 
   const drawDiamond = (x1: number, y1: number, x2: number, y2: number) => {
     const angle = Math.atan2(y2 - y1, x2 - x1);
@@ -325,26 +219,6 @@ export default function WhiteBoard(props: DrawTypeProps) {
     );
   };
 
-  const drawArrow = (x1: number, y1: number, x2: number, y2: number) => {
-    drawLine(x1, y1, x2, y2);
-    if (distance(x1, y1, x2, y2) < 20) return;
-
-    const headLength = 15;
-    const angle = Math.atan2(y2 - y1, x2 - x1);
-    drawLine(
-      x2,
-      y2,
-      x2 - headLength * Math.cos(angle - Math.PI / 6),
-      y2 - headLength * Math.sin(angle - Math.PI / 6)
-    );
-    drawLine(
-      x2,
-      y2,
-      x2 - headLength * Math.cos(angle + Math.PI / 6),
-      y2 - headLength * Math.sin(angle + Math.PI / 6)
-    );
-  };
-
   return (
     <canvas
       id="myCanvas"
@@ -381,7 +255,9 @@ export default function WhiteBoard(props: DrawTypeProps) {
 
   function updateLastLine(x: number, y: number) {
     const lastLine = shapes.current[shapes.current.length - 1] as Line;
-    const newLine = new Line(roughCanvas, lastLine.x1, lastLine.y1, x, y);
+    const newLine = new Line(roughCanvas, lastLine.x1, lastLine.y1);
+    newLine.x2 = x;
+    newLine.y2 = y;
     shapes.current[shapes.current.length - 1] = newLine;
   }
 
@@ -399,31 +275,4 @@ export default function WhiteBoard(props: DrawTypeProps) {
       new Date().getMilliseconds()
     );
   }
-
-  function clearLastRectangle() {
-    const lastX = curvePointsRef.current[curvePointsRef.current.length - 1][0];
-    const lastY = curvePointsRef.current[curvePointsRef.current.length - 1][1];
-    const angle = Math.atan2(
-      lastY - positionRef.current.y,
-      lastX - positionRef.current.x
-    );
-    const padding = calculatePadding((angle * 180) / Math.PI, PADDING);
-    clearRect(
-      positionRef.current.x - padding[0],
-      positionRef.current.y - padding[1],
-      lastX - positionRef.current.x + padding[0] * 2,
-      lastY - positionRef.current.y + padding[1] * 2
-    );
-  }
-}
-
-function resizeCanvasToDisplaySize(canvas: HTMLCanvasElement) {
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
-  if (canvas.width !== width || canvas.height !== height) {
-    canvas.width = width;
-    canvas.height = height;
-    return true;
-  }
-  return false;
 }

@@ -3,12 +3,12 @@ import { Drawable } from "roughjs/bin/core";
 import { distance } from "../utils/GeometryUtils";
 import { Shape } from "./Shape";
 
-export class Arrow implements Shape {
+export default class Arrow implements Shape {
     private mainDrawable: Drawable | undefined;
     private leftDrawable: Drawable | undefined;
     private rightDrawable: Drawable | undefined;
-    public x2: number = 0;
-    public y2: number = 0;
+    public x2: number | undefined;
+    public y2: number | undefined;
 
     constructor(
         public roughCanvas: RoughCanvas | undefined,
@@ -18,10 +18,12 @@ export class Arrow implements Shape {
 
     draw(): void {
         if (this.mainDrawable && this.leftDrawable && this.rightDrawable) {
-            console.log("re-draw arrow");
             this.roughCanvas?.draw(this.mainDrawable);
             this.roughCanvas?.draw(this.leftDrawable);
             this.roughCanvas?.draw(this.rightDrawable);
+            return;
+        }
+        if (!this.x1 || !this.y1 || !this.x2 || !this.y2) {
             return;
         }
         var main = this.drawLine(this.x1, this.y1, this.x2, this.y2);
