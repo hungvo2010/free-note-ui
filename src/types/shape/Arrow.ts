@@ -15,6 +15,12 @@ export default class Arrow implements Shape {
         public x1: number,
         public y1: number,
     ) { }
+    clone(x: number, y: number): Shape {
+        const newArrow = new Arrow(this.roughCanvas, this.x1, this.y1);
+        newArrow.x2 = x;
+        newArrow.y2 = y;
+        return newArrow;
+    }
 
     draw(): void {
         if (this.mainDrawable && this.leftDrawable && this.rightDrawable) {

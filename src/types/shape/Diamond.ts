@@ -10,6 +10,12 @@ export class Diamond implements Shape {
     constructor(
         public roughCanvas: RoughCanvas | undefined,
         public x1: number, public y1: number,) { }
+    clone(x: number, y: number): Shape {
+        const newDiamond = new Diamond(this.roughCanvas, this.x1, this.y1);
+        newDiamond.x2 = x;
+        newDiamond.y2 = y;
+        return newDiamond;
+    }
 
     draw(): void {
         if (!this.x2 || !this.y2) {

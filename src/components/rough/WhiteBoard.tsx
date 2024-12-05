@@ -8,6 +8,7 @@ import {
 import rough from "roughjs";
 import { RoughCanvas } from "roughjs/bin/canvas";
 
+import { ReDrawController } from "main/ReDrawController";
 import Arrow from "types/shape/Arrow";
 import { Circle } from "types/shape/Circle";
 import { CircleAdapter } from "types/shape/CircleAdapter";
@@ -18,7 +19,6 @@ import { Rectangle } from "types/shape/Rectangle";
 import { RectangleAdapter } from "types/shape/RectangleAdapter";
 import { Shape } from "types/shape/Shape";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
-import { distance } from "utils/GeometryUtils";
 import "./WhiteBoard.scss";
 
 type DrawTypeProps = {
@@ -34,39 +34,43 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const positionRef = useRef(startPosition);
   const roughCanvasRef = useRef(roughCanvas);
   const drawingRef = useRef(false);
+  const reDrawController = new ReDrawController(roughCanvas, shapes.current);
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
       const { x, y } = getCanvasCoordinates(e);
+      let newShape: Shape;
       switch (type) {
         case "rect":
-          shapes.current.push(
-            new RectangleAdapter(
-              new Rectangle(roughCanvas, x, y, 0, 0),
-              new Date().getMilliseconds()
-            )
+          newShape = new RectangleAdapter(
+            roughCanvas,
+            new Rectangle(roughCanvas, x, y, 0, 0),
+            new Date().getMilliseconds()
           );
           break;
         case "circle":
-          shapes.current.push(
-            new CircleAdapter(
-              new Circle(roughCanvas, x, y, 0),
-              new Date().getMilliseconds()
-            )
+          newShape = new CircleAdapter(
+            roughCanvas,
+            new Circle(roughCanvas, x, y, x, y, 0),
+            new Date().getMilliseconds()
           );
           break;
         case "arrow":
-          shapes.current.push(new Arrow(roughCanvas, x, y));
+          newShape = new Arrow(roughCanvas, x, y);
           break;
         case "line":
-          shapes.current.push(new Line(roughCanvas, x, y));
+          newShape = new Line(roughCanvas, x, y);
           break;
         case "pen":
-          shapes.current.push(new FreeStyleShape(roughCanvas, [[x, y]]));
+          newShape = new FreeStyleShape(roughCanvas, [[x, y]]);
           break;
         case "diam":
-          shapes.current.push(new Diamond(roughCanvas, x, y));
+          newShape = new Diamond(roughCanvas, x, y);
+          break;
+        default:
+          return;
       }
+      reDrawController.addShape(newShape);
       drawingRef.current = true;
       setStartPosition({ x, y });
       positionRef.current = { x, y };
@@ -78,34 +82,8 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     (e: MouseEvent) => {
       if (!drawingRef.current) return;
       const { x, y } = getCanvasCoordinates(e);
-      switch (type) {
-        case "rect":
-          // clearLastRectangle();
-          // drawRect(positionRef.current.x, positionRef.current.y, x, y);
-          updateLastRect(shapes.current, x, y);
-          reDraw();
-          break;
-        case "diam":
-          updateLastDiamond(shapes.current, x, y);
-          reDraw();
-          break;
-        case "arrow":
-          updateLastArrow(shapes.current, x, y);
-          reDraw();
-          break;
-        case "circle":
-          updateLastCircle(shapes.current, x, y);
-          reDraw();
-          break;
-        case "pen":
-          updateShapePoint(shapes.current, x, y);
-          reDraw();
-          break;
-        case "line":
-          updateLastLine(shapes.current, x, y);
-          reDraw();
-          break;
-      }
+      reDrawController.updateLastShape(x, y);
+      reDraw();
     },
     [type, roughCanvas]
   );
@@ -122,9 +100,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     if (ctx) {
       ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
     }
-    for (const shape of shapes.current) {
-      shape.draw();
-    }
+    reDrawController.reDraw();
   }, [canvas]);
 
   useLayoutEffect(() => {
@@ -189,64 +165,4 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       onKeyDown={handleKeyDown}
     ></canvas>
   );
-
-  function updateLastRect(shapes: Shape[], x: number, y: number) {
-    const lastRect = shapes[shapes.length - 1] as RectangleAdapter;
-    shapes[shapes.length - 1] = new RectangleAdapter(
-      new Rectangle(
-        roughCanvas,
-        lastRect.getStartPoint().x,
-        lastRect.getStartPoint().y,
-        x - positionRef.current.x,
-        y - positionRef.current.y
-      ),
-      new Date().getMilliseconds()
-    );
-  }
-
-  function updateLastArrow(shapes: Shape[], x: number, y: number) {
-    const lastArrow = shapes[shapes.length - 1] as Arrow;
-    const newArrow = new Arrow(roughCanvas, lastArrow.x1, lastArrow.y1);
-    newArrow.x2 = x;
-    newArrow.y2 = y;
-    shapes[shapes.length - 1] = newArrow;
-  }
-
-  function updateLastLine(shapes: Shape[], x: number, y: number) {
-    const lastLine = shapes[shapes.length - 1] as Line;
-    const newLine = new Line(roughCanvas, lastLine.x1, lastLine.y1);
-    newLine.x2 = x;
-    newLine.y2 = y;
-    shapes[shapes.length - 1] = newLine;
-  }
-
-  function updateLastDiamond(shapes: Shape[], x: number, y: number) {
-    const lastDiamond = shapes[shapes.length - 1] as Diamond;
-    const newDiamond = new Diamond(roughCanvas, lastDiamond.x1, lastDiamond.y1);
-    newDiamond.x2 = x;
-    newDiamond.y2 = y;
-    shapes[shapes.length - 1] = newDiamond;
-  }
-
-  function updateShapePoint(shapes: Shape[], x: number, y: number) {
-    const shapePoints = shapes[shapes.length - 1] as FreeStyleShape;
-    const newFreeStyleShape = new FreeStyleShape(roughCanvas, [
-      ...shapePoints.points,
-      [x, y],
-    ]);
-    shapes[shapes.length - 1] = newFreeStyleShape;
-  }
-
-  function updateLastCircle(shapes: Shape[], x: number, y: number) {
-    const lastCircle = shapes[shapes.length - 1] as CircleAdapter;
-    shapes[shapes.length - 1] = new CircleAdapter(
-      new Circle(
-        roughCanvas,
-        (lastCircle.getCenterPoint().x + x) / 2,
-        (lastCircle.getCenterPoint().y + y) / 2,
-        distance(x, y, positionRef.current.x, positionRef.current.y) / 2
-      ),
-      new Date().getMilliseconds()
-    );
-  }
 }

@@ -9,6 +9,12 @@ export class Line implements Shape {
     constructor(
         public roughCanvas: RoughCanvas | undefined,
         public x1: number, public y1: number,) { }
+    clone(x: number, y: number): Shape {
+        const newLine = new Line(this.roughCanvas, this.x1, this.y1);
+        newLine.x2 = x;
+        newLine.y2 = y;
+        return newLine;
+    }
 
     draw(): void {
         if (!this.x2 || !this.y2) {

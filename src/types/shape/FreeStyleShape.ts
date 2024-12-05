@@ -14,4 +14,10 @@ export class FreeStyleShape implements Shape {
         }
         this.drawable = this.roughCanvas?.curve(this.points, { roughness: 0.1, strokeWidth: 2 });
     }
+    clone(x: number, y: number): Shape {
+        return new FreeStyleShape(this.roughCanvas, [
+            ...this.points,
+            [x, y],
+        ]);
+    }
 }

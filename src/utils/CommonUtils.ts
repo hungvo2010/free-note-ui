@@ -180,3 +180,63 @@ const drawPen = (roughCanvas: any, curvePoints: [number, number][], x2: number, 
 //       new Date().getMilliseconds()
 //     );
 //   }
+
+// function updateLastRect(shapes: Shape[], x: number, y: number) {
+//     const lastRect = shapes[shapes.length - 1] as RectangleAdapter;
+//     shapes[shapes.length - 1] = new RectangleAdapter(
+//       new Rectangle(
+//         roughCanvas,
+//         lastRect.getStartPoint().x,
+//         lastRect.getStartPoint().y,
+//         x - positionRef.current.x,
+//         y - positionRef.current.y
+//       ),
+//       new Date().getMilliseconds()
+//     );
+//   }
+
+// function updateLastDiamond(shapes: Shape[], x: number, y: number) {
+//     const lastDiamond = shapes[shapes.length - 1] as Diamond;
+//     const newDiamond = new Diamond(roughCanvas, lastDiamond.x1, lastDiamond.y1);
+//     newDiamond.x2 = x;
+//     newDiamond.y2 = y;
+//     shapes[shapes.length - 1] = newDiamond;
+//   }
+
+// function updateLastArrow(shapes: Shape[], x: number, y: number) {
+//     const lastArrow = shapes[shapes.length - 1] as Arrow;
+//     const newArrow = new Arrow(roughCanvas, lastArrow.x1, lastArrow.y1);
+//     newArrow.x2 = x;
+//     newArrow.y2 = y;
+//     shapes[shapes.length - 1] = newArrow;
+//   }
+
+// function updateLastLine(shapes: Shape[], x: number, y: number) {
+//     const lastLine = shapes[shapes.length - 1] as Line;
+//     const newLine = new Line(roughCanvas, lastLine.x1, lastLine.y1);
+//     newLine.x2 = x;
+//     newLine.y2 = y;
+//     shapes[shapes.length - 1] = newLine;
+//   }
+
+// function updateLastCircle(shapes: Shape[], x: number, y: number) {
+//     const lastCircle = shapes[shapes.length - 1] as CircleAdapter;
+//     shapes[shapes.length - 1] = new CircleAdapter(
+//       new Circle(
+//         roughCanvas,
+//         (lastCircle.getCenterPoint().x + x) / 2,
+//         (lastCircle.getCenterPoint().y + y) / 2,
+//         distance(x, y, positionRef.current.x, positionRef.current.y) / 2
+//       ),
+//       new Date().getMilliseconds()
+//     );
+//   }
+
+// function updateShapePoint(shapes: Shape[], x: number, y: number) {
+//     const shapePoints = shapes[shapes.length - 1] as FreeStyleShape;
+//     const newFreeStyleShape = new FreeStyleShape(roughCanvas, [
+//       ...shapePoints.points,
+//       [x, y],
+//     ]);
+//     shapes[shapes.length - 1] = newFreeStyleShape;
+//   }
