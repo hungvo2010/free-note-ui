@@ -6,13 +6,20 @@ import { Shape } from "./Shape";
 export class CircleAdapter implements Shape {
   private readonly circle: Circle;
   private roughCanvas: RoughCanvas | undefined;
-  constructor(roughCanvas: RoughCanvas | undefined, circle: Circle, private readonly id: number) {
+  constructor(
+    roughCanvas: RoughCanvas | undefined,
+    circle: Circle,
+    private readonly id: number
+  ) {
     this.circle = circle;
     this.roughCanvas = roughCanvas;
+    this.id = id;
+  }
+  applyNewCoordinates(x: number, y: number): Shape {
+    throw new Error("Method not implemented.");
   }
   clone(x: number, y: number): Shape {
-    console.log(this.circle.x1, this.circle.y1, x, y);
-    console.log(distance(x, y, this.circle.x1, this.circle.y1) / 2);
+    console.log(this.id);
     return new CircleAdapter(
       this.roughCanvas,
       new Circle(

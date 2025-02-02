@@ -28,12 +28,15 @@ type DrawTypeProps = {
 export default function WhiteBoard({ type }: DrawTypeProps) {
   const shapes = useRef<Shape[]>([]);
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
-  const canvasRef = useRef(null);
   const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();
   const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
+  const [scale, setScale] = useState(1);
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
+  const canvasRef = useRef(null);
   const positionRef = useRef(startPosition);
-  const roughCanvasRef = useRef(roughCanvas);
   const drawingRef = useRef(false);
+  const moveBoardRef = useRef(false);
   const reDrawController = new ReDrawController(roughCanvas, shapes.current);
 
   const handleMouseDown = useCallback(
@@ -80,8 +83,19 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      if (!drawingRef.current) return;
       const { x, y } = getCanvasCoordinates(e);
+      console.log(type);
+      if (type === "hand" && moveBoardRef.current) {
+        console.log("console handle hand tool");
+        moveBoardRef.current = false;
+        reDrawController.updateCoordinates(
+          x - positionRef.current.x,
+          y - positionRef.current.y
+        );
+        reDraw();
+        return;
+      }
+      if (!drawingRef.current) return;
       reDrawController.updateLastShape(x, y);
       reDraw();
     },
@@ -91,6 +105,16 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const handleMouseUp = useCallback(
     (e: MouseEvent) => {
       drawingRef.current = false;
+    },
+    [type]
+  );
+
+  const handleDoubleClick = useCallback(
+    (e: MouseEvent) => {
+      if (type === "hand") {
+        console.log("handleDoubleClick");
+        moveBoardRef.current = true;
+      }
     },
     [type]
   );
@@ -108,6 +132,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       const canvas = canvasRef.current;
       if (canvas) {
         resizeCanvasToDisplaySize(canvas);
+        reDraw();
       }
     }
     window.addEventListener("resize", updateSize);
@@ -124,7 +149,6 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     const newRoughCanvas = rough.canvas(myCanvas);
     setCanvas(myCanvas);
     setRoughCanvas(newRoughCanvas);
-    roughCanvasRef.current = newRoughCanvas;
   }, []);
 
   useEffect(() => {
@@ -132,11 +156,13 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     myCanvas.addEventListener("mousedown", handleMouseDown);
     myCanvas.addEventListener("mousemove", handleMouseMove);
     myCanvas.addEventListener("mouseup", handleMouseUp);
+    myCanvas.addEventListener("dblclick", handleDoubleClick);
     return () => {
       console.log("on cleanup function");
       myCanvas.removeEventListener("mousedown", handleMouseDown);
       myCanvas.removeEventListener("mousemove", handleMouseMove);
       myCanvas.removeEventListener("mouseup", handleMouseUp);
+      myCanvas.removeEventListener("dblclick", handleDoubleClick);
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 

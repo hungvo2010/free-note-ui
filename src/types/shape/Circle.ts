@@ -4,7 +4,12 @@ import { Drawable } from "roughjs/bin/core";
 export class Circle {
   private drawable: Drawable | undefined;
   constructor(
-    private roughCanvas: RoughCanvas | undefined, private x: number, private y: number, public readonly x1: number, public readonly y1: number, private radius: number) { }
+    private roughCanvas: RoughCanvas | undefined,
+    private x: number,
+    private y: number,
+    public readonly x1: number,
+    public readonly y1: number,
+    private radius: number) { }
   drawCircle() {
     if (this.drawable) {
       this.roughCanvas?.draw(this.drawable);
