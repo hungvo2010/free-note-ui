@@ -2,6 +2,14 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { Shape } from "types/shape/Shape";
 
 export class ReDrawController {
+  redrawUsingVirtualCoordinates(newOffsetX: number, newOffsetY: number) {
+    for (let i = 0; i < this.shapes.length; i++) {
+      this.shapes[i] = this.shapes[i].toVirtualCoordinates(
+        newOffsetX,
+        newOffsetY
+      );
+    }
+  }
   constructor(
     public roughCanvas: RoughCanvas | undefined,
     public shapes: Shape[] = []
@@ -17,8 +25,11 @@ export class ReDrawController {
     this.shapes[this.shapes.length - 1] = newShape;
   }
 
+  public updateShape(newShape: Shape) {
+    this.shapes[this.shapes.length - 1] = newShape;
+  }
+
   public updateCoordinates(offsetX: number, offsetY: number) {
-    console.log("updateCoordinates: " + offsetX + " " + offsetY);
     for (let i = 0; i < this.shapes.length; i++) {
       this.shapes[i] = this.shapes[i].applyNewCoordinates(offsetX, offsetY);
     }

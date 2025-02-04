@@ -15,6 +15,9 @@ export class CircleAdapter implements Shape {
     this.roughCanvas = roughCanvas;
     this.id = id;
   }
+  toVirtualCoordinates(x: number, y: number): Shape {
+    throw new Error("Method not implemented.");
+  }
   applyNewCoordinates(x: number, y: number): Shape {
     throw new Error("Method not implemented.");
   }

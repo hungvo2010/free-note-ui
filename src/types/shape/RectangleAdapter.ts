@@ -8,15 +8,35 @@ export class RectangleAdapter implements Shape {
   private readonly rectangle: Rectangle;
   constructor(
     roughCanvas: RoughCanvas | undefined,
+    private offsetX: number,
+    private offsetY: number,
     rectangle: Rectangle,
     private readonly id: number
   ) {
     this.roughCanvas = roughCanvas;
     this.rectangle = rectangle;
   }
+  applyNewCoordinates(x: number, y: number): Shape {
+    console.log("applyNewCoordinates" + x + " " + y);
+    return new RectangleAdapter(
+      this.roughCanvas,
+      0,
+      0,
+      new Rectangle(
+        this.roughCanvas,
+        toVirtualX(this.rectangle.getStartPoint().x, this.offsetX, 1),
+        toVirtualY(this.rectangle.getStartPoint().y, this.offsetY, 1),
+        this.rectangle.getWidth,
+        this.rectangle.getHeight
+      ),
+      this.id
+    );
+  }
   clone(x: number, y: number): Shape {
     return new RectangleAdapter(
       this.roughCanvas,
+      this.offsetX,
+      this.offsetY,
       new Rectangle(
         this.roughCanvas,
         this.rectangle.getStartPoint().x,
@@ -28,13 +48,18 @@ export class RectangleAdapter implements Shape {
     );
   }
 
-  applyNewCoordinates(offsetX: number, offsetY: number): Shape {
+  toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
+    // console.log(
+    //   "start point: " + JSON.stringify(this.rectangle.getStartPoint())
+    // );
     return new RectangleAdapter(
       this.roughCanvas,
+      offsetX,
+      offsetY,
       new Rectangle(
         this.roughCanvas,
-        toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
-        toVirtualY(this.rectangle.getStartPoint().y, offsetY, 1),
+        this.rectangle.getStartPoint().x,
+        this.rectangle.getStartPoint().y,
         this.rectangle.getWidth,
         this.rectangle.getHeight
       ),
@@ -43,7 +68,14 @@ export class RectangleAdapter implements Shape {
   }
 
   draw(): void {
-    this.rectangle.drawRectangle();
+    const newRectangle = new Rectangle(
+      this.roughCanvas,
+      toVirtualX(this.rectangle.getStartPoint().x, this.offsetX, 1),
+      toVirtualY(this.rectangle.getStartPoint().y, this.offsetY, 1),
+      this.rectangle.getWidth,
+      this.rectangle.getHeight
+    );
+    newRectangle.drawRectangle();
   }
 
   getStartPoint(): { x: number; y: number } {

@@ -16,6 +16,9 @@ export default class Arrow implements Shape {
     public x1: number,
     public y1: number
   ) {}
+  toVirtualCoordinates(x: number, y: number): Shape {
+    throw new Error("Method not implemented.");
+  }
   applyNewCoordinates(x: number, y: number): Shape {
     throw new Error("Method not implemented.");
   }

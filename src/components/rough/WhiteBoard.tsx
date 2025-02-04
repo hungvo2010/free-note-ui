@@ -36,17 +36,22 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const canvasRef = useRef(null);
   const positionRef = useRef(startPosition);
   const drawingRef = useRef(false);
-  const moveBoardRef = useRef(false);
+  const moveBoardRef = useRef(0);
   const reDrawController = new ReDrawController(roughCanvas, shapes.current);
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
+      // console.log("handleMouseDown");
       const { x, y } = getCanvasCoordinates(e);
-      let newShape: Shape;
+      setStartPosition({ x, y });
+      positionRef.current = { x, y };
+      let newShape: Shape | undefined;
       switch (type) {
         case "rect":
           newShape = new RectangleAdapter(
             roughCanvas,
+            0,
+            0,
             new Rectangle(roughCanvas, x, y, 0, 0),
             new Date().getMilliseconds()
           );
@@ -70,50 +75,42 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         case "diam":
           newShape = new Diamond(roughCanvas, x, y);
           break;
+        case "hand":
+          moveBoardRef.current += 1;
+          break;
         default:
           return;
       }
-      reDrawController.addShape(newShape);
-      drawingRef.current = true;
-      setStartPosition({ x, y });
-      positionRef.current = { x, y };
+      if (newShape) {
+        reDrawController.addShape(newShape);
+        drawingRef.current = true;
+      }
     },
     [type, roughCanvas]
   );
 
-  const handleMouseMove = useCallback(
-    (e: MouseEvent) => {
-      const { x, y } = getCanvasCoordinates(e);
-      console.log(type);
-      if (type === "hand" && moveBoardRef.current) {
-        console.log("console handle hand tool");
-        moveBoardRef.current = false;
-        reDrawController.updateCoordinates(
-          x - positionRef.current.x,
-          y - positionRef.current.y
-        );
-        reDraw();
-        return;
-      }
-      if (!drawingRef.current) return;
-      reDrawController.updateLastShape(x, y);
+  const handleMouseMove = (e: MouseEvent) => {
+    const { x, y } = getCanvasCoordinates(e);
+    if (type === "hand" && moveBoardRef.current > 0) {
+      const newOffsetX = x - positionRef.current.x;
+      const newOffsetY = y - positionRef.current.y;
+      reDrawController.redrawUsingVirtualCoordinates(newOffsetX, newOffsetY);
+      // setOffsetX(newOffsetX);
+      // setOffsetY(newOffsetY);
       reDraw();
-    },
-    [type, roughCanvas]
-  );
+      return;
+    }
+    if (!drawingRef.current) return;
+    reDrawController.updateLastShape(x, y);
+    reDraw();
+  };
 
   const handleMouseUp = useCallback(
     (e: MouseEvent) => {
       drawingRef.current = false;
-    },
-    [type]
-  );
-
-  const handleDoubleClick = useCallback(
-    (e: MouseEvent) => {
       if (type === "hand") {
-        console.log("handleDoubleClick");
-        moveBoardRef.current = true;
+        reDrawController.updateCoordinates(0, 0);
+        moveBoardRef.current -= 1;
       }
     },
     [type]
@@ -156,13 +153,11 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     myCanvas.addEventListener("mousedown", handleMouseDown);
     myCanvas.addEventListener("mousemove", handleMouseMove);
     myCanvas.addEventListener("mouseup", handleMouseUp);
-    myCanvas.addEventListener("dblclick", handleDoubleClick);
     return () => {
       console.log("on cleanup function");
       myCanvas.removeEventListener("mousedown", handleMouseDown);
       myCanvas.removeEventListener("mousemove", handleMouseMove);
       myCanvas.removeEventListener("mouseup", handleMouseUp);
-      myCanvas.removeEventListener("dblclick", handleDoubleClick);
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp]);
 

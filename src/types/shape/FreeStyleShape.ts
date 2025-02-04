@@ -8,6 +8,9 @@ export class FreeStyleShape implements Shape {
     public roughCanvas: RoughCanvas | undefined,
     public points: [number, number][]
   ) {}
+  toVirtualCoordinates(x: number, y: number): Shape {
+    throw new Error("Method not implemented.");
+  }
   applyNewCoordinates(x: number, y: number): Shape {
     throw new Error("Method not implemented.");
   }
