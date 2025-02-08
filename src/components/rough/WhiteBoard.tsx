@@ -67,7 +67,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           newShape = new Arrow(roughCanvas, x, y);
           break;
         case "line":
-          newShape = new Line(roughCanvas, x, y);
+          newShape = new Line(roughCanvas, 0, 0, x, y);
           break;
         case "pen":
           newShape = new FreeStyleShape(roughCanvas, [[x, y]]);
@@ -135,7 +135,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     window.addEventListener("resize", updateSize);
     updateSize();
     return () => window.removeEventListener("resize", updateSize);
-  }, []);
+  }, [reDraw]);
 
   useEffect(() => {
     const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;

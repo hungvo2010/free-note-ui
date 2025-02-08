@@ -17,7 +17,6 @@ export class RectangleAdapter implements Shape {
     this.rectangle = rectangle;
   }
   applyNewCoordinates(x: number, y: number): Shape {
-    console.log("applyNewCoordinates" + x + " " + y);
     return new RectangleAdapter(
       this.roughCanvas,
       0,
