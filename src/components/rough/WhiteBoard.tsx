@@ -64,7 +64,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           );
           break;
         case "arrow":
-          newShape = new Arrow(roughCanvas, x, y);
+          newShape = new Arrow(roughCanvas, x, y, 0, 0);
           break;
         case "line":
           newShape = new Line(roughCanvas, 0, 0, x, y);
