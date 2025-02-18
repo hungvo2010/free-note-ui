@@ -70,7 +70,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           newShape = new Line(roughCanvas, 0, 0, x, y);
           break;
         case "pen":
-          newShape = new FreeStyleShape(roughCanvas, [[x, y]]);
+          newShape = new FreeStyleShape(roughCanvas, [[x, y]], 0, 0);
           break;
         case "diam":
           newShape = new Diamond(roughCanvas, x, y);
