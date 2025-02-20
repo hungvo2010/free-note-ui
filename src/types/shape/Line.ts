@@ -14,6 +14,7 @@ export class Line implements Shape {
     public x1: number,
     public y1: number
   ) {}
+
   toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
     const newLine = new Line(
       this.roughCanvas,
@@ -26,6 +27,7 @@ export class Line implements Shape {
     newLine.y2 = this.y2;
     return newLine;
   }
+  
   applyNewCoordinates(offsetX: number, offsetY: number): Shape {
     const newLine = new Line(
       this.roughCanvas,

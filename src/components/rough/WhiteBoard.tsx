@@ -59,8 +59,10 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         case "circle":
           newShape = new CircleAdapter(
             roughCanvas,
-            new Circle(roughCanvas, x, y, x, y, 0),
-            new Date().getMilliseconds()
+            new Circle(roughCanvas, x, y, 0),
+            new Date().getMilliseconds(),
+            0,
+            0
           );
           break;
         case "arrow":
@@ -101,7 +103,12 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       return;
     }
     if (!drawingRef.current) return;
-    reDrawController.updateLastShape(x, y);
+    reDrawController.updateLastShape(
+      positionRef.current.x,
+      positionRef.current.y,
+      x,
+      y
+    );
     reDraw();
   };
 
@@ -121,7 +128,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     if (ctx) {
       ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
     }
-    reDrawController.reDraw();
+    reDrawController.reDraw(offsetX, offsetY);
   }, [canvas]);
 
   useLayoutEffect(() => {

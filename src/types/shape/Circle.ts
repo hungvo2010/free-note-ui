@@ -7,8 +7,6 @@ export class Circle {
     private roughCanvas: RoughCanvas | undefined,
     private x: number,
     private y: number,
-    public readonly x1: number,
-    public readonly y1: number,
     private radius: number) { }
   drawCircle() {
     if (this.drawable) {
@@ -23,5 +21,21 @@ export class Circle {
   }
   getCenterPoint(): { x: number; y: number; } {
     return { x: this.x, y: this.y };
+  }
+
+  public get getRadius(): number {
+    return this.radius;
+  }
+
+  public setRadius(radius: number) {
+    this.radius = radius;
+  }
+
+  public get getX(): number {
+    return this.x;
+  }
+
+  public get getY(): number {
+    return this.y;
   }
 }
