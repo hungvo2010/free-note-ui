@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -19,6 +20,7 @@ import { Rectangle } from "types/shape/Rectangle";
 import { RectangleAdapter } from "types/shape/RectangleAdapter";
 import { Shape } from "types/shape/Shape";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
+import { getCanvasCoordinates } from "utils/GeometryUtils";
 import "./WhiteBoard.scss";
 
 type DrawTypeProps = {
@@ -29,29 +31,28 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const shapes = useRef<Shape[]>([]);
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();
-  const [startPosition, setStartPosition] = useState({ x: 0, y: 0 });
-  const [scale, setScale] = useState(1);
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
-  const canvasRef = useRef(null);
-  const positionRef = useRef(startPosition);
+  const canvasRef = useRef<HTMLCanvasElement>(
+    document.getElementById("canvas") as HTMLCanvasElement
+  );
+  const positionRef = useRef({ x: 0, y: 0 });
   const drawingRef = useRef(false);
   const moveBoardRef = useRef(0);
-  const reDrawController = new ReDrawController(roughCanvas, shapes.current);
+  const reDrawController = useMemo(
+    () => new ReDrawController(roughCanvas, shapes.current),
+    [roughCanvas]
+  );
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
-      // console.log("handleMouseDown");
-      const { x, y } = getCanvasCoordinates(e);
-      setStartPosition({ x, y });
+      let { x, y } = getCanvasCoordinates(e, canvasRef.current);
       positionRef.current = { x, y };
       let newShape: Shape | undefined;
       switch (type) {
         case "rect":
           newShape = new RectangleAdapter(
             roughCanvas,
-            0,
-            0,
             new Rectangle(roughCanvas, x, y, 0, 0),
             new Date().getMilliseconds()
           );
@@ -69,7 +70,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           newShape = new Arrow(roughCanvas, x, y, 0, 0);
           break;
         case "line":
-          newShape = new Line(roughCanvas, 0, 0, x, y);
+          newShape = new Line(roughCanvas, x, y);
           break;
         case "pen":
           newShape = new FreeStyleShape(roughCanvas, [[x, y]], 0, 0);
@@ -88,61 +89,72 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         drawingRef.current = true;
       }
     },
-    [type, roughCanvas]
+    [type, roughCanvas, reDrawController]
   );
 
-  const handleMouseMove = (e: MouseEvent) => {
-    const { x, y } = getCanvasCoordinates(e);
-    if (type === "hand" && moveBoardRef.current > 0) {
-      const newOffsetX = x - positionRef.current.x;
-      const newOffsetY = y - positionRef.current.y;
-      reDrawController.redrawUsingVirtualCoordinates(newOffsetX, newOffsetY);
-      // setOffsetX(newOffsetX);
-      // setOffsetY(newOffsetY);
-      reDraw();
-      return;
-    }
-    if (!drawingRef.current) return;
-    reDrawController.updateLastShape(
-      positionRef.current.x,
-      positionRef.current.y,
-      x,
-      y
-    );
-    reDraw();
-  };
+  const reDraw = useCallback(
+    (offsetX: number, offsetY: number) => {
+      console.log("reDraw: " + offsetX + " " + offsetY);
+      const ctx = canvas?.getContext("2d");
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
+      }
+      reDrawController.reDraw(offsetX, offsetY);
+    },
+    [canvas, reDrawController]
+  );
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      let { x, y } = getCanvasCoordinates(e, canvasRef.current);
+      if (type === "hand" && moveBoardRef.current > 0) {
+        const newOffsetX = x - positionRef.current.x;
+        const newOffsetY = y - positionRef.current.y;
+        reDraw(newOffsetX, newOffsetY);
+        return;
+      }
+      if (!drawingRef.current) return;
+      reDrawController.updateLastShape(
+        positionRef.current.x,
+        positionRef.current.y,
+        x,
+        y
+      );
+      reDraw(0, 0);
+    },
+    [type, reDraw, reDrawController]
+  );
 
   const handleMouseUp = useCallback(
     (e: MouseEvent) => {
       drawingRef.current = false;
       if (type === "hand") {
-        reDrawController.updateCoordinates(0, 0);
         moveBoardRef.current -= 1;
+        const { x, y } = getCanvasCoordinates(e, canvasRef.current);
+        setOffsetX((val) => val + x - positionRef.current.x);
+        setOffsetY((val) => val + y - positionRef.current.y);
+        reDrawController.updateCoordinates(
+          x - positionRef.current.x,
+          y - positionRef.current.y
+        );
       }
     },
-    [type]
+    [type, reDrawController]
   );
-
-  const reDraw = useCallback(() => {
-    const ctx = canvas?.getContext("2d");
-    if (ctx) {
-      ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
-    }
-    reDrawController.reDraw(offsetX, offsetY);
-  }, [canvas]);
 
   useLayoutEffect(() => {
     function updateSize() {
+      console.log("updateSize: " + offsetX + " " + offsetY);
       const canvas = canvasRef.current;
       if (canvas) {
         resizeCanvasToDisplaySize(canvas);
-        reDraw();
+        reDraw(0, 0);
       }
     }
     window.addEventListener("resize", updateSize);
     updateSize();
     return () => window.removeEventListener("resize", updateSize);
-  }, [reDraw]);
+  }, [reDraw, offsetX, offsetY]);
 
   useEffect(() => {
     const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;
@@ -171,18 +183,6 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
     console.log("handleKeyDown: " + e.key.length);
   };
-
-  const getCanvasCoordinates = useCallback((e: MouseEvent) => {
-    if (!canvasRef.current) {
-      return { x: 0, y: 0 };
-    }
-    const rect = (
-      canvasRef.current as HTMLCanvasElement
-    ).getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    return { x, y };
-  }, []);
 
   return (
     <canvas

@@ -8,34 +8,30 @@ export class RectangleAdapter implements Shape {
   private readonly rectangle: Rectangle;
   constructor(
     roughCanvas: RoughCanvas | undefined,
-    private offsetX: number,
-    private offsetY: number,
     rectangle: Rectangle,
     private readonly id: number
   ) {
     this.roughCanvas = roughCanvas;
     this.rectangle = rectangle;
   }
-  applyNewCoordinates(x: number, y: number): Shape {
+
+  applyNewCoordinates(changeX: number, changeY: number): Shape {
     return new RectangleAdapter(
       this.roughCanvas,
-      0,
-      0,
       new Rectangle(
         this.roughCanvas,
-        toVirtualX(this.rectangle.getStartPoint().x, this.offsetX, 1),
-        toVirtualY(this.rectangle.getStartPoint().y, this.offsetY, 1),
+        this.rectangle.getStartPoint().x + changeX,
+        this.rectangle.getStartPoint().y + changeY,
         this.rectangle.getWidth,
         this.rectangle.getHeight
       ),
       this.id
     );
   }
+
   clone(x: number, y: number): Shape {
     return new RectangleAdapter(
       this.roughCanvas,
-      this.offsetX,
-      this.offsetY,
       new Rectangle(
         this.roughCanvas,
         this.rectangle.getStartPoint().x,
@@ -53,8 +49,6 @@ export class RectangleAdapter implements Shape {
     // );
     return new RectangleAdapter(
       this.roughCanvas,
-      offsetX,
-      offsetY,
       new Rectangle(
         this.roughCanvas,
         this.rectangle.getStartPoint().x,
@@ -66,11 +60,11 @@ export class RectangleAdapter implements Shape {
     );
   }
 
-  draw(): void {
+  draw(offsetX: number, offsetY: number): void {
     const newRectangle = new Rectangle(
       this.roughCanvas,
-      toVirtualX(this.rectangle.getStartPoint().x, this.offsetX, 1),
-      toVirtualY(this.rectangle.getStartPoint().y, this.offsetY, 1),
+      toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
+      toVirtualY(this.rectangle.getStartPoint().y, offsetY, 1),
       this.rectangle.getWidth,
       this.rectangle.getHeight
     );

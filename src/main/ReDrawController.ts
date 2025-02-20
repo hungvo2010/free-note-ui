@@ -45,15 +45,15 @@ export class ReDrawController {
     this.shapes[this.shapes.length - 1] = newShape;
   }
 
-  public updateCoordinates(offsetX: number, offsetY: number) {
+  public updateCoordinates(changeX: number, changeY: number) {
     for (let i = 0; i < this.shapes.length; i++) {
-      this.shapes[i] = this.shapes[i].applyNewCoordinates(offsetX, offsetY);
+      this.shapes[i] = this.shapes[i].applyNewCoordinates(changeX, changeY);
     }
   }
 
   public reDraw(offsetX: number, offsetY: number) {
     for (const shape of this.shapes) {
-      shape.draw();
+      shape.draw(offsetX, offsetY);
     }
   }
 }
