@@ -5,19 +5,29 @@ import { Shape } from "./Shape";
 
 export class Diamond implements Shape {
   private drawable: Drawable | undefined;
-  public x2: number | undefined;
-  public y2: number | undefined;
+  public x2: number = 0;
+  public y2: number = 0;
   constructor(
     public roughCanvas: RoughCanvas | undefined,
     public x1: number,
     public y1: number
   ) {}
+  
   toVirtualCoordinates(x: number, y: number): Shape {
     throw new Error("Method not implemented.");
   }
-  applyNewCoordinates(x: number, y: number): Shape {
-    throw new Error("Method not implemented.");
+
+  applyNewCoordinates(changeX: number, changeY: number): Shape {
+    const newDiamond = new Diamond(
+      this.roughCanvas,
+      this.x1 + changeX,
+      this.y1 + changeY
+    );
+    newDiamond.x2 = this.x2 + changeX;
+    newDiamond.y2 = this.y2 + changeY;
+    return newDiamond;
   }
+
   clone(x: number, y: number): Shape {
     const newDiamond = new Diamond(this.roughCanvas, this.x1, this.y1);
     newDiamond.x2 = x;
@@ -25,15 +35,20 @@ export class Diamond implements Shape {
     return newDiamond;
   }
 
-  draw(): void {
+  draw(offsetX: number, offsetY: number): void {
     if (!this.x2 || !this.y2) {
       return;
     }
-    if (this.drawable) {
+    if (this.drawable && offsetX === 0 && offsetY === 0) {
       this.roughCanvas?.draw(this.drawable);
       return;
     }
-    this.drawable = this.drawDiamond(this.x1, this.y1, this.x2, this.y2);
+    this.drawable = this.drawDiamond(
+      this.x1 + offsetX,
+      this.y1 + offsetY,
+      this.x2 + offsetX,
+      this.y2 + offsetY
+    );
   }
 
   drawDiamond(x1: number, y1: number, x2: number, y2: number) {

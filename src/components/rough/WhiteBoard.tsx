@@ -46,7 +46,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
-      let { x, y } = getCanvasCoordinates(e, canvasRef.current);
+      const { x, y } = getCanvasCoordinates(e, canvasRef.current);
       positionRef.current = { x, y };
       let newShape: Shape | undefined;
       switch (type) {
@@ -61,19 +61,17 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           newShape = new CircleAdapter(
             roughCanvas,
             new Circle(roughCanvas, x, y, 0),
-            new Date().getMilliseconds(),
-            0,
-            0
+            new Date().getMilliseconds()
           );
           break;
         case "arrow":
-          newShape = new Arrow(roughCanvas, x, y, 0, 0);
+          newShape = new Arrow(roughCanvas, x, y);
           break;
         case "line":
           newShape = new Line(roughCanvas, x, y);
           break;
         case "pen":
-          newShape = new FreeStyleShape(roughCanvas, [[x, y]], 0, 0);
+          newShape = new FreeStyleShape(roughCanvas, [[x, y]]);
           break;
         case "diam":
           newShape = new Diamond(roughCanvas, x, y);
@@ -94,7 +92,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
 
   const reDraw = useCallback(
     (offsetX: number, offsetY: number) => {
-      console.log("reDraw: " + offsetX + " " + offsetY);
+      // console.log("reDraw: " + offsetX + " " + offsetY);
       const ctx = canvas?.getContext("2d");
       if (ctx) {
         ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
@@ -106,20 +104,21 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      let { x, y } = getCanvasCoordinates(e, canvasRef.current);
+      const { x, y } = getCanvasCoordinates(e, canvasRef.current);
+      const startPosition = positionRef.current;
+
       if (type === "hand" && moveBoardRef.current > 0) {
-        const newOffsetX = x - positionRef.current.x;
-        const newOffsetY = y - positionRef.current.y;
-        reDraw(newOffsetX, newOffsetY);
+        const offset = {
+          x: x - startPosition.x,
+          y: y - startPosition.y,
+        };
+        reDraw(offset.x, offset.y);
         return;
       }
+
       if (!drawingRef.current) return;
-      reDrawController.updateLastShape(
-        positionRef.current.x,
-        positionRef.current.y,
-        x,
-        y
-      );
+
+      reDrawController.updateLastShape(startPosition.x, startPosition.y, x, y);
       reDraw(0, 0);
     },
     [type, reDraw, reDrawController]

@@ -5,8 +5,8 @@ import { Shape } from "./Shape";
 
 export class Line implements Shape {
   private drawable: Drawable | undefined;
-  public x2: number | undefined;
-  public y2: number | undefined;
+  public x2: number = 0;
+  public y2: number = 0;
   constructor(
     public roughCanvas: RoughCanvas | undefined,
     public x1: number,
@@ -20,15 +20,18 @@ export class Line implements Shape {
     return newLine;
   }
 
-  applyNewCoordinates(offsetX: number, offsetY: number): Shape {
-    const newLine = new Line(this.roughCanvas, this.x1, this.y1);
-    newLine.x2 = this.x2;
-    newLine.y2 = this.y2;
+  applyNewCoordinates(changeX: number, changeY: number): Shape {
+    const newLine = new Line(
+      this.roughCanvas,
+      this.x1 + changeX,
+      this.y1 + changeY
+    );
+    newLine.x2 = this.x2 + changeX;
+    newLine.y2 = this.y2 + changeY;
     return newLine;
   }
 
   clone(x: number, y: number): Shape {
-    console.log("x1, y1: " + this.x1 + ", " + this.y1 + "x2, y2: " + x + ", " + y);
     const newLine = new Line(this.roughCanvas, this.x1, this.y1);
     newLine.x2 = x;
     newLine.y2 = y;
@@ -37,6 +40,10 @@ export class Line implements Shape {
 
   draw(offsetX: number, offsetY: number): void {
     if (!this.x2 || !this.y2) {
+      return;
+    }
+    if (this.drawable && offsetX === 0 && offsetY === 0) {
+      this.roughCanvas?.draw(this.drawable);
       return;
     }
     this.drawable = this.roughCanvas?.line(

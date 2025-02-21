@@ -16,7 +16,7 @@ module.exports = {
     ],
     "@typescript-eslint/no-unused-vars": "off",
     "prefer-const": "warn",
-    "no-unused-vars": "warn",
+    "no-unused-vars": ["warn", { vars: "all", args: "none", ignoreRestSiblings: true }],
     "handle-callback-err": "warn",
     // "react/jsx-no-bind": "warn",
     "no-sequences": "warn",

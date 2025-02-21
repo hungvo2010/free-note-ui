@@ -2,7 +2,6 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { distance } from "utils/GeometryUtils";
 import { Circle } from "./Circle";
 import { Shape } from "./Shape";
-import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 
 export class CircleAdapter implements Shape {
   updateRadius(radius: number) {
@@ -13,9 +12,7 @@ export class CircleAdapter implements Shape {
   constructor(
     roughCanvas: RoughCanvas | undefined,
     circle: Circle,
-    private readonly id: number,
-    private offsetX: number,
-    private offsetY: number
+    private readonly id: number
   ) {
     this.circle = circle;
     this.roughCanvas = roughCanvas;
@@ -23,17 +20,17 @@ export class CircleAdapter implements Shape {
   }
 
   toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
-    return new CircleAdapter(this.roughCanvas, this.circle, this.id, offsetX, offsetY);
+    return new CircleAdapter(this.roughCanvas, this.circle, this.id);
   }
 
-  applyNewCoordinates(offsetX: number, offsetY: number): Shape {
-    var newCircle = new Circle(
+  applyNewCoordinates(changeX: number, changeY: number): Shape {
+    const newCircle = new Circle(
       this.roughCanvas,
-      toVirtualX(this.circle.getX, this.offsetX, 1),
-      toVirtualY(this.circle.getY, this.offsetY, 1),
+      this.circle.getX + changeX,
+      this.circle.getY + changeY,
       this.circle.getRadius
     );
-    return new CircleAdapter(this.roughCanvas, newCircle, this.id, 0, 0);
+    return new CircleAdapter(this.roughCanvas, newCircle, this.id);
   }
 
   clone(x: number, y: number): Shape {
@@ -45,17 +42,15 @@ export class CircleAdapter implements Shape {
         y,
         distance(x, y, this.circle.getX, this.circle.getY) / 2
       ),
-      new Date().getMilliseconds(),
-      this.offsetX,
-      this.offsetY
+      new Date().getMilliseconds()
     );
   }
 
-  draw(): void {
-    var newCircle = new Circle(
+  draw(offsetX: number, offsetY: number): void {
+    const newCircle = new Circle(
       this.roughCanvas,
-      toVirtualX(this.circle.getX, this.offsetX, 1),
-      toVirtualY(this.circle.getY, this.offsetY, 1),
+      this.circle.getX + offsetX,
+      this.circle.getY + offsetY,
       this.circle.getRadius
     );
     newCircle.drawCircle();
