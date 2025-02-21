@@ -1,6 +1,7 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
+import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
 export class FreeStyleShape implements Shape {
@@ -9,6 +10,12 @@ export class FreeStyleShape implements Shape {
     public roughCanvas: RoughCanvas | undefined,
     public points: [number, number][]
   ) {}
+  getBoundingRect(): Rectangle {
+    throw new Error("Method not implemented.");
+  }
+  isPointInShape(x: number, y: number): boolean {
+    throw new Error("Method not implemented.");
+  }
 
   toVirtualCoordinates(x: number, y: number): Shape {
     return new FreeStyleShape(this.roughCanvas, this.points);

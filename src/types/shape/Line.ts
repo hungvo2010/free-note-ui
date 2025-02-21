@@ -1,6 +1,7 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
+import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
 export class Line implements Shape {
@@ -12,6 +13,20 @@ export class Line implements Shape {
     public x1: number,
     public y1: number
   ) {}
+  getBoundingRect(): Rectangle {
+    return new Rectangle(
+      this.roughCanvas,
+      this.x1,
+      this.y1,
+      this.x2 - this.x1,
+      this.y2 - this.y1
+    );
+  }
+  isPointInShape(x: number, y: number): boolean {
+    const arctan1 = (y - this.y1) / (this.y2 - this.y1);
+    const arctan2 = (x - this.x1) / (this.x2 - this.x1);
+    return Math.abs(arctan1 - arctan2) < 0.01;
+  }
 
   toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
     const newLine = new Line(this.roughCanvas, this.x1, this.y1);

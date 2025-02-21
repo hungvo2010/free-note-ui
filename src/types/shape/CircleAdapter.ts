@@ -2,6 +2,7 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { distance } from "utils/GeometryUtils";
 import { Circle } from "./Circle";
 import { Shape } from "./Shape";
+import { Rectangle } from "./Rectangle";
 
 export class CircleAdapter implements Shape {
   updateRadius(radius: number) {
@@ -17,6 +18,12 @@ export class CircleAdapter implements Shape {
     this.circle = circle;
     this.roughCanvas = roughCanvas;
     this.id = id;
+  }
+  getBoundingRect(): Rectangle {
+    throw new Error("Method not implemented.");
+  }
+  isPointInShape(x: number, y: number): boolean {
+    throw new Error("Method not implemented.");
   }
 
   toVirtualCoordinates(offsetX: number, offsetY: number): Shape {

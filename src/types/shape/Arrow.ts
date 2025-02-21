@@ -2,6 +2,7 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
 import { drawLine } from "utils/CommonUtils";
 import { Shape } from "./Shape";
+import { Rectangle } from "./Rectangle";
 
 export default class Arrow implements Shape {
   private mainDrawable: Drawable | undefined;
@@ -15,6 +16,12 @@ export default class Arrow implements Shape {
     public x1: number,
     public y1: number
   ) {}
+  getBoundingRect(): Rectangle {
+    throw new Error("Method not implemented.");
+  }
+  isPointInShape(x: number, y: number): boolean {
+    throw new Error("Method not implemented.");
+  }
 
   toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
     const newArrow = new Arrow(this.roughCanvas, this.x1, this.y1);

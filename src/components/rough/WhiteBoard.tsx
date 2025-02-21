@@ -9,6 +9,7 @@ import {
 import rough from "roughjs";
 import { RoughCanvas } from "roughjs/bin/canvas";
 
+import { Coordinator } from "main/Coordinator";
 import { ReDrawController } from "main/ReDrawController";
 import Arrow from "types/shape/Arrow";
 import { Circle } from "types/shape/Circle";
@@ -19,10 +20,14 @@ import { Line } from "types/shape/Line";
 import { Rectangle } from "types/shape/Rectangle";
 import { RectangleAdapter } from "types/shape/RectangleAdapter";
 import { Shape } from "types/shape/Shape";
-import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
-import { getCanvasCoordinates } from "utils/GeometryUtils";
-import "./WhiteBoard.scss";
 import { updateCursorType } from "utils/CommonUtils";
+import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
+import {
+  checkSelectedShape,
+  drawBoundingBox,
+  getCanvasCoordinates,
+} from "utils/GeometryUtils";
+import "./WhiteBoard.scss";
 
 type DrawTypeProps = {
   type: string;
@@ -32,8 +37,12 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const shapes = useRef<Shape[]>([]);
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();
-  const [offsetX, setOffsetX] = useState(0);
-  const [offsetY, setOffsetY] = useState(0);
+  const [coordinator, setCoordinator] = useState<Coordinator>(
+    new Coordinator(0, 0)
+  );
+  const [selectedShape, setSelectedShape] = useState<Shape | undefined>(
+    undefined
+  );
   const canvasRef = useRef<HTMLCanvasElement>(
     document.getElementById("canvas") as HTMLCanvasElement
   );
@@ -81,6 +90,9 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           moveBoardRef.current = true;
           updateCursorType(canvasRef.current, "pointer");
           break;
+        case "mouse":
+          setSelectedShape(checkSelectedShape(shapes.current, x, y));
+          break;
         default:
           return;
       }
@@ -94,14 +106,16 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
 
   const reDraw = useCallback(
     (offsetX: number, offsetY: number) => {
-      // console.log("reDraw: " + offsetX + " " + offsetY);
       const ctx = canvas?.getContext("2d");
       if (ctx) {
         ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
       }
       reDrawController.reDraw(offsetX, offsetY);
+      if (selectedShape) {
+        drawBoundingBox(canvas, selectedShape);
+      }
     },
-    [canvas, reDrawController]
+    [canvas, reDrawController, selectedShape]
   );
 
   const handleMouseMove = useCallback(
@@ -115,6 +129,16 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           y: y - startPosition.y,
         };
         reDraw(offset.x, offset.y);
+        return;
+      }
+
+      if (type === "mouse") {
+        const shape = checkSelectedShape(shapes.current, x, y);
+        if (shape) {
+          updateCursorType(canvasRef.current, "pointer");
+        } else {
+          updateCursorType(canvasRef.current, "default");
+        }
         return;
       }
 
@@ -132,8 +156,13 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       if (type === "hand") {
         moveBoardRef.current = false;
         const { x, y } = getCanvasCoordinates(e, canvasRef.current);
-        setOffsetX((val) => val + x - positionRef.current.x);
-        setOffsetY((val) => val + y - positionRef.current.y);
+        setCoordinator(
+          (val) =>
+            new Coordinator(
+              val.getOffsetX() + x - positionRef.current.x,
+              val.getOffsetY() + y - positionRef.current.y
+            )
+        );
         reDrawController.updateCoordinates(
           x - positionRef.current.x,
           y - positionRef.current.y
@@ -146,7 +175,6 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
 
   useLayoutEffect(() => {
     function updateSize() {
-      console.log("updateSize: " + offsetX + " " + offsetY);
       const canvas = canvasRef.current;
       if (canvas) {
         resizeCanvasToDisplaySize(canvas);
@@ -156,7 +184,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     window.addEventListener("resize", updateSize);
     updateSize();
     return () => window.removeEventListener("resize", updateSize);
-  }, [reDraw, offsetX, offsetY]);
+  }, [reDraw]);
 
   useEffect(() => {
     const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;

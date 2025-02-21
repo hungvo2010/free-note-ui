@@ -1,6 +1,7 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
 import { distance } from "utils/GeometryUtils";
+import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
 export class Diamond implements Shape {
@@ -12,7 +13,13 @@ export class Diamond implements Shape {
     public x1: number,
     public y1: number
   ) {}
-  
+  getBoundingRect(): Rectangle {
+    throw new Error("Method not implemented.");
+  }
+  isPointInShape(x: number, y: number): boolean {
+    throw new Error("Method not implemented.");
+  }
+
   toVirtualCoordinates(x: number, y: number): Shape {
     throw new Error("Method not implemented.");
   }
