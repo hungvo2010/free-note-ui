@@ -22,6 +22,7 @@ import { Shape } from "types/shape/Shape";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
 import "./WhiteBoard.scss";
+import { updateCursorType } from "utils/CommonUtils";
 
 type DrawTypeProps = {
   type: string;
@@ -38,7 +39,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   );
   const positionRef = useRef({ x: 0, y: 0 });
   const drawingRef = useRef(false);
-  const moveBoardRef = useRef(0);
+  const moveBoardRef = useRef(false);
   const reDrawController = useMemo(
     () => new ReDrawController(roughCanvas, shapes.current),
     [roughCanvas]
@@ -77,7 +78,8 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           newShape = new Diamond(roughCanvas, x, y);
           break;
         case "hand":
-          moveBoardRef.current += 1;
+          moveBoardRef.current = true;
+          updateCursorType(canvasRef.current, "pointer");
           break;
         default:
           return;
@@ -107,7 +109,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       const { x, y } = getCanvasCoordinates(e, canvasRef.current);
       const startPosition = positionRef.current;
 
-      if (type === "hand" && moveBoardRef.current > 0) {
+      if (type === "hand" && moveBoardRef.current) {
         const offset = {
           x: x - startPosition.x,
           y: y - startPosition.y,
@@ -128,7 +130,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     (e: MouseEvent) => {
       drawingRef.current = false;
       if (type === "hand") {
-        moveBoardRef.current -= 1;
+        moveBoardRef.current = false;
         const { x, y } = getCanvasCoordinates(e, canvasRef.current);
         setOffsetX((val) => val + x - positionRef.current.x);
         setOffsetY((val) => val + y - positionRef.current.y);
@@ -136,6 +138,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           x - positionRef.current.x,
           y - positionRef.current.y
         );
+        updateCursorType(canvasRef.current, "default");
       }
     },
     [type, reDrawController]

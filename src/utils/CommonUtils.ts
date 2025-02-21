@@ -1,3 +1,4 @@
+import { RoughCanvas } from "roughjs/bin/canvas";
 import { PADDING } from "./Constant";
 import { calculatePadding, distance } from "./GeometryUtils";
 
@@ -92,7 +93,7 @@ const drawArrow = (
 };
 
 export const drawLine = (
-  roughCanvas: any,
+  roughCanvas: RoughCanvas,
   x1: number,
   y1: number,
   x2: number,
@@ -133,17 +134,9 @@ const drawRect = (x: number, y: number, x1: number, y1: number) => {
   // });
 };
 
-function reDrawRectangleV2() {
-  // const x1 =
-  //   curvePointsRef.current[curvePointsRef.current.length - 1][0];
-  // const y1 =
-  //   curvePointsRef.current[curvePointsRef.current.length - 1][1];
-  // clearCircle(
-  //   (positionRef.current.x + x1) / 2,
-  //   (positionRef.current.y + y1) / 2,
-  //   distance(x1, y1, positionRef.current.x, positionRef.current.y) / 2
-  // );
-  // drawCircle(positionRef.current.x, positionRef.current.y, x, y);
+
+export function updateCursorType(canvas: HTMLCanvasElement, cursor: string) {
+  canvas.style.cursor = cursor;
 }
 
 const drawPen = (
@@ -170,22 +163,6 @@ const drawPen = (
 //       ),
 //       new Date().getMilliseconds()
 //     );
-//   }
-
-//   function updateLastArrow(shapes: Shape[], x: number, y: number) {
-//     const lastArrow = shapes[shapes.length - 1] as Arrow;
-//     const newArrow = new Arrow(roughCanvas, lastArrow.x1, lastArrow.y1);
-//     newArrow.x2 = x;
-//     newArrow.y2 = y;
-//     shapes[shapes.length - 1] = newArrow;
-//   }
-
-//   function updateLastLine(shapes: Shape[], x: number, y: number) {
-//     const lastLine = shapes[shapes.length - 1] as Line;
-//     const newLine = new Line(roughCanvas, lastLine.x1, lastLine.y1);
-//     newLine.x2 = x;
-//     newLine.y2 = y;
-//     shapes[shapes.length - 1] = newLine;
 //   }
 
 //   function updateLastDiamond(shapes: Shape[], x: number, y: number) {
