@@ -28,6 +28,7 @@ import {
   getCanvasCoordinates,
 } from "utils/GeometryUtils";
 import "./WhiteBoard.scss";
+import { Text } from "types/shape/Text";
 
 type DrawTypeProps = {
   type: string;
@@ -38,7 +39,6 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();
   const [isDraggingShape, setIsDraggingShape] = useState(false);
-  const dragStartPosRef = useRef({ x: 0, y: 0 });
   const [coordinator, setCoordinator] = useState<Coordinator>(
     new Coordinator(0, 0)
   );
@@ -48,6 +48,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(
     document.getElementById("canvas") as HTMLCanvasElement
   );
+  const dragStartPosRef = useRef({ x: 0, y: 0 });
   const positionRef = useRef({ x: 0, y: 0 });
   const drawingRef = useRef(false);
   const moveBoardRef = useRef(false);
@@ -55,12 +56,45 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     () => new ReDrawController(roughCanvas, shapes.current),
     [roughCanvas]
   );
+  const [isEditingText, setIsEditingText] = useState(false);
+  const textInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleMouseEnter = useCallback(
+    (shapes: Shape[], x: number, y: number) => {
+      const selectedShape = checkSelectedShape(shapes, x, y);
+      setSelectedShape(selectedShape);
+      if (selectedShape) {
+        setIsDraggingShape(true);
+        updateCursorType(canvasRef.current, "move");
+        return;
+      }
+    },
+    []
+  );
+
+  const handleAddTextShape = useCallback((x: number, y: number) => {
+    const textShape = shapes.current.find((shape) => shape instanceof Text && shape.isPointInShape(x, y));
+    if (textShape) {
+      setIsEditingText(true);
+      return;
+    }
+    const newShape = new Text(roughCanvas, x, y, "very first text");
+    reDrawController.addShape(newShape);
+    setSelectedShape(newShape);
+  }, [roughCanvas, reDrawController]);
+
 
   const handleMouseDown = useCallback(
     (e: MouseEvent) => {
       const { x, y } = getCanvasCoordinates(e, canvasRef.current);
       positionRef.current = { x, y };
       dragStartPosRef.current = { x, y };
+
+      if (isEditingText) {
+        setIsEditingText(false);
+        return;
+      }
+
       let newShape: Shape | undefined;
       switch (type) {
         case "rect":
@@ -96,6 +130,9 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         case "mouse":
           handleMouseEnter(shapes.current, x, y);
           break;
+        case "word":
+          handleAddTextShape(x, y);
+          break;
         default:
           return;
       }
@@ -103,26 +140,12 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         reDrawController.addShape(newShape);
         drawingRef.current = true;
       }
-      if (type !== "mouse") {
+      if (type !== "mouse" && type !== "word") {
         setSelectedShape(undefined);
       }
     },
-    [type, roughCanvas, reDrawController]
+    [type, roughCanvas, reDrawController, handleMouseEnter, isEditingText, handleAddTextShape]
   );
-
-  const handleMouseEnter = useCallback(
-    (shapes: Shape[], x: number, y: number) => {
-      const selectedShape = checkSelectedShape(shapes, x, y);
-      if (selectedShape) {
-        setSelectedShape(selectedShape);
-        setIsDraggingShape(true);
-        updateCursorType(canvasRef.current, "move");
-        return;
-      }
-    },
-    []
-  );
-
   const reDraw = useCallback(
     (offsetX: number, offsetY: number) => {
       const ctx = canvas?.getContext("2d");
@@ -170,12 +193,16 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         return;
       }
 
-      if (!drawingRef.current) return;
+      if (type === "word" && isEditingText) {
+        updateCursorType(canvasRef.current, "text");
+      }
+
+      if (!drawingRef.current && !isDraggingShape) return;
 
       reDrawController.updateLastShape(startPosition.x, startPosition.y, x, y);
       reDraw(0, 0);
     },
-    [type, reDraw, reDrawController, isDraggingShape, selectedShape]
+    [type, reDraw, reDrawController, isDraggingShape, selectedShape, isEditingText]
   );
 
   const handleMouseUp = useCallback(
@@ -249,19 +276,62 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     };
   }, [handleMouseDown, handleMouseMove, handleMouseUp, handleCanvasBlur]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
-    console.log("handleKeyDown: " + e.key.length);
-  };
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLCanvasElement>) => {
+      if (!selectedShape || !(selectedShape instanceof Text)) return;
+
+      if (e.key === "Backspace") {
+        const currentText = (selectedShape as Text).getText();
+        (selectedShape as Text).setText(currentText.slice(0, -1));
+        reDraw(0, 0);
+      } else if (e.key.length === 1) {
+        const currentText = (selectedShape as Text).getText();
+        (selectedShape as Text).setText(currentText + e.key);
+        reDraw(0, 0);
+      }
+    },
+    [selectedShape, reDraw]
+  );
+
+  const textInputStyle = useMemo(() => {
+    if (!selectedShape || !(selectedShape instanceof Text))
+      return { display: "none" };
+    const pos = (selectedShape as Text).getPosition();
+    return {
+      position: "absolute" as const,
+      left: `${pos.x}px`,
+      top: `${pos.y - 20}px`,
+      border: "none",
+      background: "transparent",
+      outline: "none",
+      font: "20px Excalifont",
+      display: isEditingText ? "block" : "none",
+    };
+  }, [selectedShape, isEditingText]);
 
   console.log("re render");
 
   return (
-    <canvas
-      id="myCanvas"
-      className="full-canvas"
-      ref={canvasRef}
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
-    ></canvas>
+    <div style={{ position: "relative" }}>
+      <canvas
+        id="myCanvas"
+        className="full-canvas"
+        ref={canvasRef}
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+      ></canvas>
+      <textarea
+        ref={textInputRef}
+        style={textInputStyle}
+        autoFocus={isEditingText}
+        onBlur={() => setIsEditingText(false)}
+        onChange={(e) => {
+          if (selectedShape instanceof Text) {
+            selectedShape.setText(e.target.value);
+            reDraw(0, 0);
+          }
+        }}
+      />
+    </div>
   );
 }

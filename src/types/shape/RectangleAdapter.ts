@@ -2,6 +2,7 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
+import { isInLine } from "utils/GeometryUtils";
 
 export class RectangleAdapter implements Shape {
   private readonly roughCanvas: RoughCanvas | undefined;
@@ -29,29 +30,12 @@ export class RectangleAdapter implements Shape {
     const width = this.rectangle.getWidth;
     const height = this.rectangle.getHeight;
 
-    const adjustedWidth = Math.abs(width);
-    const adjustedHeight = Math.abs(height);
-    const rectX = startX + (width < 0 ? width : 0);
-    const rectY = startY + (height < 0 ? height : 0);
+    const top = isInLine(x, y, [startX, startY], [startX + width, startY]);
+    const bottom = isInLine(x, y, [startX, startY + height], [startX + width, startY + height]);
+    const left = isInLine(x, y, [startX, startY], [startX, startY + height]);
+    const right = isInLine(x, y, [startX + width, startY], [startX + width, startY + height]);
 
-    return (
-      (x >= rectX - 2 &&
-        x <= rectX + 2 &&
-        y >= rectY &&
-        y <= rectY + adjustedHeight) || // Left edge
-      (x >= rectX + adjustedWidth - 2 &&
-        x <= rectX + adjustedWidth + 2 &&
-        y >= rectY &&
-        y <= rectY + adjustedHeight) || // Right edge
-      (y >= rectY - 2 &&
-        y <= rectY + 2 &&
-        x >= rectX &&
-        x <= rectX + adjustedWidth) || // Top edge
-      (y >= rectY + adjustedHeight - 2 &&
-        y <= rectY + adjustedHeight + 2 &&
-        x >= rectX &&
-        x <= rectX + adjustedWidth) // Bottom edge
-    );
+    return top || bottom || left || right;
   }
 
   inRange(val: number, start: number, end: number): boolean {
