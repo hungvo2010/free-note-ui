@@ -5,7 +5,7 @@ import { Shape } from "./Shape";
 
 export class RectangleAdapter implements Shape {
   private readonly roughCanvas: RoughCanvas | undefined;
-  private readonly rectangle: Rectangle;
+  private rectangle: Rectangle;
   constructor(
     roughCanvas: RoughCanvas | undefined,
     rectangle: Rectangle,
@@ -35,15 +35,29 @@ export class RectangleAdapter implements Shape {
     const rectY = startY + (height < 0 ? height : 0);
 
     return (
-      (x >= rectX - 2 && x <= rectX + 2 && y >= rectY && y <= rectY + adjustedHeight) || // Left edge
-      (x >= rectX + adjustedWidth - 2 && x <= rectX + adjustedWidth + 2 && y >= rectY && y <= rectY + adjustedHeight) || // Right edge
-      (y >= rectY - 2 && y <= rectY + 2 && x >= rectX && x <= rectX + adjustedWidth) || // Top edge
-      (y >= rectY + adjustedHeight - 2 && y <= rectY + adjustedHeight + 2 && x >= rectX && x <= rectX + adjustedWidth) // Bottom edge
+      (x >= rectX - 2 &&
+        x <= rectX + 2 &&
+        y >= rectY &&
+        y <= rectY + adjustedHeight) || // Left edge
+      (x >= rectX + adjustedWidth - 2 &&
+        x <= rectX + adjustedWidth + 2 &&
+        y >= rectY &&
+        y <= rectY + adjustedHeight) || // Right edge
+      (y >= rectY - 2 &&
+        y <= rectY + 2 &&
+        x >= rectX &&
+        x <= rectX + adjustedWidth) || // Top edge
+      (y >= rectY + adjustedHeight - 2 &&
+        y <= rectY + adjustedHeight + 2 &&
+        x >= rectX &&
+        x <= rectX + adjustedWidth) // Bottom edge
     );
   }
 
   inRange(val: number, start: number, end: number): boolean {
-    return start <= end ? val >= start && val <= end : val >= end && val <= start;
+    return start <= end
+      ? val >= start && val <= end
+      : val >= end && val <= start;
   }
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {
@@ -74,20 +88,13 @@ export class RectangleAdapter implements Shape {
     );
   }
 
-  toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
-    // console.log(
-    //   "start point: " + JSON.stringify(this.rectangle.getStartPoint())
-    // );
-    return new RectangleAdapter(
+  toVirtualCoordinates(offsetX: number, offsetY: number): void {
+    this.rectangle = new Rectangle(
       this.roughCanvas,
-      new Rectangle(
-        this.roughCanvas,
-        this.rectangle.getStartPoint().x,
-        this.rectangle.getStartPoint().y,
-        this.rectangle.getWidth,
-        this.rectangle.getHeight
-      ),
-      new Date().getMilliseconds()
+      this.rectangle.getStartPoint().x + offsetX,
+      this.rectangle.getStartPoint().y + offsetY,
+      this.rectangle.getWidth,
+      this.rectangle.getHeight
     );
   }
 

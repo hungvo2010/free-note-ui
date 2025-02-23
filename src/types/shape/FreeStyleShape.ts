@@ -3,6 +3,7 @@ import { Drawable } from "roughjs/bin/core";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
+import { distance } from "utils/GeometryUtils";
 
 export class FreeStyleShape implements Shape {
   private drawable: Drawable | undefined;
@@ -11,10 +12,19 @@ export class FreeStyleShape implements Shape {
     public points: [number, number][]
   ) {}
   getBoundingRect(): Rectangle {
-    throw new Error("Method not implemented.");
+    const minX = Math.min(...this.points.map((point) => point[0]));
+    const maxX = Math.max(...this.points.map((point) => point[0]));
+    const minY = Math.min(...this.points.map((point) => point[1]));
+    const maxY = Math.max(...this.points.map((point) => point[1]));
+    return new Rectangle(this.roughCanvas, minX, minY, maxX - minX, maxY - minY);
   }
   isPointInShape(x: number, y: number): boolean {
-    throw new Error("Method not implemented.");
+    for (let i = 0; i < this.points.length - 1; i++) {
+      if (distance(x, y, this.points[i][0], this.points[i][1]) <= 4) {
+        return true;
+      }
+    }
+    return false;
   }
 
   toVirtualCoordinates(x: number, y: number): Shape {

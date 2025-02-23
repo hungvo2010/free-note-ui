@@ -93,7 +93,7 @@ const drawArrow = (
 };
 
 export const drawLine = (
-  roughCanvas: RoughCanvas,
+  roughCanvas: RoughCanvas | undefined,
   x1: number,
   y1: number,
   x2: number,

@@ -3,6 +3,7 @@ import { Drawable } from "roughjs/bin/core";
 import { drawLine } from "utils/CommonUtils";
 import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
+import { distanceToLine } from "utils/GeometryUtils";
 
 export default class Arrow implements Shape {
   private mainDrawable: Drawable | undefined;
@@ -16,11 +17,25 @@ export default class Arrow implements Shape {
     public x1: number,
     public y1: number
   ) {}
+
   getBoundingRect(): Rectangle {
-    throw new Error("Method not implemented.");
+    return new Rectangle(
+      this.roughCanvas,
+      this.x1,
+      this.y1,
+      this.x2 - this.x1,
+      this.y2 - this.y1
+    );
   }
+  
   isPointInShape(x: number, y: number): boolean {
-    throw new Error("Method not implemented.");
+    const dToLine = distanceToLine(
+      x,
+      y,
+      [this.x1, this.y1],
+      [this.x2, this.y2]
+    );
+    return dToLine <= 4;
   }
 
   toVirtualCoordinates(offsetX: number, offsetY: number): Shape {

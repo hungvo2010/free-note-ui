@@ -6,7 +6,7 @@ import { distance } from "utils/GeometryUtils";
 export class ReDrawController {
   redrawUsingVirtualCoordinates(newOffsetX: number, newOffsetY: number) {
     for (let i = 0; i < this.shapes.length; i++) {
-      this.shapes[i] = this.shapes[i].toVirtualCoordinates(
+     this.shapes[i].toVirtualCoordinates(
         newOffsetX,
         newOffsetY
       );
@@ -36,7 +36,7 @@ export class ReDrawController {
     }
     const newShape = lastShape.clone(nextX, nextY);
     if (newShape instanceof CircleAdapter) {
-      newShape.updateRadius(distance(currentX, currentY, x, y));
+      newShape.updateRadius(distance(nextX, nextY, x, y));
     }
     this.shapes[this.shapes.length - 1] = newShape;
   }

@@ -1,6 +1,6 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
-import { distance } from "utils/GeometryUtils";
+import { distance, isInLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
@@ -14,10 +14,32 @@ export class Diamond implements Shape {
     public y1: number
   ) {}
   getBoundingRect(): Rectangle {
-    throw new Error("Method not implemented.");
+    return new Rectangle(
+      this.roughCanvas,
+      this.x1,
+      this.y1,
+      this.x2 - this.x1,
+      this.y2 - this.y1
+    );
   }
   isPointInShape(x: number, y: number): boolean {
-    throw new Error("Method not implemented.");
+    const mainPoint = {
+      x: (this.x1 + this.x2) / 2,
+      y: (this.y1 + this.y2) / 2,
+    };
+    const angle = Math.atan2(this.y2 - this.y1, this.x2 - this.x1);
+    const distanceInY =
+      (Math.sin(angle) * distance(this.x1, this.y1, this.x2, this.y2)) / 2;
+    const left = [this.x1, this.y1 + distanceInY] as [number, number];
+    const top = [mainPoint.x, mainPoint.y - distanceInY] as [number, number];
+    const right = [this.x2, this.y2 - distanceInY] as [number, number];
+    const bottom = [mainPoint.x, mainPoint.y + distanceInY] as [number, number];
+    return (
+      isInLine(x, y, left, top) ||
+      isInLine(x, y, top, right) ||
+      isInLine(x, y, right, bottom) ||
+      isInLine(x, y, bottom, left)
+    );
   }
 
   toVirtualCoordinates(x: number, y: number): Shape {

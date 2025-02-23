@@ -37,6 +37,8 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const shapes = useRef<Shape[]>([]);
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();
+  const [isDraggingShape, setIsDraggingShape] = useState(false);
+  const dragStartPosRef = useRef({ x: 0, y: 0 });
   const [coordinator, setCoordinator] = useState<Coordinator>(
     new Coordinator(0, 0)
   );
@@ -58,6 +60,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     (e: MouseEvent) => {
       const { x, y } = getCanvasCoordinates(e, canvasRef.current);
       positionRef.current = { x, y };
+      dragStartPosRef.current = { x, y };
       let newShape: Shape | undefined;
       switch (type) {
         case "rect":
@@ -91,7 +94,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           updateCursorType(canvasRef.current, "pointer");
           break;
         case "mouse":
-          setSelectedShape(checkSelectedShape(shapes.current, x, y));
+          handleMouseEnter(shapes.current, x, y);
           break;
         default:
           return;
@@ -100,8 +103,24 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         reDrawController.addShape(newShape);
         drawingRef.current = true;
       }
+      if (type !== "mouse") {
+        setSelectedShape(undefined);
+      }
     },
     [type, roughCanvas, reDrawController]
+  );
+
+  const handleMouseEnter = useCallback(
+    (shapes: Shape[], x: number, y: number) => {
+      const selectedShape = checkSelectedShape(shapes, x, y);
+      if (selectedShape) {
+        setSelectedShape(selectedShape);
+        setIsDraggingShape(true);
+        updateCursorType(canvasRef.current, "move");
+        return;
+      }
+    },
+    []
   );
 
   const reDraw = useCallback(
@@ -133,6 +152,15 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       }
 
       if (type === "mouse") {
+        if (isDraggingShape && selectedShape) {
+          selectedShape.toVirtualCoordinates(
+            x - dragStartPosRef.current.x,
+            y - dragStartPosRef.current.y
+          );
+          dragStartPosRef.current = { x, y };
+          reDraw(0, 0);
+          return;
+        }
         const shape = checkSelectedShape(shapes.current, x, y);
         if (shape) {
           updateCursorType(canvasRef.current, "pointer");
@@ -147,7 +175,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       reDrawController.updateLastShape(startPosition.x, startPosition.y, x, y);
       reDraw(0, 0);
     },
-    [type, reDraw, reDrawController]
+    [type, reDraw, reDrawController, isDraggingShape, selectedShape]
   );
 
   const handleMouseUp = useCallback(
@@ -169,9 +197,18 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         );
         updateCursorType(canvasRef.current, "default");
       }
+      if (isDraggingShape) {
+        setIsDraggingShape(false);
+        updateCursorType(canvasRef.current, "pointer");
+        return;
+      }
     },
-    [type, reDrawController]
+    [type, reDrawController, isDraggingShape]
   );
+
+  const handleCanvasBlur = useCallback(() => {
+    setSelectedShape(undefined);
+  }, []);
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -202,17 +239,21 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     myCanvas.addEventListener("mousedown", handleMouseDown);
     myCanvas.addEventListener("mousemove", handleMouseMove);
     myCanvas.addEventListener("mouseup", handleMouseUp);
+    myCanvas.addEventListener("blur", handleCanvasBlur);
     return () => {
       console.log("on cleanup function");
       myCanvas.removeEventListener("mousedown", handleMouseDown);
       myCanvas.removeEventListener("mousemove", handleMouseMove);
       myCanvas.removeEventListener("mouseup", handleMouseUp);
+      myCanvas.removeEventListener("blur", handleCanvasBlur);
     };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp]);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp, handleCanvasBlur]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLCanvasElement>) => {
     console.log("handleKeyDown: " + e.key.length);
   };
+
+  console.log("re render");
 
   return (
     <canvas

@@ -7,19 +7,23 @@ export class Circle {
     private roughCanvas: RoughCanvas | undefined,
     private x: number,
     private y: number,
-    private radius: number) { }
+    private radius: number
+  ) {}
   drawCircle() {
+    if (this.radius < 3) {
+      return;
+    }
     if (this.drawable) {
       this.roughCanvas?.draw(this.drawable);
       return;
     }
-    this.drawable = this.roughCanvas?.circle(this.x, this.y, this.radius, {
+    this.drawable = this.roughCanvas?.circle(this.x, this.y, this.radius * 2, {
       roughness: 1,
       stroke: "black",
-      seed: 1
+      seed: 1,
     });
   }
-  getCenterPoint(): { x: number; y: number; } {
+  getCenterPoint(): { x: number; y: number } {
     return { x: this.x, y: this.y };
   }
 

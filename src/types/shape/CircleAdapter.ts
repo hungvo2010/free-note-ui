@@ -20,10 +20,19 @@ export class CircleAdapter implements Shape {
     this.id = id;
   }
   getBoundingRect(): Rectangle {
-    throw new Error("Method not implemented.");
+    return new Rectangle(
+      this.roughCanvas,
+      this.circle.getX - this.circle.getRadius,
+      this.circle.getY - this.circle.getRadius,
+      this.circle.getRadius * 2,
+      this.circle.getRadius * 2
+    );
   }
+
   isPointInShape(x: number, y: number): boolean {
-    throw new Error("Method not implemented.");
+    const center = this.circle.getCenterPoint();
+    const distanceFromCenter = distance(x, y, center.x, center.y);
+    return Math.abs(distanceFromCenter - this.circle.getRadius) <= 4;
   }
 
   toVirtualCoordinates(offsetX: number, offsetY: number): Shape {

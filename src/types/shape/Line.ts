@@ -3,7 +3,7 @@ import { Drawable } from "roughjs/bin/core";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-
+import { distanceToLine } from "utils/GeometryUtils";
 export class Line implements Shape {
   private drawable: Drawable | undefined;
   public x2: number = 0;
@@ -23,9 +23,7 @@ export class Line implements Shape {
     );
   }
   isPointInShape(x: number, y: number): boolean {
-    const arctan1 = (y - this.y1) / (this.y2 - this.y1);
-    const arctan2 = (x - this.x1) / (this.x2 - this.x1);
-    return Math.abs(arctan1 - arctan2) < 0.01;
+    return distanceToLine(x, y, [this.x1, this.y1], [this.x2, this.y2]) <= 4;
   }
 
   toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
