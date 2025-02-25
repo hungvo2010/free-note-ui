@@ -62,11 +62,31 @@ export class Text implements Shape {
   }
 
   isPointInShape(x: number, y: number): boolean {
-    const boundingRect = this.getBoundingRect();
-    console.log(boundingRect);
-    const rect = new RectangleAdapter(undefined, boundingRect, 0);
-    rect.draw(0, 0);
-    return rect.isPointInShape(x, y);
+    // Create a temporary canvas for text measurement
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+
+    // Set up the font context
+    ctx.font = `${this.fontSize}px ${this.font}`;
+    const metrics = ctx.measureText(this.text);
+
+    // Get the vertical metrics
+    const top = this.y - metrics.actualBoundingBoxAscent;
+    const bottom = this.y + metrics.actualBoundingBoxDescent;
+
+    // Get the horizontal metrics
+    const left = this.x;
+    const right = this.x + metrics.width;
+
+    // Check if point is within the text bounds
+    const isInside = (
+      x >= left &&
+      x <= right &&
+      y >= top &&
+      y <= bottom
+    );
+    return isInside;
   }
 
   applyNewCoordinates(x: number, y: number): Shape {
