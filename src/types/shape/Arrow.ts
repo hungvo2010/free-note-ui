@@ -38,11 +38,14 @@ export default class Arrow implements Shape {
     return dToLine <= 4;
   }
 
-  toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
-    const newArrow = new Arrow(this.roughCanvas, this.x1, this.y1);
-    newArrow.x2 = this.x2;
-    newArrow.y2 = this.y2;
-    return newArrow;
+  toVirtualCoordinates(offsetX: number, offsetY: number): void {
+    this.x1 += offsetX;
+    this.y1 += offsetY;
+    this.x2 += offsetX;
+    this.y2 += offsetY;
+    this.mainDrawable = undefined;
+    this.leftDrawable = undefined;
+    this.rightDrawable = undefined;
   }
 
   applyNewCoordinates(offsetX: number, offsetY: number): Shape {

@@ -1,9 +1,9 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
+import { distanceToLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { distanceToLine } from "utils/GeometryUtils";
 export class Line implements Shape {
   private drawable: Drawable | undefined;
   public x2: number = 0;
@@ -26,11 +26,12 @@ export class Line implements Shape {
     return distanceToLine(x, y, [this.x1, this.y1], [this.x2, this.y2]) <= 4;
   }
 
-  toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
-    const newLine = new Line(this.roughCanvas, this.x1, this.y1);
-    newLine.x2 = this.x2;
-    newLine.y2 = this.y2;
-    return newLine;
+  toVirtualCoordinates(offsetX: number, offsetY: number): void {
+    this.x1 += offsetX;
+    this.y1 += offsetY;
+    this.x2 += offsetX;
+    this.y2 += offsetY;
+    this.drawable = undefined;
   }
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {

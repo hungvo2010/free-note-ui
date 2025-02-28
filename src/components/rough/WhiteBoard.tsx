@@ -200,7 +200,6 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       }
 
       if (type === "mouse") {
-        console.log("dragging shape: " + isDraggingShape + " " + selectedShape);
         if (isDraggingShape && selectedShape) {
           selectedShape.toVirtualCoordinates(
             x - dragStartPosRef.current.x,
@@ -384,9 +383,9 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         onChange={(e) => {
           if (selectedShape instanceof Text) {
             const textPos = (selectedShape as Text).getPosition();
-            setSelectedShape(
-              new Text(roughCanvas, textPos.x, textPos.y, e.target.value)
-            );
+            // setSelectedShape(
+            //   new Text(roughCanvas, textPos.x, textPos.y, e.target.value)
+            // );
           }
         }}
       />

@@ -8,7 +8,7 @@ export class CircleAdapter implements Shape {
   updateRadius(radius: number) {
     this.circle.setRadius(radius);
   }
-  private readonly circle: Circle;
+  private circle: Circle;
   private roughCanvas: RoughCanvas | undefined;
   constructor(
     roughCanvas: RoughCanvas | undefined,
@@ -35,8 +35,13 @@ export class CircleAdapter implements Shape {
     return Math.abs(distanceFromCenter - this.circle.getRadius) <= 4;
   }
 
-  toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
-    return new CircleAdapter(this.roughCanvas, this.circle, this.id);
+  toVirtualCoordinates(offsetX: number, offsetY: number): void {
+    this.circle = new Circle(
+      this.roughCanvas,
+      this.circle.getX + offsetX,
+      this.circle.getY + offsetY,
+      this.circle.getRadius
+    );
   }
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {

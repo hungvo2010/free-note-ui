@@ -27,8 +27,11 @@ export class FreeStyleShape implements Shape {
     return false;
   }
 
-  toVirtualCoordinates(x: number, y: number): Shape {
-    return new FreeStyleShape(this.roughCanvas, this.points);
+  toVirtualCoordinates(x: number, y: number): void {
+    this.points = this.points.map(
+      (point) => [point[0] + x, point[1] + y] as [number, number]
+    );
+    this.drawable = undefined;
   }
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {

@@ -42,8 +42,12 @@ export class Diamond implements Shape {
     );
   }
 
-  toVirtualCoordinates(x: number, y: number): Shape {
-    throw new Error("Method not implemented.");
+  toVirtualCoordinates(x: number, y: number): void {
+    this.x1 += x;
+    this.y1 += y;
+    this.drawable = undefined;
+    this.x2 += x;
+    this.y2 += y;
   }
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {
