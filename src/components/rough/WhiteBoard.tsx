@@ -20,6 +20,7 @@ import { Line } from "types/shape/Line";
 import { Rectangle } from "types/shape/Rectangle";
 import { RectangleAdapter } from "types/shape/RectangleAdapter";
 import { Shape } from "types/shape/Shape";
+import { Text } from "types/shape/Text";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import {
   checkSelectedShape,
@@ -27,7 +28,6 @@ import {
   getCanvasCoordinates,
 } from "utils/GeometryUtils";
 import "./WhiteBoard.scss";
-import { Text } from "types/shape/Text";
 import { updateCursorType } from "utils/CommonUtils";
 
 type DrawTypeProps = {
@@ -60,10 +60,20 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const textInputRef = useRef<HTMLTextAreaElement>(null);
 
   const handleMouseEnter = useCallback(
-    (shapes: Shape[], x: number, y: number) => {
+    (
+      shapes: Shape[],
+      x: number,
+      y: number,
+      cursorType: string,
+      eventType: string
+    ) => {
       const selectedShape = checkSelectedShape(shapes, x, y);
       setSelectedShape(selectedShape);
-      if (selectedShape) {
+      updateCursorType(
+        canvasRef.current!,
+        selectedShape ? cursorType : "default"
+      );
+      if (eventType === "mousedown") {
         setIsDraggingShape(true);
         updateCursorType(canvasRef.current, "move");
         return;
@@ -75,6 +85,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const handleAddTextShape = useCallback(
     (x: number, y: number) => {
       updateCursorType(canvasRef.current, "text");
+      updateCursorType(canvasRef.current!, "text");
       const textShape = shapes.current.find(
         (shape) => shape instanceof Text && shape.isPointInShape(x, y)
       );
@@ -100,9 +111,6 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       positionRef.current = { x, y };
       dragStartPosRef.current = { x, y };
 
-      // If we're currently editing text and the user clicks somewhere,
-      // we want to exit the text editing mode and do nothing else.
-      // This prevents creating new shapes while editing text.
       if (isEditingText && type !== "word") {
         setIsEditingText(false);
         return;
@@ -141,7 +149,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           updateCursorType(canvasRef.current, "pointer");
           break;
         case "mouse":
-          handleMouseEnter(shapes.current, x, y);
+          handleMouseEnter(shapes.current, x, y, "move", "mousedown");
           break;
         case "word":
           handleAddTextShape(x, y);
@@ -206,12 +214,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           reDraw(0, 0);
           return;
         }
-        const shape = checkSelectedShape(shapes.current, x, y);
-        if (shape) {
-          updateCursorType(canvasRef.current, "pointer");
-        } else {
-          updateCursorType(canvasRef.current, "default");
-        }
+        handleMouseEnter(shapes.current, x, y, "pointer", "mousemove");
         return;
       }
 
@@ -233,6 +236,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       isDraggingShape,
       selectedShape,
       isEditingText,
+      handleMouseEnter,
     ]
   );
 
@@ -384,9 +388,9 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         onChange={(e) => {
           if (selectedShape instanceof Text) {
             const textPos = (selectedShape as Text).getPosition();
-            // setSelectedShape(
-            //   new Text(roughCanvas, textPos.x, textPos.y, e.target.value)
-            // );
+            setSelectedShape(
+              new Text(roughCanvas, textPos.x, textPos.y, e.target.value)
+            );
           }
         }}
       />
