@@ -107,15 +107,16 @@ export const drawLine = (
 };
 
 const drawCircle = (
-  roughCanvas: any,
+  roughCanvas: RoughCanvas | undefined,
   x: number,
   y: number,
   x1: number,
   y1: number
 ) => {
+  if (!roughCanvas) return;
+  
   const angle = Math.atan2(y1 - y, x1 - x);
-
-  roughCanvas?.circle(
+  roughCanvas.circle(
     (x + x1) / 2,
     (y + y1) / 2,
     (distance(x1, y1, x, y) * Math.cos(angle)) / 2,
@@ -127,11 +128,11 @@ const drawCircle = (
   );
 };
 
-const drawRect = (x: number, y: number, x1: number, y1: number) => {
-  // roughCanvasRef.current?.rectangle(x, y, x1 - x, y1 - y, {
-  //     roughness: 1,
-  //     stroke: "black",
-  // });
+const drawRect = (roughCanvas: RoughCanvas, x: number, y: number, x1: number, y1: number) => {
+    roughCanvas?.rectangle(x, y, x1 - x, y1 - y, {
+        roughness: 1,
+        stroke: "black",
+    });
 };
 
 
@@ -155,9 +156,11 @@ export function updateCursorType(canvas: HTMLCanvasElement, type: string) {
       canvas.style.cursor = "text";
       break;
     case "eraser":
-      // Use a simpler approach with CSS class
       canvas.classList.add("eraser-cursor");
       canvas.style.cursor = "none"; // Hide default cursor
+      break;
+    case "not-allowed":
+      canvas.style.cursor = "not-allowed";
       break;
     default:
       canvas.style.cursor = "default";
@@ -165,12 +168,14 @@ export function updateCursorType(canvas: HTMLCanvasElement, type: string) {
 }
 
 const drawPen = (
-  roughCanvas: any,
+  roughCanvas: RoughCanvas | undefined,
   curvePoints: [number, number][],
   x2: number,
   y2: number
 ) => {
-  roughCanvas?.curve([...curvePoints, [x2, y2]], {
+  if (!roughCanvas) return;
+  
+  roughCanvas.curve([...curvePoints, [x2, y2]], {
     roughness: 0.1,
     strokeWidth: 2,
   });

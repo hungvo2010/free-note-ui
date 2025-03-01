@@ -53,7 +53,7 @@ export function calculatePadding(
   return [0, 0];
 }
 
-export function getCanvasCoordinates(e: MouseEvent, canvas: HTMLCanvasElement) {
+export function getCanvasCoordinates(e: MouseEvent, canvas: HTMLCanvasElement | null) {
   if (!canvas) {
     return { x: 0, y: 0 };
   }
