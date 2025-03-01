@@ -4,19 +4,31 @@ export function distance(x1: number, y1: number, x2: number, y2: number) {
   return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
 }
 
-export function isInLine(x: number, y: number, start: [number, number], end: [number, number]){
+export function isInLine(
+  x: number,
+  y: number,
+  start: [number, number],
+  end: [number, number]
+) {
   const minX = Math.min(start[0], end[0]);
   const maxX = Math.max(start[0], end[0]);
   const minY = Math.min(start[1], end[1]);
   const maxY = Math.max(start[1], end[1]);
   const dToLine = distanceToLine(x, y, start, end);
   return x >= minX && x <= maxX && y >= minY && y <= maxY && dToLine <= 4;
-} 
+}
 
-export function distanceToLine(x0: number, y0: number, start: [number, number], end: [number, number]){
+export function distanceToLine(
+  x0: number,
+  y0: number,
+  start: [number, number],
+  end: [number, number]
+) {
   const [x1, y1] = start;
   const [x2, y2] = end;
-  const numerator = Math.abs((y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1);
+  const numerator = Math.abs(
+    (y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1
+  );
   const denominator = Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
   return numerator / denominator;
 }
@@ -25,7 +37,6 @@ export function calculatePadding(
   angle: number,
   lineWidth: number
 ): [number, number] {
-  console.log("angle: " + angle);
   if (angle >= 0 && angle <= 90) {
     // bottom right corner
     return [lineWidth, lineWidth];
