@@ -36,7 +36,13 @@ export class CircleAdapter implements Shape {
   }
 
   toVirtualCoordinates(offsetX: number, offsetY: number): Shape {
-    return new CircleAdapter(this.roughCanvas, this.circle, this.id);
+    const newCircle = new Circle(
+      this.roughCanvas,
+      this.circle.getX + offsetX,
+      this.circle.getY + offsetY,
+      this.circle.getRadius
+    );
+    return new CircleAdapter(this.roughCanvas, newCircle, this.id);
   }
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {

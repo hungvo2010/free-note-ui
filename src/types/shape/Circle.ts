@@ -11,9 +11,11 @@ export class Circle {
   ) {}
   drawCircle() {
     if (this.radius < 3) {
+      console.log("radius < 3");
       return;
     }
     if (this.drawable) {
+      console.log("drawable");
       this.roughCanvas?.draw(this.drawable);
       return;
     }

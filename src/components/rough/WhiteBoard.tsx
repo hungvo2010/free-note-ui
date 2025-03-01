@@ -28,6 +28,7 @@ import {
 } from "utils/GeometryUtils";
 import "./WhiteBoard.scss";
 import { Text } from "types/shape/Text";
+import { updateCursorType } from "utils/CommonUtils";
 
 type DrawTypeProps = {
   type: string;
@@ -41,7 +42,6 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   const [coordinator, setCoordinator] = useState<Coordinator>(
     new Coordinator(0, 0)
   );
-  const [cursorType, setCursorType] = useState<string>("default");
   const [selectedShape, setSelectedShape] = useState<Shape | undefined>(
     undefined
   );
@@ -65,7 +65,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       setSelectedShape(selectedShape);
       if (selectedShape) {
         setIsDraggingShape(true);
-        setCursorType("move");
+        updateCursorType(canvasRef.current, "move");
         return;
       }
     },
@@ -74,7 +74,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
 
   const handleAddTextShape = useCallback(
     (x: number, y: number) => {
-      setCursorType("text");
+      updateCursorType(canvasRef.current, "text");
       const textShape = shapes.current.find(
         (shape) => shape instanceof Text && shape.isPointInShape(x, y)
       );
@@ -138,7 +138,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           break;
         case "hand":
           moveBoardRef.current = true;
-          setCursorType("pointer");
+          updateCursorType(canvasRef.current, "pointer");
           break;
         case "mouse":
           handleMouseEnter(shapes.current, x, y);
@@ -166,6 +166,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       handleAddTextShape,
     ]
   );
+
   const reDraw = useCallback(
     (offsetX: number, offsetY: number) => {
       const ctx = canvas?.getContext("2d");
@@ -173,11 +174,11 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
       }
       reDrawController.reDraw(offsetX, offsetY);
-      if (selectedShape && type === "mouse") {
+      if (selectedShape) {
         drawBoundingBox(canvas, selectedShape);
       }
     },
-    [canvas, reDrawController, selectedShape, type]
+    [canvas, reDrawController, selectedShape]
   );
 
   const handleMouseMove = useCallback(
@@ -201,22 +202,25 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
             y - dragStartPosRef.current.y
           );
           dragStartPosRef.current = { x, y };
+          console.log(Object.is(selectedShape, shapes.current[0]));
           reDraw(0, 0);
           return;
         }
         const shape = checkSelectedShape(shapes.current, x, y);
         if (shape) {
-          setCursorType("pointer");
+          updateCursorType(canvasRef.current, "pointer");
+        } else {
+          updateCursorType(canvasRef.current, "default");
         }
         return;
       }
 
       if (type === "word" && isEditingText) {
-        setCursorType("text");
+        updateCursorType(canvasRef.current, "text");
         return;
       }
 
-      setCursorType("default");
+      updateCursorType(canvasRef.current, "default");
       if (!drawingRef.current && !isDraggingShape) return;
 
       reDrawController.updateLastShape(startPosition.x, startPosition.y, x, y);
@@ -249,11 +253,11 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
           x - positionRef.current.x,
           y - positionRef.current.y
         );
-        setCursorType("default");
+        updateCursorType(canvasRef.current, "default");
       }
       if (isDraggingShape) {
         setIsDraggingShape(false);
-        setCursorType("pointer");
+        updateCursorType(canvasRef.current, "pointer");
         return;
       }
     },
@@ -287,11 +291,6 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     setCanvas(myCanvas);
     setRoughCanvas(newRoughCanvas);
   }, []);
-
-  useEffect(() => {
-    const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;
-    myCanvas.style.cursor = cursorType;
-  }, [cursorType]);
 
   useEffect(() => {
     const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;
@@ -385,9 +384,9 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         onChange={(e) => {
           if (selectedShape instanceof Text) {
             const textPos = (selectedShape as Text).getPosition();
-            setSelectedShape(
-              new Text(roughCanvas, textPos.x, textPos.y, e.target.value)
-            );
+            // setSelectedShape(
+            //   new Text(roughCanvas, textPos.x, textPos.y, e.target.value)
+            // );
           }
         }}
       />
