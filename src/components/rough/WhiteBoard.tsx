@@ -7,18 +7,9 @@ import {
   useState,
 } from "react";
 import rough from "roughjs";
-import { RoughCanvas } from "roughjs/bin/canvas";
 
 import { Coordinator } from "main/Coordinator";
 import { ReDrawController } from "main/ReDrawController";
-import Arrow from "types/shape/Arrow";
-import { Circle } from "types/shape/Circle";
-import { CircleAdapter } from "types/shape/CircleAdapter";
-import { Diamond } from "types/shape/Diamond";
-import { FreeStyleShape } from "types/shape/FreeStyleShape";
-import { Line } from "types/shape/Line";
-import { Rectangle } from "types/shape/Rectangle";
-import { RectangleAdapter } from "types/shape/RectangleAdapter";
 import { Shape } from "types/shape/Shape";
 import { Text } from "types/shape/Text";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
@@ -26,9 +17,14 @@ import {
   checkSelectedShape,
   drawBoundingBox,
   getCanvasCoordinates,
+  getShapesUnderPoint,
 } from "utils/GeometryUtils";
 import "./WhiteBoard.scss";
 import { updateCursorType } from "utils/CommonUtils";
+import { ImageShape } from "types/shape/ImageShape";
+import { ShapeFactory } from "utils/ShapeFactory";
+import { ImageService } from "services/ImageService";
+import { useCanvas } from "hooks/useCanvas";
 
 type DrawTypeProps = {
   type: string;
@@ -36,17 +32,13 @@ type DrawTypeProps = {
 
 export default function WhiteBoard({ type }: DrawTypeProps) {
   const shapes = useRef<Shape[]>([]);
-  const [canvas, setCanvas] = useState<HTMLCanvasElement>();
-  const [roughCanvas, setRoughCanvas] = useState<RoughCanvas>();
+  const { canvas, roughCanvas, canvasRef } = useCanvas();
   const [isDraggingShape, setIsDraggingShape] = useState(false);
   const [coordinator, setCoordinator] = useState<Coordinator>(
     new Coordinator(0, 0)
   );
   const [selectedShape, setSelectedShape] = useState<Shape | undefined>(
     undefined
-  );
-  const canvasRef = useRef<HTMLCanvasElement>(
-    document.getElementById("canvas") as HTMLCanvasElement
   );
   const dragStartPosRef = useRef({ x: 0, y: 0 });
   const positionRef = useRef({ x: 0, y: 0 });
@@ -58,6 +50,23 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   );
   const [isEditingText, setIsEditingText] = useState(false);
   const textInputRef = useRef<HTMLTextAreaElement>(null);
+  const eraserModeRef = useRef(false);
+  const eraserSizeRef = useRef(10); // Eraser size in pixels
+  const eraserCursorTimeoutRef = useRef<number | null>(null);
+
+  const reDraw = useCallback(
+    (offsetX: number, offsetY: number) => {
+      const ctx = canvas?.getContext("2d");
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
+      }
+      reDrawController.reDraw(offsetX, offsetY);
+      if (selectedShape) {
+        drawBoundingBox(canvas, selectedShape);
+      }
+    },
+    [canvas, reDrawController, selectedShape]
+  );
 
   const handleMouseEnter = useCallback(
     (
@@ -79,7 +88,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         return;
       }
     },
-    []
+    [canvasRef]
   );
 
   const handleAddTextShape = useCallback(
@@ -102,7 +111,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       // newShape.getBoundingRect().drawRectangle();
       setSelectedShape(newShape);
     },
-    [roughCanvas, reDrawController]
+    [roughCanvas, reDrawController, canvasRef]
   );
 
   const handleMouseDown = useCallback(
@@ -117,51 +126,41 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       }
 
       let newShape: Shape | undefined;
-      switch (type) {
-        case "rect":
-          newShape = new RectangleAdapter(
-            roughCanvas,
-            new Rectangle(roughCanvas, x, y, 0, 0),
-            new Date().getMilliseconds()
-          );
-          break;
-        case "circle":
-          newShape = new CircleAdapter(
-            roughCanvas,
-            new Circle(roughCanvas, x, y, 0),
-            new Date().getMilliseconds()
-          );
-          break;
-        case "arrow":
-          newShape = new Arrow(roughCanvas, x, y);
-          break;
-        case "line":
-          newShape = new Line(roughCanvas, x, y);
-          break;
-        case "pen":
-          newShape = new FreeStyleShape(roughCanvas, [[x, y]]);
-          break;
-        case "diam":
-          newShape = new Diamond(roughCanvas, x, y);
-          break;
-        case "hand":
-          moveBoardRef.current = true;
-          updateCursorType(canvasRef.current, "pointer");
-          break;
-        case "mouse":
-          handleMouseEnter(shapes.current, x, y, "move", "mousedown");
-          break;
-        case "word":
-          handleAddTextShape(x, y);
-          break;
-        default:
-          return;
+
+      if (type === "eraser") {
+        // Just set eraser mode to true, don't erase yet
+        eraserModeRef.current = true;
+        updateCursorType(canvasRef.current, "eraser");
+        return;
+      } else if (type === "image") {
+        ImageService.openImageDialog(
+          (imageShape) => {
+            reDrawController.addShape(imageShape);
+            reDraw(0, 0);
+          },
+          roughCanvas,
+          x,
+          y
+        );
+        return;
+      } else if (type === "word") {
+        handleAddTextShape(x, y);
+        return;
+      } else if (type === "hand") {
+        moveBoardRef.current = true;
+        updateCursorType(canvasRef.current, "pointer");
+        return;
+      } else if (type === "mouse") {
+        handleMouseEnter(shapes.current, x, y, "move", "mousedown");
+        return;
       }
+
+      // Use the factory for other shape types
+      newShape = ShapeFactory.createShape(type, roughCanvas, x, y);
+
       if (newShape) {
         reDrawController.addShape(newShape);
         drawingRef.current = true;
-      }
-      if (type !== "mouse" && type !== "word") {
         setSelectedShape(undefined);
       }
     },
@@ -172,29 +171,55 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       handleMouseEnter,
       isEditingText,
       handleAddTextShape,
+      reDraw,
+      canvasRef,
     ]
-  );
-
-  const reDraw = useCallback(
-    (offsetX: number, offsetY: number) => {
-      const ctx = canvas?.getContext("2d");
-      if (ctx) {
-        ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
-      }
-      reDrawController.reDraw(offsetX, offsetY);
-      if (selectedShape) {
-        drawBoundingBox(canvas, selectedShape);
-      }
-    },
-    [canvas, reDrawController, selectedShape]
   );
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       const { x, y } = getCanvasCoordinates(e, canvasRef.current);
-      const startPosition = positionRef.current;
+      
+      // Handle eraser dragging - move this to the top
+      if (type === "eraser" && eraserModeRef.current) {
+        // Find and remove shapes under the eraser
+        const shapesToRemove = getShapesUnderPoint(shapes.current, x, y);
+        if (shapesToRemove.length > 0) {
+          // Remove the shapes
+          shapes.current = shapes.current.filter(
+            shape => !shapesToRemove.includes(shape)
+          );
+          // Update the controller's shapes reference
+          reDrawController.updateShapes(shapes.current);
+          reDraw(0, 0);
+        }
+        
+        // Draw eraser cursor
+        const ctx = canvas?.getContext("2d");
+        if (ctx) {
+          // Draw after the main redraw to ensure it's on top
+          ctx.beginPath();
+          ctx.arc(x, y, eraserSizeRef.current, 0, Math.PI * 2);
+          ctx.strokeStyle = "#000000";
+          ctx.stroke();
+          
+          // Clear previous timeout if exists
+          if (eraserCursorTimeoutRef.current !== null) {
+            window.clearTimeout(eraserCursorTimeoutRef.current);
+          }
+          
+          // Set timeout to clear the cursor after a short delay
+          eraserCursorTimeoutRef.current = window.setTimeout(() => {
+            reDraw(0, 0); // Redraw without the cursor
+            eraserCursorTimeoutRef.current = null;
+          }, 150); // Adjust timing as needed (150ms works well)
+        }
+        return;
+      }
 
-      if (type === "hand" && moveBoardRef.current) {
+      const startPosition = positionRef.current;
+      
+      if (moveBoardRef.current) {
         const offset = {
           x: x - startPosition.x,
           y: y - startPosition.y,
@@ -202,29 +227,25 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         reDraw(offset.x, offset.y);
         return;
       }
-
-      if (type === "mouse") {
-        if (isDraggingShape && selectedShape) {
-          selectedShape.toVirtualCoordinates(
-            x - dragStartPosRef.current.x,
-            y - dragStartPosRef.current.y
-          );
-          dragStartPosRef.current = { x, y };
-          console.log(Object.is(selectedShape, shapes.current[0]));
-          reDraw(0, 0);
-          return;
-        }
-        handleMouseEnter(shapes.current, x, y, "pointer", "mousemove");
+      
+      if (isDraggingShape && selectedShape) {
+        selectedShape.toVirtualCoordinates(
+          x - dragStartPosRef.current.x,
+          y - dragStartPosRef.current.y
+        );
+        dragStartPosRef.current = { x, y };
+        console.log(Object.is(selectedShape, shapes.current[0]));
+        reDraw(0, 0);
         return;
       }
-
+      
       if (type === "word" && isEditingText) {
         updateCursorType(canvasRef.current, "text");
         return;
       }
 
       updateCursorType(canvasRef.current, "default");
-      if (!drawingRef.current && !isDraggingShape) return;
+      if ((!drawingRef.current && !isDraggingShape) || type === "image") return;
 
       reDrawController.updateLastShape(startPosition.x, startPosition.y, x, y);
       reDraw(0, 0);
@@ -236,7 +257,12 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       isDraggingShape,
       selectedShape,
       isEditingText,
-      handleMouseEnter,
+      canvasRef,
+      eraserModeRef,
+      eraserSizeRef,
+      moveBoardRef,
+      shapes,
+      canvas,
     ]
   );
 
@@ -264,8 +290,13 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
         updateCursorType(canvasRef.current, "pointer");
         return;
       }
+
+      if (type === "eraser") {
+        eraserModeRef.current = false;
+        return;
+      }
     },
-    [type, reDrawController, isDraggingShape]
+    [type, reDrawController, isDraggingShape, canvasRef]
   );
 
   const handleCanvasBlur = useCallback(() => {
@@ -283,7 +314,7 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
     window.addEventListener("resize", updateSize);
     updateSize();
     return () => window.removeEventListener("resize", updateSize);
-  }, [reDraw]);
+  }, [reDraw, canvasRef]);
 
   useEffect(() => {
     const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;
@@ -292,9 +323,8 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
       ctx.font = "20px Excalifont";
     }
     const newRoughCanvas = rough.canvas(myCanvas);
-    setCanvas(myCanvas);
-    setRoughCanvas(newRoughCanvas);
-  }, []);
+    reDraw(0, 0);
+  }, [reDraw, canvasRef]);
 
   useEffect(() => {
     const myCanvas = document.getElementById("myCanvas") as HTMLCanvasElement;
@@ -366,6 +396,40 @@ export default function WhiteBoard({ type }: DrawTypeProps) {
   }, [selectedShape, isEditingText]);
 
   console.log("re render: " + isEditingText);
+
+  useEffect(() => {
+    // Set up the redraw callback for ImageShape
+    ImageShape.setRedrawCallback(() => {
+      reDraw(0, 0);
+    });
+
+    return () => {
+      // Clear the callback on unmount
+      ImageShape.setRedrawCallback(() => {});
+    };
+  }, [reDraw]);
+
+  useEffect(() => {
+    if (type === "image") {
+      ImageService.openImageDialog(
+        (imageShape) => {
+          reDrawController.addShape(imageShape);
+          reDraw(0, 0);
+        },
+        roughCanvas,
+        canvas ? canvas.width / 2 - 100 : 0,
+        canvas ? canvas.height / 2 - 100 : 0
+      );
+    }
+  }, [type, roughCanvas, reDrawController, reDraw, canvas]);
+
+  useEffect(() => {
+    return () => {
+      if (eraserCursorTimeoutRef.current !== null) {
+        window.clearTimeout(eraserCursorTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div style={{ position: "relative" }}>

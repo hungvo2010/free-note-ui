@@ -94,3 +94,11 @@ export const drawBoundingBox = (
     );
   }
 };
+
+export function getShapesUnderPoint(
+  shapes: Shape[],
+  x: number,
+  y: number
+): Shape[] {
+  return shapes.filter(shape => shape.isPointInShape(x, y));
+}

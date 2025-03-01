@@ -56,4 +56,8 @@ export class ReDrawController {
       shape.draw(offsetX, offsetY);
     }
   }
+
+  public updateShapes(shapes: Shape[]): void {
+    this.shapes = shapes;
+  }
 }

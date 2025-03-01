@@ -135,8 +135,33 @@ const drawRect = (x: number, y: number, x1: number, y1: number) => {
 };
 
 
-export function updateCursorType(canvas: HTMLCanvasElement, cursor: string) {
-  canvas.style.cursor = cursor;
+export function updateCursorType(canvas: HTMLCanvasElement, type: string) {
+  if (!canvas) return;
+  
+  // Remove any previous custom cursor classes
+  canvas.classList.remove("eraser-cursor");
+  
+  switch (type) {
+    case "default":
+      canvas.style.cursor = "default";
+      break;
+    case "pointer":
+      canvas.style.cursor = "pointer";
+      break;
+    case "move":
+      canvas.style.cursor = "move";
+      break;
+    case "text":
+      canvas.style.cursor = "text";
+      break;
+    case "eraser":
+      // Use a simpler approach with CSS class
+      canvas.classList.add("eraser-cursor");
+      canvas.style.cursor = "none"; // Hide default cursor
+      break;
+    default:
+      canvas.style.cursor = "default";
+  }
 }
 
 const drawPen = (
