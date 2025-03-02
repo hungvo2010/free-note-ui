@@ -1,4 +1,4 @@
-import { Profiler, useState } from "react";
+import { StrictMode, useState } from "react";
 import "./App.css";
 import WhiteBoard from "./components/rough/WhiteBoard";
 import Toolbar from "./components/toolbar/Toolbar";
@@ -32,12 +32,12 @@ function App() {
         selected={selected}
         handleSelected={handleSelected}
       />
-      <Profiler id="App" onRender={onRender}>
+      <StrictMode>
         <WhiteBoard
           type={options[selected]}
           isLocked={options[selected] === "lock"}
         />
-      </Profiler>
+      </StrictMode>
     </>
   );
 }

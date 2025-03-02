@@ -22,10 +22,6 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
     canvasRef,
     selectedShape,
     setSelectedShape,
-    isDraggingShape,
-    setIsDraggingShape,
-    isEditingText,
-    setIsEditingText,
     reDrawController,
     reDraw,
   } = useWhiteboard();
@@ -41,27 +37,22 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
       type,
       selectedShape,
       setSelectedShape,
-      isDraggingShape,
-      setIsDraggingShape,
-      isEditingText,
-      setIsEditingText,
       canvas
     );
 
   useEffect(() => {
-    const myCanvas = canvasRef.current;
-    if (!myCanvas) return;
+    if (!canvas) return;
 
-    myCanvas.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      myCanvas.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      canvas.removeEventListener("mousedown", handleMouseDown);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp, canvasRef]);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp, canvas]);
 
   return (
     <div style={{ position: "relative" }}>
@@ -76,8 +67,8 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
       <TextEditor
         selectedShape={selectedShape}
         roughCanvas={roughCanvas}
-        isEditingText={isEditingText}
-        setIsEditingText={setIsEditingText}
+        isEditingText={false}
+        setIsEditingText={() => {}}
         setSelectedShape={setSelectedShape}
         isLocked={isLocked}
       />

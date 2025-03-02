@@ -1,7 +1,7 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { CircleAdapter } from "types/shape/CircleAdapter";
 import { Shape } from "types/shape/Shape";
-import { distance } from "utils/GeometryUtils";
+import { distance, isPointInShape } from "utils/GeometryUtils";
 
 export class ReDrawController {
   constructor(
@@ -11,6 +11,11 @@ export class ReDrawController {
 
   public addShape(shape: Shape) {
     this.shapes.push(shape);
+  }
+
+  public checkSelectedShape(x: number, y: number): Shape | undefined {
+    const shape = this.shapes.find((shape) => isPointInShape(shape, x, y));
+    return shape;
   }
 
   public updateLastShape(
@@ -57,5 +62,19 @@ export class ReDrawController {
     for (let i = 0; i < this.shapes.length; i++) {
       this.shapes[i].toVirtualCoordinates(newOffsetX, newOffsetY);
     }
+  }
+
+  public getShapes() {
+    return this.shapes;
+  }
+
+  public getShapesUnderPoint(x: number, y: number): Shape[] {
+    return this.shapes.filter(shape => isPointInShape(shape, x, y));
+  }
+
+  public removeShapes(shapesToRemove: Shape[]): void {
+    this.shapes = this.shapes.filter(shape => 
+      !shapesToRemove.includes(shape)
+    );
   }
 }

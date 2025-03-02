@@ -11,19 +11,15 @@ interface WhiteboardContextType {
   canvasRef: React.RefObject<HTMLCanvasElement>;
   selectedShape: Shape | undefined;
   setSelectedShape: (shape: Shape | undefined) => void;
-  isDraggingShape: boolean;
-  setIsDraggingShape: (isDragging: boolean) => void;
-  isEditingText: boolean;
-  setIsEditingText: (isEditing: boolean) => void;
   reDrawController: ReDrawController;
   reDraw: (offsetX: number, offsetY: number) => void;
   isLocked: boolean;
   setIsLocked: (isLocked: boolean) => void;
 }
 
-export const WhiteboardContext = createContext<WhiteboardContextType | undefined>(
-  undefined
-);
+export const WhiteboardContext = createContext<
+  WhiteboardContextType | undefined
+>(undefined);
 
 export const WhiteboardProvider: React.FC<{
   children: React.ReactNode;
@@ -34,8 +30,6 @@ export const WhiteboardProvider: React.FC<{
   const [selectedShape, setSelectedShape] = useState<Shape | undefined>(
     undefined
   );
-  const [isDraggingShape, setIsDraggingShape] = useState(false);
-  const [isEditingText, setIsEditingText] = useState(false);
   const [isLocked, setIsLocked] = useState(initialLocked);
 
   const reDrawController = React.useMemo(
@@ -64,10 +58,6 @@ export const WhiteboardProvider: React.FC<{
     canvasRef,
     selectedShape,
     setSelectedShape,
-    isDraggingShape,
-    setIsDraggingShape,
-    isEditingText,
-    setIsEditingText,
     reDrawController,
     reDraw,
     isLocked,

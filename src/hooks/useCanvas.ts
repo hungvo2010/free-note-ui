@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import rough from 'roughjs';
-import { RoughCanvas } from 'roughjs/bin/canvas';
-import { resizeCanvasToDisplaySize } from 'utils/DisplayUtils';
+import { useState, useEffect, useRef } from "react";
+import rough from "roughjs";
+import { RoughCanvas } from "roughjs/bin/canvas";
 
 export function useCanvas() {
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
@@ -21,17 +20,5 @@ export function useCanvas() {
     setRoughCanvas(newRoughCanvas);
   }, []);
 
-  useEffect(() => {
-    function updateSize() {
-      const canvas = canvasRef.current;
-      if (canvas) {
-        resizeCanvasToDisplaySize(canvas);
-      }
-    }
-    window.addEventListener("resize", updateSize);
-    updateSize();
-    return () => window.removeEventListener("resize", updateSize);
-  }, []);
-
   return { canvas, roughCanvas, canvasRef };
-} 
+}
