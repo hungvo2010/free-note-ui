@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useRef } from 'react';
-import { Shape } from 'types/shape/Shape';
-import { ReDrawController } from 'main/ReDrawController';
-import { useCanvas } from 'hooks/useCanvas';
-import { drawBoundingBox } from 'utils/GeometryUtils';
+import React, { createContext, useState, useRef } from "react";
+import { Shape } from "types/shape/Shape";
+import { ReDrawController } from "main/ReDrawController";
+import { useCanvas } from "hooks/useCanvas";
+import { drawBoundingBox } from "utils/GeometryUtils";
 
 interface WhiteboardContextType {
   shapes: React.MutableRefObject<Shape[]>;
@@ -21,24 +21,28 @@ interface WhiteboardContextType {
   setIsLocked: (isLocked: boolean) => void;
 }
 
-const WhiteboardContext = createContext<WhiteboardContextType | undefined>(undefined);
+export const WhiteboardContext = createContext<WhiteboardContextType | undefined>(
+  undefined
+);
 
-export const WhiteboardProvider: React.FC<{children: React.ReactNode, isLocked?: boolean}> = ({ 
-  children, 
-  isLocked: initialLocked = false 
-}) => {
+export const WhiteboardProvider: React.FC<{
+  children: React.ReactNode;
+  isLocked?: boolean;
+}> = ({ children, isLocked: initialLocked = false }) => {
   const shapes = useRef<Shape[]>([]);
   const { canvas, roughCanvas, canvasRef } = useCanvas();
-  const [selectedShape, setSelectedShape] = useState<Shape | undefined>(undefined);
+  const [selectedShape, setSelectedShape] = useState<Shape | undefined>(
+    undefined
+  );
   const [isDraggingShape, setIsDraggingShape] = useState(false);
   const [isEditingText, setIsEditingText] = useState(false);
   const [isLocked, setIsLocked] = useState(initialLocked);
-  
+
   const reDrawController = React.useMemo(
     () => new ReDrawController(roughCanvas, shapes.current),
     [roughCanvas]
   );
-  
+
   const reDraw = React.useCallback(
     (offsetX: number, offsetY: number) => {
       const ctx = canvas?.getContext("2d");
@@ -52,7 +56,7 @@ export const WhiteboardProvider: React.FC<{children: React.ReactNode, isLocked?:
     },
     [canvas, reDrawController, selectedShape]
   );
-  
+
   const value = {
     shapes,
     canvas,
@@ -67,20 +71,12 @@ export const WhiteboardProvider: React.FC<{children: React.ReactNode, isLocked?:
     reDrawController,
     reDraw,
     isLocked,
-    setIsLocked
+    setIsLocked,
   };
-  
+
   return (
     <WhiteboardContext.Provider value={value}>
       {children}
     </WhiteboardContext.Provider>
   );
 };
-
-export const useWhiteboard = () => {
-  const context = useContext(WhiteboardContext);
-  if (context === undefined) {
-    throw new Error('useWhiteboard must be used within a WhiteboardProvider');
-  }
-  return context;
-}; 

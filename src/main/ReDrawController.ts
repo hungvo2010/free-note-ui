@@ -4,14 +4,6 @@ import { Shape } from "types/shape/Shape";
 import { distance } from "utils/GeometryUtils";
 
 export class ReDrawController {
-  redrawUsingVirtualCoordinates(newOffsetX: number, newOffsetY: number) {
-    for (let i = 0; i < this.shapes.length; i++) {
-     this.shapes[i].toVirtualCoordinates(
-        newOffsetX,
-        newOffsetY
-      );
-    }
-  }
   constructor(
     public roughCanvas: RoughCanvas | undefined,
     public shapes: Shape[] = []
@@ -59,5 +51,11 @@ export class ReDrawController {
 
   public updateShapes(shapes: Shape[]): void {
     this.shapes = shapes;
+  }
+
+  public redrawUsingVirtualCoordinates(newOffsetX: number, newOffsetY: number) {
+    for (let i = 0; i < this.shapes.length; i++) {
+      this.shapes[i].toVirtualCoordinates(newOffsetX, newOffsetY);
+    }
   }
 }

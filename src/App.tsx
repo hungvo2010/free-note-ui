@@ -33,7 +33,10 @@ function App() {
         handleSelected={handleSelected}
       />
       <Profiler id="App" onRender={onRender}>
-        <WhiteBoard type={options[selected]} />
+        <WhiteBoard
+          type={options[selected]}
+          isLocked={options[selected] === "lock"}
+        />
       </Profiler>
     </>
   );
