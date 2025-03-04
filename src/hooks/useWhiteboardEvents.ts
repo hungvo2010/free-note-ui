@@ -70,12 +70,12 @@ export function useWhiteboardEvents(
   const handleMouseEnter = useCallback(
     (x: number, y: number, cursorType: string, eventType: string) => {
       const selectedShape = reDrawController.checkSelectedShape(x, y);
-      if (selectedShape && eventType === "mousemove") {
-        setSelectedShape(selectedShape);
-      }
+      // if (selectedShape && eventType === "mousemove") {
+      //   setSelectedShape(selectedShape);
+      // }
+      setSelectedShape(selectedShape);
       updateCursorType(canvas!, selectedShape ? cursorType : "default");
       if (eventType === "mousedown") {
-        isDraggingShapeRef.current = true;
         updateCursorType(canvas!, "move");
         return;
       }
@@ -160,6 +160,9 @@ export function useWhiteboardEvents(
         if (shapesToRemove.length > 0) {
           // Remove the shapes
           reDrawController.removeShapes(shapesToRemove);
+          shapes.current = shapes.current.filter(
+            (shape) => !shapesToRemove.includes(shape)
+          );
           reDraw(0, 0);
         }
 
@@ -187,16 +190,13 @@ export function useWhiteboardEvents(
       }
 
       // If locked, only allow cursor changes for better UX, but no edits
-      if (type === "mouse") {
-        // Still allow cursor to change when hovering over shapes
-        // const hoverShape = checkSelectedShape(shapes.current, x, y);
-        // // Only update selectedShape if it's different to avoid unnecessary rerenders
-        // updateCursorType(
-        //   canvasRef.current!,
-        //   hoverShape ? "pointer" : "default"
-        // );
+      if (type === "mouse" && !isDraggingShapeRef.current) {
+        const hoverShape = reDrawController.checkSelectedShape(x, y);
+        updateCursorType(
+          canvasRef.current!,
+          hoverShape ? "pointer" : "default"
+        );
         handleMouseEnter(x, y, "pointer", "mousemove");
-        reDraw(0, 0);
         return;
       }
 
@@ -211,13 +211,10 @@ export function useWhiteboardEvents(
         return;
       }
 
-      console.log(
-        "isDraggingShapeRef.current",
-        isDraggingShapeRef.current,
-        selectedShape,
-        type
-      );
-      if (selectedShape && type === "mouse") {
+      if (type === "mouse" && isDraggingShapeRef.current) {
+        if (!selectedShape) {
+          return;
+        }
         selectedShape.toVirtualCoordinates(
           x - dragStartPosRef.current.x,
           y - dragStartPosRef.current.y
@@ -238,22 +235,23 @@ export function useWhiteboardEvents(
         type === "image"
       )
         return;
-
+      console.log("update last shape");
       reDrawController.updateLastShape(startPosition.x, startPosition.y, x, y);
       reDraw(0, 0);
     },
     [
       type,
       eraserModeRef,
+      shapes,
       reDrawController,
       reDraw,
       canvas,
+      handleMouseEnter,
       canvasRef,
       selectedShape,
       moveBoardRef,
       isDraggingShapeRef,
       isEditingTextRef,
-      handleMouseEnter,
     ]
   );
 
