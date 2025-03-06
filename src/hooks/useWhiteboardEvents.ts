@@ -107,11 +107,13 @@ export function useWhiteboardEvents(
         ImageService.openImageDialog(
           (imageShape) => {
             reDrawController.addShape(imageShape);
-            reDraw(0, 0);
           },
           roughCanvas,
           x,
-          y
+          y,
+          () => {
+            reDraw(0, 0);
+          }
         );
         return;
       } else if (type === "word") {
@@ -128,6 +130,7 @@ export function useWhiteboardEvents(
         return;
       } else if (type === "hand") {
         moveBoardRef.current = true;
+        updateCursorType(canvas!, "pointer");
         return;
       }
 
@@ -264,12 +267,13 @@ export function useWhiteboardEvents(
       drawingRef.current = false;
       if (type === "hand") {
         moveBoardRef.current = false;
-        const { x, y } = getCanvasCoordinates(e, canvasRef.current);
+        const { x, y } = getCanvasCoordinates(e, canvas!);
         const offset = {
           x: x - positionRef.current.x,
           y: y - positionRef.current.y,
         };
         reDrawController.updateCoordinates(offset.x, offset.y);
+        updateCursorType(canvas!, "default");
         reDraw(0, 0);
         return;
       }
@@ -283,7 +287,7 @@ export function useWhiteboardEvents(
         isDraggingShapeRef.current = false;
       }
     },
-    [isLocked, type, reDrawController, canvasRef, reDraw]
+    [isLocked, type, reDrawController, reDraw, canvas]
   );
 
   const handleKeyDown = useCallback(
