@@ -22,15 +22,17 @@ export class ImageShape implements Shape {
     public height: number
   ) {
     this.image = new Image();
-    
+
     // Set up load handler before setting src
     this.image.onload = () => {
       this.isLoaded = true;
-      
+
       // Calculate dimensions if needed
       if (width === 0 || height === 0) {
         if (this.roughCanvas) {
-          const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+          const canvas = document.getElementById(
+            "myCanvas"
+          ) as HTMLCanvasElement;
           if (canvas) {
             this.calculateOptimalDimensions(canvas);
           } else {
@@ -40,13 +42,13 @@ export class ImageShape implements Shape {
           }
         }
       }
-      
+
       // Trigger redraw when image loads
       if (ImageShape.redrawCallback) {
         ImageShape.redrawCallback();
       }
     };
-    
+
     // Add error handling
     this.image.onerror = () => {
       console.error("Failed to load image:", url);
@@ -54,7 +56,7 @@ export class ImageShape implements Shape {
       this.width = width || 200;
       this.height = height || 200;
     };
-    
+
     // Set src after handlers are in place
     this.image.src = url;
   }
@@ -77,17 +79,27 @@ export class ImageShape implements Shape {
     } else {
       // Draw a placeholder while loading
       ctx.fillStyle = "#f0f0f0";
-      ctx.fillRect(this.x + offsetX, this.y + offsetY, 
-                  this.width || 200, this.height || 200);
+      ctx.fillRect(
+        this.x + offsetX,
+        this.y + offsetY,
+        this.width || 200,
+        this.height || 200
+      );
       ctx.strokeStyle = "#cccccc";
-      ctx.strokeRect(this.x + offsetX, this.y + offsetY, 
-                    this.width || 200, this.height || 200);
+      ctx.strokeRect(
+        this.x + offsetX,
+        this.y + offsetY,
+        this.width || 200,
+        this.height || 200
+      );
       ctx.fillStyle = "#999999";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("Loading image...", 
-                  this.x + offsetX + (this.width || 200)/2, 
-                  this.y + offsetY + (this.height || 200)/2);
+      ctx.fillText(
+        "Loading image...",
+        this.x + offsetX + (this.width || 200) / 2,
+        this.y + offsetY + (this.height || 200) / 2
+      );
     }
   }
 
@@ -95,26 +107,26 @@ export class ImageShape implements Shape {
     // Get canvas dimensions
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
-    
+
     // Set maximum dimensions (e.g., 80% of canvas size)
     const maxWidth = canvasWidth * 0.4;
     const maxHeight = canvasHeight * 0.4;
-    
+
     // Get image's natural dimensions
     const imgWidth = this.image.width;
     const imgHeight = this.image.height;
-    
+
     // Calculate scale factors
     const widthRatio = maxWidth / imgWidth;
     const heightRatio = maxHeight / imgHeight;
-    
+
     // Use the smaller ratio to ensure image fits within constraints
     const scaleFactor = Math.min(widthRatio, heightRatio, 1); // Don't upscale small images
-    
+
     // Set dimensions while maintaining aspect ratio
     this.width = Math.round(imgWidth * scaleFactor);
     this.height = Math.round(imgHeight * scaleFactor);
-    
+
     // Ensure minimum dimensions
     this.width = Math.max(this.width, 100);
     this.height = Math.max(this.height, 100);
@@ -140,7 +152,7 @@ export class ImageShape implements Shape {
   }
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {
-    return new ImageShape(
+    const newImageShape = new ImageShape(
       this.roughCanvas,
       this.url,
       this.x + changeX,
@@ -148,6 +160,8 @@ export class ImageShape implements Shape {
       this.width,
       this.height
     );
+    newImageShape.isLoaded = this.isLoaded;
+    return newImageShape;
   }
 
   toVirtualCoordinates(x: number, y: number): void {

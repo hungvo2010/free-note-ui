@@ -107,11 +107,13 @@ export function useWhiteboardEvents(
         ImageService.openImageDialog(
           (imageShape) => {
             reDrawController.addShape(imageShape);
-            reDraw(0, 0);
           },
           roughCanvas,
           x,
-          y
+          y,
+          () => {
+            reDraw(0, 0);
+          }
         );
         return;
       } else if (type === "word") {
@@ -128,6 +130,7 @@ export function useWhiteboardEvents(
         return;
       } else if (type === "hand") {
         moveBoardRef.current = true;
+        updateCursorType(canvas!, "pointer");
         return;
       }
 
@@ -271,6 +274,7 @@ export function useWhiteboardEvents(
         };
         reDrawController.updateCoordinates(offset.x, offset.y);
         reDraw(0, 0);
+        updateCursorType(canvasRef.current!, "default");
         return;
       }
 
