@@ -16,6 +16,10 @@ class Piece {
     return this._offset;
   }
 
+  set offset(offset: number) {
+    this._offset = offset;
+  }
+
   get next(): Piece | null {
     return this._next;
   }
@@ -75,14 +79,19 @@ class PieceTableTextEditor implements TextEditor {
 
     if (head !== null) {
       const rightPrice = new Piece(
-        "original",
+        head.sourceType,
         head.offset + (head.length - (originalOffset - position)),
         originalOffset - position,
         head.next
       );
       head.length = head.length - (originalOffset - position);
-      newPiece.next = rightPrice;
-      head.next = newPiece;
+      if (head.length === 0 && previous === null) {
+        this.root = newPiece;
+        newPiece.next = rightPrice;
+      } else {
+        newPiece.next = rightPrice;
+        head.next = newPiece;
+      }
     }
 
     // console.log(head, position, originalOffset, previous);
@@ -102,21 +111,36 @@ class PieceTableTextEditor implements TextEditor {
     let endPiece: Piece | null = null;
 
     while (head !== null) {
+      const originalLength = currentOffset + head.length;
       if (start >= currentOffset && start < currentOffset + head.length) {
-        head.length = head.length - (currentOffset + head.length - end);
+        head.length -= start - currentOffset + 1;
+        head.offset += start - currentOffset + 1;
+        if (head.length === 0 && previous !== null) {
+          previous.next = head.next;
+        }
+        if (head.length === 0 && previous === null) {
+          this.root = head.next;
+        }
         startPiece = head;
       }
-      if (end >= currentOffset && end < currentOffset + head.length) {
-        head.length = head.length - (currentOffset + head.length - end);
+      if (
+        end > start + 1 &&
+        end >= currentOffset &&
+        end < currentOffset + head.length - 1
+      ) {
+        head.length -= end - currentOffset;
+        if (head.length === 0 && previous !== null) {
+          previous.next = head.next;
+        }
         endPiece = head;
       }
+      if (startPiece !== null && endPiece !== null) {
+        startPiece.next = endPiece.next;
+        break;
+      }
       previous = head;
-      currentOffset += head.length;
+      currentOffset = originalLength;
       head = head.next;
-    }
-
-    if (startPiece !== null && endPiece !== null) {
-      startPiece.next = endPiece.next;
     }
   }
 
@@ -136,11 +160,8 @@ class PieceTableTextEditor implements TextEditor {
 const editor = new PieceTableTextEditor(null, "Hello World", "");
 console.log(editor.getText());
 
-editor.insert("!", 12);
+editor.insert("!", 0);
 console.log(editor.getText());
 
-editor.insert(",", 5);
-console.log(editor.getText());
-
-editor.insert("!", 4);
+editor.delete(0, 5);
 console.log(editor.getText());
