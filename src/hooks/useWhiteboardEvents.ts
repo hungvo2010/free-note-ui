@@ -275,6 +275,7 @@ export function useWhiteboardEvents(
         reDrawController.updateCoordinates(offset.x, offset.y);
         updateCursorType(canvas!, "default");
         reDraw(0, 0);
+        updateCursorType(canvasRef.current!, "default");
         return;
       }
 

@@ -7,7 +7,7 @@ export class ImageService {
     roughCanvas: RoughCanvas | undefined,
     x: number,
     y: number,
-    onloadCallback: () => void
+    loadCallback: () => void
   ): void {
     const input = document.createElement("input");
     input.type = "file";
@@ -19,9 +19,9 @@ export class ImageService {
         const url = URL.createObjectURL(blob);
         const imageShape = new ImageShape(roughCanvas, url, x, y, 0, 0);
         callback(imageShape);
-        ImageShape.setRedrawCallback(onloadCallback);
       }
     };
     input.click();
+    ImageShape.setRedrawCallback(loadCallback);
   }
 }

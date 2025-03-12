@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build a debugger",
+        "type": "shell",
+        "command": "tsc && vite build",
+        "problemMatcher": []
+      }
+    ]
+  }
