@@ -1,16 +1,20 @@
-import TextEditor from "./TextEditor";
+import TextEditor, { Position } from "./TextEditor";
 
 class SimpleTextEditor implements TextEditor {
   constructor(private text: string) {}
-  insert(text: string, position: number): void {
-    this.text = this.text.slice(0, position) + text + this.text.slice(position);
+  insert(content: string, at: Position): void {
+    throw new Error("Method not implemented.");
   }
-  delete(start: number, end: number): void {
-    this.text = this.text.slice(0, start) + this.text.slice(end);
+  delete(at: Position): void {
+    throw new Error("Method not implemented.");
   }
-  getText(): string {
-    return this.text;
+  getText(): string[] {
+    throw new Error("Method not implemented.");
   }
+  deleteRange(start: Position, end: Position): void {
+    throw new Error("Method not implemented.");
+  }
+
   append(text: string): void {
     this.text += text;
   }
