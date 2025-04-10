@@ -1,6 +1,6 @@
 export type Position = {
   line: number;
-  character: number;
+  col: number;
 };
 
 export enum Source {
@@ -11,6 +11,8 @@ export enum Source {
 export default interface TextEditor {
   insert(content: string, at: Position): void;
   delete(at: Position): void;
-  getText(): string[];
+  getContent(): string[];
+  getText(): string;
   deleteRange(start: Position, end: Position): void;
+  appendText(text: string): void;
 }

@@ -1,10 +1,15 @@
+import PieceTableTextEditor from "components/editor/PieceTableTextEditor";
+import SimpleTextEditor from "components/editor/SimpleTextEditor";
+import TextEditor from "components/editor/TextEditor";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
-import { RectangleAdapter } from "./RectangleAdapter";
+import { Shape } from "./Shape";
 
-export class Text implements Shape {
-  private text: string;
+export class TextShape implements Shape {
+  getContent(): string {
+    return this.textEditor.getContent().join("\n");
+  }
+  private textEditor: TextEditor;
   private fontSize: number;
   private font: string;
 
@@ -14,7 +19,8 @@ export class Text implements Shape {
     private y: number,
     initialText: string = ""
   ) {
-    this.text = initialText;
+    // this.textEditor = new PieceTableTextEditor(null, initialText, "");
+    this.textEditor = new SimpleTextEditor([initialText]);
     this.fontSize = 20;
     this.font = "Excalifont";
   }
@@ -23,29 +29,38 @@ export class Text implements Shape {
     if (!this.roughCanvas) return;
     // Get canvas from the DOM directly since we know its ID
     const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     ctx.font = `${this.fontSize}px ${this.font}`;
     ctx.fillStyle = "black";
-    ctx.fillText(this.text, this.x + offsetX, this.y + offsetY);
+    ctx.fillText(
+      this.textEditor.getContent().join("\n"),
+      this.x + offsetX,
+      this.y + offsetY
+    );
+  }
+
+  append(text: string): void {
+    this.textEditor.appendText(text);
   }
 
   getBoundingRect(): Rectangle {
     // Use a cached canvas context for better performance
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     if (!ctx) {
-      console.warn('Could not get canvas context for text measurement');
+      console.warn("Could not get canvas context for text measurement");
       return new Rectangle(this.roughCanvas, this.x, this.y, 0, 0);
     }
 
     // Set font properties
     ctx.font = `${this.fontSize}px ${this.font}`;
-    const metrics = ctx.measureText(this.text);
+    const metrics = ctx.measureText(this.textEditor.getContent().join("\n"));
 
     // Get full text metrics including height
-    const actualHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    const actualHeight =
+      metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
     const height = actualHeight || this.fontSize; // Fallback to fontSize if metrics not available
 
     // Calculate precise bounds
@@ -63,13 +78,13 @@ export class Text implements Shape {
 
   isPointInShape(x: number, y: number): boolean {
     // Create a temporary canvas for text measurement
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
     if (!ctx) return false;
 
     // Set up the font context
     ctx.font = `${this.fontSize}px ${this.font}`;
-    const metrics = ctx.measureText(this.text);
+    const metrics = ctx.measureText(this.textEditor.getContent().join("\n"));
 
     // Get the vertical metrics
     const top = this.y - metrics.actualBoundingBoxAscent;
@@ -80,12 +95,7 @@ export class Text implements Shape {
     const right = this.x + metrics.width;
 
     // Check if point is within the text bounds
-    const isInside = (
-      x >= left &&
-      x <= right &&
-      y >= top &&
-      y <= bottom
-    );
+    const isInside = x >= left && x <= right && y >= top && y <= bottom;
     return isInside;
   }
 
@@ -101,19 +111,15 @@ export class Text implements Shape {
   }
 
   clone(x: number, y: number): Shape {
-    return new Text(this.roughCanvas, this.x, this.y, this.text);
+    return new TextShape(
+      this.roughCanvas,
+      this.x,
+      this.y,
+      this.textEditor.getContent().join("\n")
+    );
   }
 
-  // Additional methods specific to Text
-  setText(newText: string) {
-    this.text = newText;
-  }
-
-  getText(): string {
-    return this.text;
-  }
-
-  getPosition(): { x: number, y: number } {
+  getPosition(): { x: number; y: number } {
     return { x: this.x, y: this.y };
   }
-} 
+}
