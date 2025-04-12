@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { WhiteboardProvider } from "contexts/WhiteboardContext";
 import { useWhiteboardEvents } from "hooks/useWhiteboardEvents";
-import { TextEditor } from "components/TextEditor";
 import { LockIndicator } from "components/LockIndicator";
 import "./WhiteBoard.scss";
 import { useWhiteboard } from "hooks/useWhiteboard";
@@ -63,15 +62,6 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
         tabIndex={0}
         onKeyDown={handleKeyDown}
       ></canvas>
-
-      <TextEditor
-        selectedShape={selectedShape}
-        roughCanvas={roughCanvas}
-        isEditingText={false}
-        setIsEditingText={() => {}}
-        setSelectedShape={setSelectedShape}
-        isLocked={isLocked}
-      />
 
       <LockIndicator isLocked={isLocked} />
     </div>

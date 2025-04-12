@@ -1,13 +1,13 @@
-import { useCallback, useRef, useEffect, useLayoutEffect } from "react";
-import { Shape } from "types/shape/Shape";
 import { ReDrawController } from "main/ReDrawController";
-import { getCanvasCoordinates } from "utils/GeometryUtils";
-import { updateCursorType } from "utils/CommonUtils";
-import { ShapeFactory } from "utils/ShapeFactory";
-import { Text } from "types/shape/Text";
-import { ImageService } from "services/ImageService";
+import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { ImageService } from "services/ImageService";
+import { Shape } from "types/shape/Shape";
+import { TextShape } from "types/shape/Text";
+import { updateCursorType } from "utils/CommonUtils";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
+import { getCanvasCoordinates } from "utils/GeometryUtils";
+import { ShapeFactory } from "utils/ShapeFactory";
 export function useWhiteboardEvents(
   shapes: React.MutableRefObject<Shape[]>,
   canvasRef: React.RefObject<HTMLCanvasElement>,
@@ -117,7 +117,7 @@ export function useWhiteboardEvents(
         );
         return;
       } else if (type === "word") {
-        const textShape = new Text(roughCanvas, x, y, "");
+        const textShape = new TextShape(roughCanvas, x, y, "");
         reDrawController.addShape(textShape);
         setSelectedShape(textShape);
         isEditingTextRef.current = true;
@@ -288,33 +288,19 @@ export function useWhiteboardEvents(
         isDraggingShapeRef.current = false;
       }
     },
-    [isLocked, type, reDrawController, reDraw, canvas]
+    [isLocked, type, canvas, reDrawController, reDraw, canvasRef]
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (isLocked) return;
-
-      if (e.key === "Delete" || e.key === "Backspace") {
-        if (selectedShape && !isEditingTextRef.current) {
-          shapes.current = shapes.current.filter(
-            (shape) => shape !== selectedShape
-          );
-          setSelectedShape(undefined);
-          reDrawController.updateShapes(shapes.current);
-          reDraw(0, 0);
-        }
+      if (isEditingTextRef.current) {
+        const selectedTextShape = selectedShape as TextShape;
+        selectedTextShape.append(e.key);
+        reDraw(0, 0);
       }
     },
-    [
-      isLocked,
-      selectedShape,
-      isEditingTextRef,
-      shapes,
-      setSelectedShape,
-      reDrawController,
-      reDraw,
-    ]
+    [isLocked, selectedShape, isEditingTextRef, reDraw]
   );
 
   return {

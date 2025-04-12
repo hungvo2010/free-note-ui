@@ -1,43 +1,7 @@
+import Piece from "./Piece";
 import TextEditor, { Position, Source } from "./TextEditor";
 
-class Piece {
-  constructor(
-    private _offset: number,
-    private _length: number,
-    private _sourceType: "add" | "original",
-    private _next: Piece | null
-  ) {}
-
-  get sourceType(): "add" | "original" {
-    return this._sourceType;
-  }
-
-  get offset(): number {
-    return this._offset;
-  }
-
-  set offset(offset: number) {
-    this._offset = offset;
-  }
-
-  get next(): Piece | null {
-    return this._next;
-  }
-
-  set next(next: Piece | null) {
-    this._next = next;
-  }
-
-  get length(): number {
-    return this._length;
-  }
-
-  set length(length: number) {
-    this._length = length;
-  }
-}
-
-class PieceTableTextEditor implements TextEditor {
+export default class PieceTableTextEditor implements TextEditor {
   constructor(
     private root: Piece | null,
     private originalText: string,
@@ -51,8 +15,31 @@ class PieceTableTextEditor implements TextEditor {
     this.originalText = originalText;
     this.addText = addText;
   }
+  getText(): string {
+    return this.getContent().join("\n");
+  }
 
-  insert(content: string, at: { line: number; character: number }): void {
+  /**
+   * Appends the given text to the end of the text editor's content.
+   *
+   * @param text - The text to be appended.
+   */
+  appendText(text: string): void {
+    this.insert(text, { line: Number.MAX_VALUE, col: Number.MAX_VALUE });
+  }
+
+  /**
+   * Inserts the given content at the specified line and character position in the text editor.
+   *
+   * @param content - The text to be inserted.
+   * @param at - An object specifying the line and character position where the content should be inserted.
+   *
+   * The function determines the correct piece and offset for insertion by finding the piece corresponding to the specified position.
+   * If no piece is found and the root is empty, it creates a new piece with the content. If a piece is found, it splits the piece at
+   * the specified offset, inserts the new content, and updates the piece links and lengths accordingly.
+   */
+
+  insert(content: string, at: Position): void {
     const { piece, offset, previous } = this.findPieceByLine(at);
 
     if (!piece) {
@@ -88,7 +75,14 @@ class PieceTableTextEditor implements TextEditor {
       piece.next = currentPiece;
     }
   }
-  delete(at: { line: number; character: number }): void {
+  /**
+   * Deletes a character at the specified position. If the position is at the
+   * beginning of a piece, it merges the pieces. If the position is at the end of
+   * a piece, it reduces the length of the piece. If the position is in the middle
+   * of a piece, it splits the piece in two.
+   * @param at The position to delete the character at.
+   */
+  delete(at: Position): void {
     const { piece, offset, previous } = this.findPieceByLine(at);
 
     if (!piece) {
@@ -132,10 +126,15 @@ class PieceTableTextEditor implements TextEditor {
     piece.next = newPiece;
     piece.length = offset - 1;
   }
-  deleteRange(
-    start: { line: number; character: number },
-    end: { line: number; character: number }
-  ): void {
+  /**
+   * Deletes the text between the two given positions. If the start or end
+   * position is outside of a piece, the deletion will be done at the
+   * beginning or end of that piece.
+   *
+   * @param start The start position of the deletion.
+   * @param end The end position of the deletion.
+   */
+  deleteRange(start: Position, end: Position): void {
     const { piece: startPiece, offset: startOffset } =
       this.findPieceByLine(start);
 
@@ -181,7 +180,14 @@ class PieceTableTextEditor implements TextEditor {
     }
   }
 
-  getText(): string[] {
+  /**
+   * Returns the text as an array of strings, with each string representing
+   * a line of text. The lines do not include the newline character at the
+   * end.
+   *
+   * @returns An array of strings, each one representing a line of text.
+   */
+  getContent(): string[] {
     let head: Piece | null = this.root;
     const lines: string[] = [];
     let line = "";
@@ -206,12 +212,21 @@ class PieceTableTextEditor implements TextEditor {
     return lines;
   }
 
+  /**
+   * Finds the piece that starts the given line, and its offset.
+   * If the character is out of the line range, it will return the piece
+   * at the end of the line and the offset will be the length of the piece.
+   * If the line is out of range, it will return { piece: null, offset: 0, previous: null }
+   * @param position The position to find the piece for.
+   * @returns An object with the piece that starts the line, the offset in
+   * that piece, and the previous piece.
+   */
   private findPieceByLine(position: Position): {
     offset: number;
     piece: Piece | null;
     previous: Piece | null;
   } {
-    const { line, character } = position;
+    const { line, col } = position;
     let head: Piece | null = this.root;
     let previous: Piece | null = null;
     let currentLine = 0;
@@ -226,7 +241,7 @@ class PieceTableTextEditor implements TextEditor {
       for (let i = 0; i < content.length; i++) {
         const letter = content[i];
 
-        if (currentLine === line && currentCharacter === character) {
+        if (currentLine === line && currentCharacter === col) {
           return { piece: head, offset: i, previous };
         }
 
@@ -250,6 +265,11 @@ class PieceTableTextEditor implements TextEditor {
     return { piece: null, offset: 0, previous: null };
   }
 
+  /**
+   * Removes the last character of the given piece. If the piece length is
+   * reduced to 0, it also removes the piece from the list.
+   * @param piece The piece to remove the last character from.
+   */
   private removeLastCharacterOfPiece(piece: Piece) {
     piece.length--;
 
@@ -258,6 +278,12 @@ class PieceTableTextEditor implements TextEditor {
     }
   }
 
+  /**
+   * Removes the given piece from the linked list. This method does not
+   * check if the piece is not null or if it is part of the list, it assumes
+   * that the piece is valid and part of the list.
+   * @param piece The piece to remove from the list.
+   */
   private removePiece(piece: Piece) {
     let head = this.root;
     let previous = null;
@@ -281,11 +307,11 @@ class PieceTableTextEditor implements TextEditor {
 const editor = new PieceTableTextEditor(null, "Hello World", "");
 // console.log(editor.getText());
 
-editor.insert("!", { line: 0, character: 0 });
-console.log(editor.getText());
+editor.insert("!", { line: 0, col: 0 });
+console.log(editor.getContent());
 
-editor.delete({ line: 0, character: 2 });
-console.log(editor.getText());
+editor.delete({ line: 0, col: 2 });
+console.log(editor.getContent());
 
-editor.deleteRange({ line: 0, character: 0 }, { line: 0, character: 5 });
-console.log(editor.getText());
+editor.deleteRange({ line: 0, col: 0 }, { line: 0, col: 5 });
+console.log(editor.getContent());
