@@ -293,12 +293,26 @@ export function useWhiteboardEvents(
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (isLocked) return;
-      if (isEditingTextRef.current) {
-        const selectedTextShape = selectedShape as TextShape;
+      e.preventDefault();
+      if (isLocked || !isEditingTextRef.current) return;
+      const selectedTextShape = selectedShape as TextShape;
+      if (e.key.length === 1) {
         selectedTextShape.append(e.key);
-        reDraw(0, 0);
       }
+      switch (e.key) {
+        case "Backspace":
+          selectedTextShape.delete({
+            line: selectedTextShape.getContent().length - 1,
+            col: selectedTextShape.getContent()[
+              selectedTextShape.getContent().length - 1
+            ].length - 1,
+          });
+          break;
+        case "Enter":
+          selectedTextShape.append("\n");
+          break;
+      }
+      reDraw(0, 0);
     },
     [isLocked, selectedShape, isEditingTextRef, reDraw]
   );

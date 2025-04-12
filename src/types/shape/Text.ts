@@ -1,17 +1,15 @@
 import PieceTableTextEditor from "components/editor/PieceTableTextEditor";
 import SimpleTextEditor from "components/editor/SimpleTextEditor";
-import TextEditor from "components/editor/TextEditor";
+import TextEditor, { Position } from "components/editor/TextEditor";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
-export class TextShape implements Shape {
-  getContent(): string {
-    return this.textEditor.getContent().join("\n");
-  }
+export class TextShape implements Shape, TextEditor {
   private textEditor: TextEditor;
   private fontSize: number;
   private font: string;
+  private maxWidth: number = 500;
 
   constructor(
     private roughCanvas: RoughCanvas | undefined,
@@ -24,6 +22,24 @@ export class TextShape implements Shape {
     this.fontSize = 20;
     this.font = "Excalifont";
   }
+  insert(content: string, at: Position): void {
+    this.textEditor.insert(content, at);
+  }
+  delete(at: Position): void {
+    this.textEditor.delete(at);
+  }
+  getContent(): string[] {
+    return this.textEditor.getContent();
+  }
+  getText(): string {
+    return this.textEditor.getText();
+  }
+  deleteRange(start: Position, end: Position): void {
+    this.textEditor.deleteRange(start, end);
+  }
+  appendText(text: string): void {
+    this.textEditor.appendText(text);
+  }
 
   draw(offsetX: number = 0, offsetY: number = 0): void {
     if (!this.roughCanvas) return;
@@ -34,11 +50,56 @@ export class TextShape implements Shape {
 
     ctx.font = `${this.fontSize}px ${this.font}`;
     ctx.fillStyle = "black";
-    ctx.fillText(
-      this.textEditor.getContent().join("\n"),
-      this.x + offsetX,
-      this.y + offsetY
+
+    const content = this.getContent();
+
+    this.wrapText(ctx, content, this.x + offsetX, this.y + offsetY);
+  }
+
+  wrapText(
+    ctx: CanvasRenderingContext2D,
+    content: string[],
+    x: number,
+    y: number
+  ) {
+    console.log(content);
+    const lineHeight = content.reduce(
+      (a, b) => Math.max(a, this.getLineHeight(ctx, b)),
+      0
     );
+    for (let i = 0; i < content.length; i++) {
+      let line = content[i];
+      let lineWidth = ctx.measureText(line).width;
+      if (lineWidth > this.maxWidth) {
+        while (lineWidth > 0) {
+          // Binary search to find the maximum number of characters that fit within maxWidth
+          let start = 0;
+          let end = line.length;
+          let fitIndex = 0;
+
+          while (start <= end) {
+            const mid = Math.floor((start + end) / 2);
+            const testWidth = ctx.measureText(line.substring(0, mid)).width;
+
+            if (testWidth <= this.maxWidth) {
+              fitIndex = mid;
+              start = mid + 1;
+            } else {
+              end = mid - 1;
+            }
+          }
+
+          const fitLine = line.substring(0, fitIndex);
+          ctx.fillText(fitLine, x, y, this.maxWidth);
+          line = line.substring(fitIndex);
+          lineWidth -= this.maxWidth;
+          y += lineHeight;
+        }
+        continue;
+      }
+      ctx.fillText(line, x, y);
+      y += lineHeight;
+    }
   }
 
   append(text: string): void {
@@ -56,15 +117,17 @@ export class TextShape implements Shape {
 
     // Set font properties
     ctx.font = `${this.fontSize}px ${this.font}`;
-    const metrics = ctx.measureText(this.textEditor.getContent().join("\n"));
-
-    // Get full text metrics including height
-    const actualHeight =
-      metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-    const height = actualHeight || this.fontSize; // Fallback to fontSize if metrics not available
+    const metrics = this.textEditor
+      .getContent()
+      .map((a) => ctx.measureText(a))
+      .reduce((a, b) => (a.width > b.width ? a : b));
+    const height = this.getContent().reduce(
+      (a, b) => Math.max(a, this.getLineHeight(ctx, b)),
+      0
+    ) * this.getNumberOfLines(ctx);
 
     // Calculate precise bounds
-    const width = Math.ceil(metrics.width); // Round up to ensure text fits
+    const width = Math.min(Math.ceil(metrics.width), this.maxWidth); // Round up to ensure text fits
     const yOffset = metrics.actualBoundingBoxAscent || this.fontSize;
 
     return new Rectangle(
@@ -76,6 +139,51 @@ export class TextShape implements Shape {
     );
   }
 
+  getLineHeight(ctx: CanvasRenderingContext2D, text: string): number {
+    // Set font properties
+    ctx.font = `${this.fontSize}px ${this.font}`;
+    const metrics = ctx.measureText(text);
+
+    // Get full text metrics including height
+    const actualHeight =
+      metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    return actualHeight || this.fontSize; // Fallback to fontSize if metrics not available
+  }
+
+  getNumberOfLines(ctx: CanvasRenderingContext2D): number {
+    const content = this.getContent();
+    let result = 0;
+    for (let i = 0; i < content.length; i++) {
+      let line = content[i];
+      let lineWidth = ctx.measureText(line).width;
+      if (lineWidth < this.maxWidth) {
+        result++;
+        continue;
+      }
+      while (lineWidth > 0) {
+        // Binary search to find the maximum number of characters that fit within maxWidth
+        let start = 0;
+        let end = line.length;
+        let fitIndex = 0;
+
+        while (start <= end) {
+          const mid = Math.floor((start + end) / 2);
+          const testWidth = ctx.measureText(line.substring(0, mid)).width;
+
+          if (testWidth <= this.maxWidth) {
+            fitIndex = mid;
+            start = mid + 1;
+          } else {
+            end = mid - 1;
+          }
+        }
+        line = line.substring(fitIndex);
+        lineWidth -= this.maxWidth;
+        result++;
+      }
+    }
+    return result;
+  }
   isPointInShape(x: number, y: number): boolean {
     // Create a temporary canvas for text measurement
     const canvas = document.createElement("canvas");

@@ -12,7 +12,7 @@ export default class SimpleTextEditor implements TextEditor {
     });
   }
   insert(content: string, at: Position): void {
-    let targetLine = at.line;
+    let targetLine = Math.min(at.line, this.text.length - 1);
     let line = "";
     for (const c of content) {
       if (c === "\n") {
@@ -26,8 +26,6 @@ export default class SimpleTextEditor implements TextEditor {
     }
     if (line !== "") {
       if (this.text.length < targetLine) {
-        console.log("here", this.text.length);
-
         this.text[this.text.length - 1] += line;
         return;
       }
@@ -39,12 +37,14 @@ export default class SimpleTextEditor implements TextEditor {
   }
   delete(at: Position): void {
     this.text[at.line] =
-      this.text[at.line].slice(0, at.col - 1) +
-      this.text[at.line].slice(at.col);
+      this.text[at.line].slice(0, at.col) +
+      this.text[at.line].slice(at.col + 1);
   }
+
   getContent(): string[] {
     return this.text;
   }
+  
   deleteRange(start: Position, end: Position): void {
     let startLine = start.line + 1;
     const endLine = end.line - 1;
