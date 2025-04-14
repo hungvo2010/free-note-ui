@@ -14,7 +14,7 @@ export default class SimpleTextEditor implements TextEditor {
   insert(content: string, at: Position): void {
     let targetLine = Math.min(at.line, this.text.length - 1);
     let line = "";
-    for (let c of content) {
+    for (const c of content) {
       if (c === "\n") {
         this.text.splice(targetLine + 1, 0, "");
         this.text[targetLine] = this.text[targetLine] + line;
@@ -37,12 +37,14 @@ export default class SimpleTextEditor implements TextEditor {
   }
   delete(at: Position): void {
     this.text[at.line] =
-      this.text[at.line].slice(0, at.col - 1) +
-      this.text[at.line].slice(at.col);
+      this.text[at.line].slice(0, at.col) +
+      this.text[at.line].slice(at.col + 1);
   }
+
   getContent(): string[] {
     return this.text;
   }
+  
   deleteRange(start: Position, end: Position): void {
     let startLine = start.line + 1;
     const endLine = end.line - 1;
