@@ -12,7 +12,7 @@ export default class SimpleTextEditor implements TextEditor {
     });
   }
   insert(content: string, at: Position): void {
-    let targetLine = at.line;
+    let targetLine = Math.min(at.line, this.text.length - 1);
     let line = "";
     for (let c of content) {
       if (c === "\n") {
@@ -26,8 +26,6 @@ export default class SimpleTextEditor implements TextEditor {
     }
     if (line !== "") {
       if (this.text.length < targetLine) {
-        console.log("here", this.text.length);
-
         this.text[this.text.length - 1] += line;
         return;
       }
@@ -52,7 +50,6 @@ export default class SimpleTextEditor implements TextEditor {
       this.text.splice(startLine, 1);
       startLine++;
     }
-    console.log(start, end);
     if (start.line === end.line) {
       this.text[start.line] =
         this.text[start.line].slice(0, start.col) +
@@ -64,10 +61,10 @@ export default class SimpleTextEditor implements TextEditor {
   }
 }
 
-const editor = new SimpleTextEditor(["Hello World"]);
-// console.log(editor.getText());
+// const editor = new SimpleTextEditor(["Hello World"]);
+// // console.log(editor.getText());
 
-editor.appendText("f");
-editor.appendText("a");
-editor.appendText("a");
-console.log(editor.getContent());
+// editor.appendText("f");
+// editor.appendText("a");
+// editor.appendText("a");
+// console.log(editor.getContent());

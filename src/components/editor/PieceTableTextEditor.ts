@@ -2,6 +2,7 @@ import Piece from "./Piece";
 import TextEditor, { Position, Source } from "./TextEditor";
 
 export default class PieceTableTextEditor implements TextEditor {
+  private lastPosition: Position = { line: 0, col: 0 };
   constructor(
     private root: Piece | null,
     private originalText: string,
@@ -14,6 +15,9 @@ export default class PieceTableTextEditor implements TextEditor {
     }
     this.originalText = originalText;
     this.addText = addText;
+  }
+  getLastPosition(): Position {
+    return this.lastPosition;
   }
   getText(): string {
     return this.getContent().join("\n");
@@ -46,6 +50,7 @@ export default class PieceTableTextEditor implements TextEditor {
       if (this.root === null) {
         this.addText += content;
         this.root = new Piece(0, content.length, Source.ADD, null);
+        this.lastPosition = { line: 0, col: content.length };
         return;
       }
 
