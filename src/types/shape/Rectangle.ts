@@ -22,7 +22,6 @@ export class Rectangle {
       this.height,
       {
         roughness: 1,
-        stroke: "black",
         seed: 1,
       }
     );

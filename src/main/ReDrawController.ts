@@ -4,10 +4,23 @@ import { Shape } from "types/shape/Shape";
 import { distance, isPointInShape } from "utils/GeometryUtils";
 
 export class ReDrawController {
+  private theme: 'light' | 'dark' = 'light';
+
   constructor(
     public roughCanvas: RoughCanvas | undefined,
     public shapes: Shape[] = []
   ) {}
+
+  public setTheme(theme: 'light' | 'dark') {
+    this.theme = theme;
+  }
+
+  private getStrokeOptions() {
+    return {
+      stroke: this.theme === 'dark' ? '#ffffff' : '#000000',
+      strokeWidth: 1,
+    };
+  }
 
   public addShape(shape: Shape) {
     this.shapes.push(shape);
@@ -49,6 +62,7 @@ export class ReDrawController {
   }
 
   public reDraw(offsetX: number, offsetY: number) {
+    const strokeOptions = this.getStrokeOptions();
     for (const shape of this.shapes) {
       shape.draw(offsetX, offsetY);
     }

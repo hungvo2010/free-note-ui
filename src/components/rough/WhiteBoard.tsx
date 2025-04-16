@@ -4,6 +4,7 @@ import { useWhiteboardEvents } from "hooks/useWhiteboardEvents";
 import { LockIndicator } from "components/LockIndicator";
 import "./WhiteBoard.scss";
 import { useWhiteboard } from "hooks/useWhiteboard";
+import { useTheme } from "../../contexts/ThemeContext";
 
 type DrawTypeProps = {
   type: string;
@@ -25,6 +26,8 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
     reDraw,
   } = useWhiteboard();
 
+  const { theme } = useTheme();
+
   const { handleMouseDown, handleMouseMove, handleMouseUp, handleKeyDown } =
     useWhiteboardEvents(
       shapes,
@@ -42,6 +45,13 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
   useEffect(() => {
     if (!canvas) return;
 
+    // Update canvas stroke style based on theme
+    const ctx = canvas.getContext('2d');
+    console.log("theme in whiteboard: " + theme);
+    if (ctx) {
+      ctx.strokeStyle = theme === 'dark' ? '#ffffff' : '#000000';
+    }
+
     canvas.addEventListener("mousedown", handleMouseDown);
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseup", handleMouseUp);
@@ -51,7 +61,7 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp, canvas]);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp, canvas, theme]);
 
   return (
     <div style={{ position: "relative" }}>
