@@ -63,6 +63,10 @@ export class ReDrawController {
   }
 
   public reDraw(offsetX: number, offsetY: number) {
+    const ctx = this.canvas?.getContext("2d");
+    if (ctx) {
+      ctx.clearRect(0, 0, this.canvas?.width || 0, this.canvas?.height || 0);
+    }
     for (const shape of this.shapes) {
       shape.setRoughCanvas(this.roughCanvas)
       shape.draw(offsetX, offsetY);

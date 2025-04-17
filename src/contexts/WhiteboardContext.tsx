@@ -46,14 +46,8 @@ export const WhiteboardProvider: React.FC<{
 
   const reDraw = React.useCallback(
     (offsetX: number, offsetY: number) => {
-      const ctx = canvas?.getContext("2d");
-      if (ctx) {
-        ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
-      }
       reDrawController.reDraw(offsetX, offsetY);
-      if (selectedShape) {
-        drawBoundingBox(canvas, selectedShape);
-      }
+      selectedShape?.drawBoundingBox(canvas, selectedShape);
     },
     [canvas, reDrawController, selectedShape]
   );
