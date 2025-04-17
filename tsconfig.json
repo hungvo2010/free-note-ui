@@ -27,6 +27,6 @@
     // Tell ts-node CLI to install the --loader automatically
     "esm": true
   },
-  "include": ["src"],
+  "include": ["src", "test"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
