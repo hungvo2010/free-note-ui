@@ -4,7 +4,7 @@ import { useWhiteboardEvents } from "hooks/useWhiteboardEvents";
 import { LockIndicator } from "components/LockIndicator";
 import "./WhiteBoard.scss";
 import { useWhiteboard } from "hooks/useWhiteboard";
-import { useTheme } from "../../contexts/ThemeContext";
+import { useTheme } from "hooks/useTheme";
 
 type DrawTypeProps = {
   type: string;

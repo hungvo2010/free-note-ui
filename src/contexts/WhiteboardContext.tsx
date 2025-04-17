@@ -3,7 +3,7 @@ import { Shape } from "types/shape/Shape";
 import { ReDrawController } from "main/ReDrawController";
 import { useCanvas } from "hooks/useCanvas";
 import { drawBoundingBox } from "utils/GeometryUtils";
-import { useTheme } from "./ThemeContext";
+import { useTheme } from "hooks/useTheme";
 
 interface WhiteboardContextType {
   shapes: React.MutableRefObject<Shape[]>;
