@@ -1,20 +1,17 @@
-import React, { createContext, useState, useRef, useEffect } from "react";
-import { Shape } from "types/shape/Shape";
-import { ReDrawController } from "main/ReDrawController";
 import { useCanvas } from "hooks/useCanvas";
-import { drawBoundingBox } from "utils/GeometryUtils";
 import { useTheme } from "hooks/useTheme";
+import { ReDrawController } from "main/ReDrawController";
+import React, { createContext, useMemo, useRef, useState } from "react";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { Shape } from "types/shape/Shape";
 
 interface WhiteboardContextType {
   shapes: React.MutableRefObject<Shape[]>;
   canvas: HTMLCanvasElement | undefined;
   roughCanvas: RoughCanvas | undefined;
-  canvasRef: React.RefObject<HTMLCanvasElement>;
   selectedShape: Shape | undefined;
   setSelectedShape: (shape: Shape | undefined) => void;
   reDrawController: ReDrawController;
-  reDraw: (offsetX: number, offsetY: number) => void;
   isLocked: boolean;
   setIsLocked: (isLocked: boolean) => void;
 }
@@ -28,53 +25,37 @@ export const WhiteboardProvider: React.FC<{
   isLocked?: boolean;
 }> = ({ children, isLocked: initialLocked = false }) => {
   const shapes = useRef<Shape[]>([]);
+  const reDrawController = useRef<ReDrawController>();
   const [selectedShape, setSelectedShape] = useState<Shape | undefined>(
     undefined
   );
   const [isLocked, setIsLocked] = useState(initialLocked);
   const { theme } = useTheme();
-  console.log("theme: " + theme);
 
-  const { canvas, roughCanvas, canvasRef } = useCanvas({
-    options: {
-      stroke: theme === "dark" ? "white" : "#000000",
-    },
-  });
-  console.log(roughCanvas);
-
-  const reDrawController = React.useMemo(
-    () => new ReDrawController(roughCanvas, shapes.current),
-    [roughCanvas]
+  const options = useMemo(
+    () => ({
+      options: {
+        stroke: theme === "dark" ? "white" : "#000000",
+      },
+    }),
+    [theme]
   );
 
-  // Update theme in ReDrawController when it changes
-  useEffect(() => {
-    reDrawController.setTheme(theme);
-  }, [theme, reDrawController]);
+  const { canvas, roughCanvas } = useCanvas(options);
 
-  const reDraw = React.useCallback(
-    (offsetX: number, offsetY: number) => {
-      const ctx = canvas?.getContext("2d");
-      if (ctx) {
-        ctx.clearRect(0, 0, canvas?.width || 0, canvas?.height || 0);
-      }
-      reDrawController.reDraw(offsetX, offsetY);
-      if (selectedShape) {
-        drawBoundingBox(canvas, selectedShape);
-      }
-    },
-    [canvas, reDrawController, selectedShape]
+  reDrawController.current = new ReDrawController(
+    roughCanvas,
+    canvas,
+    shapes.current
   );
 
   const value = {
     shapes,
     canvas,
     roughCanvas,
-    canvasRef,
     selectedShape,
     setSelectedShape,
-    reDrawController,
-    reDraw,
+    reDrawController: reDrawController.current,
     isLocked,
     setIsLocked,
   };

@@ -4,18 +4,19 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
-export class TextShape implements Shape, TextEditor {
+export class TextShape extends Shape implements TextEditor {
   private textEditor: TextEditor;
   private fontSize: number;
   private font: string;
   private maxWidth: number = 500;
 
   constructor(
-    private roughCanvas: RoughCanvas | undefined,
+    roughCanvas: RoughCanvas | undefined,
     private x: number,
     private y: number,
     initialText: string = ""
   ) {
+    super(roughCanvas);
     // this.textEditor = new PieceTableTextEditor(null, initialText, "");
     this.textEditor = new SimpleTextEditor([initialText]);
     this.fontSize = 20;
@@ -120,10 +121,11 @@ export class TextShape implements Shape, TextEditor {
       .getContent()
       .map((a) => ctx.measureText(a))
       .reduce((a, b) => (a.width > b.width ? a : b));
-    const height = this.getContent().reduce(
-      (a, b) => Math.max(a, this.getLineHeight(ctx, b)),
-      0
-    ) * this.getNumberOfLines(ctx);
+    const height =
+      this.getContent().reduce(
+        (a, b) => Math.max(a, this.getLineHeight(ctx, b)),
+        0
+      ) * this.getNumberOfLines(ctx);
 
     // Calculate precise bounds
     const width = Math.min(Math.ceil(metrics.width), this.maxWidth); // Round up to ensure text fits

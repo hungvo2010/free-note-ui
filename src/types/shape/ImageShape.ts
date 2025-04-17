@@ -2,7 +2,7 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
 
-export class ImageShape implements Shape {
+export class ImageShape extends Shape {
   private image: HTMLImageElement;
   private isLoaded: boolean = false;
   // Add a static redraw callback that can be set by WhiteBoard
@@ -14,13 +14,14 @@ export class ImageShape implements Shape {
   }
 
   constructor(
-    public roughCanvas: RoughCanvas | undefined,
+    roughCanvas: RoughCanvas | undefined,
     private url: string,
     public x: number,
     public y: number,
     public width: number,
     public height: number
   ) {
+    super(roughCanvas);
     this.image = new Image();
 
     // Set up load handler before setting src

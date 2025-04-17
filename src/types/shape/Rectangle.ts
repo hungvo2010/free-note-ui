@@ -15,7 +15,6 @@ export class Rectangle {
       this.roughCanvas?.draw(this.drawable);
       return;
     }
-    console.log(this.roughCanvas);
     this.drawable = this.roughCanvas?.rectangle(
       this.x,
       this.y,

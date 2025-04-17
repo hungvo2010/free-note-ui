@@ -5,12 +5,14 @@ import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 import { distance } from "utils/GeometryUtils";
 
-export class FreeStyleShape implements Shape {
+export class FreeStyleShape extends Shape {
   private drawable: Drawable | undefined;
   constructor(
-    public roughCanvas: RoughCanvas | undefined,
-    public points: [number, number][]
-  ) {}
+    roughCanvas: RoughCanvas | undefined,
+    public points: [number, number][],
+  ) {
+    super(roughCanvas); 
+  }
   getBoundingRect(): Rectangle {
     const minX = Math.min(...this.points.map((point) => point[0]));
     const maxX = Math.max(...this.points.map((point) => point[0]));

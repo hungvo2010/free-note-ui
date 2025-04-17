@@ -3,15 +3,14 @@ import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
-export class RectangleAdapter implements Shape {
-  private readonly roughCanvas: RoughCanvas | undefined;
+export class RectangleAdapter extends Shape {
   private rectangle: Rectangle;
   constructor(
     roughCanvas: RoughCanvas | undefined,
     rectangle: Rectangle,
     private readonly id: number
   ) {
-    this.roughCanvas = roughCanvas;
+    super(roughCanvas);
     this.rectangle = rectangle;
   }
   getBoundingRect(): Rectangle {

@@ -1,10 +1,10 @@
-import React, { useEffect } from "react";
-import { WhiteboardProvider } from "contexts/WhiteboardContext";
-import { useWhiteboardEvents } from "hooks/useWhiteboardEvents";
 import { LockIndicator } from "components/LockIndicator";
-import "./WhiteBoard.scss";
-import { useWhiteboard } from "hooks/useWhiteboard";
+import { WhiteboardProvider } from "contexts/WhiteboardContext";
 import { useTheme } from "hooks/useTheme";
+import { useWhiteboard } from "hooks/useWhiteboard";
+import { useWhiteboardEvents } from "hooks/useWhiteboardEvents";
+import React, { useEffect } from "react";
+import "./WhiteBoard.scss";
 
 type DrawTypeProps = {
   type: string;
@@ -19,11 +19,9 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
     shapes,
     canvas,
     roughCanvas,
-    canvasRef,
     selectedShape,
     setSelectedShape,
     reDrawController,
-    reDraw,
   } = useWhiteboard();
 
   const { theme } = useTheme();
@@ -31,10 +29,8 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
   const { handleMouseDown, handleMouseMove, handleMouseUp, handleKeyDown } =
     useWhiteboardEvents(
       shapes,
-      canvasRef,
       roughCanvas,
       reDrawController,
-      reDraw,
       isLocked,
       type,
       selectedShape,
@@ -67,7 +63,6 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
       <canvas
         id="myCanvas"
         className={`full-canvas ${isLocked ? "locked-canvas" : ""}`}
-        ref={canvasRef}
         tabIndex={0}
         onKeyDown={handleKeyDown}
       ></canvas>

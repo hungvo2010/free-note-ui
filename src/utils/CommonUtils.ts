@@ -136,7 +136,7 @@ const drawRect = (roughCanvas: RoughCanvas, x: number, y: number, x1: number, y1
 };
 
 
-export function updateCursorType(canvas: HTMLCanvasElement, type: string) {
+export function updateCursorType(canvas: HTMLCanvasElement | undefined, type: string) {
   if (!canvas) return;
   
   // Remove any previous custom cursor classes

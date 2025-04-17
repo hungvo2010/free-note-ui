@@ -10,10 +10,8 @@ import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { ShapeFactory } from "utils/ShapeFactory";
 export function useWhiteboardEvents(
   shapes: React.MutableRefObject<Shape[]>,
-  canvasRef: React.RefObject<HTMLCanvasElement>,
   roughCanvas: RoughCanvas | undefined,
   reDrawController: ReDrawController,
-  reDraw: (offsetX: number, offsetY: number) => void,
   isLocked: boolean,
   type: string,
   selectedShape: Shape | undefined,
@@ -33,17 +31,16 @@ export function useWhiteboardEvents(
 
   useLayoutEffect(() => {
     function updateSize() {
-      console.log("updateSize");
-      const canvas = canvasRef.current;
       if (canvas) {
         resizeCanvasToDisplaySize(canvas);
-        reDraw(0, 0);
+        reDrawController.reDraw(0, 0);
+        selectedShape?.drawBoundingBox(canvas);
       }
     }
     window.addEventListener("resize", updateSize);
     updateSize();
     return () => window.removeEventListener("resize", updateSize);
-  }, [canvasRef, reDraw]);
+  }, [canvas, reDrawController, selectedShape]);
 
   // Effect to update cursor when lock state changes
   useEffect(() => {
@@ -51,12 +48,12 @@ export function useWhiteboardEvents(
       prevLockedRef.current = isLocked;
 
       if (isLocked) {
-        updateCursorType(canvasRef.current!, "not-allowed");
+        updateCursorType(canvas, "not-allowed");
       } else {
-        updateCursorType(canvasRef.current!, "default");
+        updateCursorType(canvas, "default");
       }
     }
-  }, [isLocked, canvasRef]);
+  }, [isLocked, canvas]);
 
   // Clean up the eraser cursor timeout when component unmounts
   useEffect(() => {
@@ -70,13 +67,10 @@ export function useWhiteboardEvents(
   const handleMouseEnter = useCallback(
     (x: number, y: number, cursorType: string, eventType: string) => {
       const selectedShape = reDrawController.checkSelectedShape(x, y);
-      // if (selectedShape && eventType === "mousemove") {
-      //   setSelectedShape(selectedShape);
-      // }
       setSelectedShape(selectedShape);
-      updateCursorType(canvas!, selectedShape ? cursorType : "default");
+      updateCursorType(canvas, selectedShape ? cursorType : "default");
       if (eventType === "mousedown") {
-        updateCursorType(canvas!, "move");
+        updateCursorType(canvas, "move");
         return;
       }
     },
@@ -89,7 +83,7 @@ export function useWhiteboardEvents(
         return;
       }
 
-      const { x, y } = getCanvasCoordinates(e, canvas!);
+      const { x, y } = getCanvasCoordinates(e, canvas);
       positionRef.current = { x, y };
       dragStartPosRef.current = { x, y };
 
@@ -112,7 +106,8 @@ export function useWhiteboardEvents(
           x,
           y,
           () => {
-            reDraw(0, 0);
+            reDrawController.reDraw(0, 0);
+            selectedShape?.drawBoundingBox(canvas);
           }
         );
         return;
@@ -144,17 +139,17 @@ export function useWhiteboardEvents(
       isLocked,
       canvas,
       type,
+      selectedShape,
       roughCanvas,
-      reDraw,
+      reDrawController,
       setSelectedShape,
       isEditingTextRef,
-      reDrawController,
     ]
   );
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
-      const { x, y } = getCanvasCoordinates(e, canvasRef.current);
+      const { x, y } = getCanvasCoordinates(e, canvas);
 
       // Handle eraser dragging - move this to the top
       if (type === "eraser" && eraserModeRef.current) {
@@ -166,7 +161,7 @@ export function useWhiteboardEvents(
           shapes.current = shapes.current.filter(
             (shape) => !shapesToRemove.includes(shape)
           );
-          reDraw(0, 0);
+          reDrawController.reDraw(0, 0);
         }
 
         // Draw eraser cursor
@@ -185,7 +180,7 @@ export function useWhiteboardEvents(
 
           // Set timeout to clear the cursor after a short delay
           eraserCursorTimeoutRef.current = window.setTimeout(() => {
-            reDraw(0, 0); // Redraw without the cursor
+            reDrawController.reDraw(0, 0); // Redraw without the cursor
             eraserCursorTimeoutRef.current = null;
           }, 150); // Adjust timing as needed (150ms works well)
         }
@@ -195,10 +190,7 @@ export function useWhiteboardEvents(
       // If locked, only allow cursor changes for better UX, but no edits
       if (type === "mouse" && !isDraggingShapeRef.current) {
         const hoverShape = reDrawController.checkSelectedShape(x, y);
-        updateCursorType(
-          canvasRef.current!,
-          hoverShape ? "pointer" : "default"
-        );
+        updateCursorType(canvas, hoverShape ? "pointer" : "default");
         handleMouseEnter(x, y, "pointer", "mousemove");
         return;
       }
@@ -210,7 +202,7 @@ export function useWhiteboardEvents(
           x: x - startPosition.x,
           y: y - startPosition.y,
         };
-        reDraw(offset.x, offset.y);
+        reDrawController.reDraw(offset.x, offset.y);
         return;
       }
 
@@ -223,16 +215,16 @@ export function useWhiteboardEvents(
           y - dragStartPosRef.current.y
         );
         dragStartPosRef.current = { x, y };
-        reDraw(0, 0);
+        reDrawController.reDraw(0, 0);
         return;
       }
 
       if (type === "word" && isEditingTextRef.current) {
-        updateCursorType(canvasRef.current!, "text");
+        updateCursorType(canvas, "text");
         return;
       }
 
-      updateCursorType(canvasRef.current!, "default");
+      updateCursorType(canvas, "default");
       if (
         (!drawingRef.current && !isDraggingShapeRef.current) ||
         type === "image"
@@ -240,17 +232,15 @@ export function useWhiteboardEvents(
         return;
       console.log("update last shape");
       reDrawController.updateLastShape(startPosition.x, startPosition.y, x, y);
-      reDraw(0, 0);
+      reDrawController.reDraw(0, 0);
     },
     [
       type,
       eraserModeRef,
       shapes,
       reDrawController,
-      reDraw,
       canvas,
       handleMouseEnter,
-      canvasRef,
       selectedShape,
       moveBoardRef,
       isDraggingShapeRef,
@@ -267,15 +257,14 @@ export function useWhiteboardEvents(
       drawingRef.current = false;
       if (type === "hand") {
         moveBoardRef.current = false;
-        const { x, y } = getCanvasCoordinates(e, canvas!);
+        const { x, y } = getCanvasCoordinates(e, canvas);
         const offset = {
           x: x - positionRef.current.x,
           y: y - positionRef.current.y,
         };
         reDrawController.updateCoordinates(offset.x, offset.y);
-        updateCursorType(canvas!, "default");
-        reDraw(0, 0);
-        updateCursorType(canvasRef.current!, "default");
+        updateCursorType(canvas, "default");
+        reDrawController.reDraw(0, 0);
         return;
       }
 
@@ -288,7 +277,7 @@ export function useWhiteboardEvents(
         isDraggingShapeRef.current = false;
       }
     },
-    [isLocked, type, canvas, reDrawController, reDraw, canvasRef]
+    [isLocked, type, canvas, reDrawController]
   );
 
   const handleKeyDown = useCallback(
@@ -313,9 +302,9 @@ export function useWhiteboardEvents(
           selectedTextShape.append("\n");
           break;
       }
-      reDraw(0, 0);
+      reDrawController.reDraw(0, 0);
     },
-    [isLocked, selectedShape, isEditingTextRef, reDraw]
+    [isLocked, selectedShape, isEditingTextRef, reDrawController]
   );
 
   return {

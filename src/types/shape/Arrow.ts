@@ -1,11 +1,11 @@
-import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
 import { drawLine } from "utils/CommonUtils";
-import { Shape } from "./Shape";
-import { Rectangle } from "./Rectangle";
 import { distanceToLine } from "utils/GeometryUtils";
+import { Rectangle } from "./Rectangle";
+import { Shape } from "./Shape";
+import { RoughCanvas } from "roughjs/bin/canvas";
 
-export default class Arrow implements Shape {
+export default class Arrow extends Shape {
   private mainDrawable: Drawable | undefined;
   private leftDrawable: Drawable | undefined;
   private rightDrawable: Drawable | undefined;
@@ -13,10 +13,12 @@ export default class Arrow implements Shape {
   public y2: number = 0;
 
   constructor(
-    public roughCanvas: RoughCanvas | undefined,
+    roughCanvas: RoughCanvas | undefined,
     public x1: number,
     public y1: number
-  ) {}
+  ) {
+    super(roughCanvas);
+  }
 
   getBoundingRect(): Rectangle {
     return new Rectangle(
@@ -27,7 +29,7 @@ export default class Arrow implements Shape {
       this.y2 - this.y1
     );
   }
-  
+
   isPointInShape(x: number, y: number): boolean {
     const dToLine = distanceToLine(
       x,

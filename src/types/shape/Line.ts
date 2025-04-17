@@ -1,18 +1,20 @@
-import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { distanceToLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-export class Line implements Shape {
+import { RoughCanvas } from "roughjs/bin/canvas";
+export class Line extends Shape {
   private drawable: Drawable | undefined;
   public x2: number = 0;
   public y2: number = 0;
   constructor(
-    public roughCanvas: RoughCanvas | undefined,
+    roughCanvas: RoughCanvas | undefined,
     public x1: number,
     public y1: number
-  ) {}
+  ) {
+    super(roughCanvas);
+  }
   getBoundingRect(): Rectangle {
     return new Rectangle(
       this.roughCanvas,
