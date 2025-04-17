@@ -1,18 +1,18 @@
-import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { distanceToLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-export class Line implements Shape {
+export class Line extends Shape {
   private drawable: Drawable | undefined;
   public x2: number = 0;
   public y2: number = 0;
   constructor(
-    public roughCanvas: RoughCanvas | undefined,
     public x1: number,
     public y1: number
-  ) {}
+  ) {
+    super();
+  }
   getBoundingRect(): Rectangle {
     return new Rectangle(
       this.roughCanvas,
@@ -36,7 +36,6 @@ export class Line implements Shape {
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {
     const newLine = new Line(
-      this.roughCanvas,
       this.x1 + changeX,
       this.y1 + changeY
     );
@@ -46,7 +45,7 @@ export class Line implements Shape {
   }
 
   clone(x: number, y: number): Shape {
-    const newLine = new Line(this.roughCanvas, this.x1, this.y1);
+    const newLine = new Line(this.x1, this.y1);
     newLine.x2 = x;
     newLine.y2 = y;
     return newLine;

@@ -19,7 +19,7 @@ export function useCanvas(config?: Config) {
     const newRoughCanvas = rough.canvas(myCanvas, config);
     setCanvas(myCanvas);
     setRoughCanvas(newRoughCanvas);
-  }, []);
+  }, [config]);
 
   return { canvas, roughCanvas, canvasRef };
 }

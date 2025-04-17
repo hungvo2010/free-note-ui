@@ -1,22 +1,19 @@
-import { RoughCanvas } from "roughjs/bin/canvas";
 import { distance } from "utils/GeometryUtils";
 import { Circle } from "./Circle";
-import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
+import { Shape } from "./Shape";
 
-export class CircleAdapter implements Shape {
+export class CircleAdapter extends Shape {
   updateRadius(radius: number) {
     this.circle.setRadius(radius);
   }
   private circle: Circle;
-  private roughCanvas: RoughCanvas | undefined;
   constructor(
-    roughCanvas: RoughCanvas | undefined,
     circle: Circle,
     private readonly id: number
   ) {
+    super();
     this.circle = circle;
-    this.roughCanvas = roughCanvas;
     this.id = id;
   }
   getBoundingRect(): Rectangle {
@@ -51,12 +48,11 @@ export class CircleAdapter implements Shape {
       this.circle.getY + changeY,
       this.circle.getRadius
     );
-    return new CircleAdapter(this.roughCanvas, newCircle, this.id);
+    return new CircleAdapter(newCircle, this.id);
   }
 
   clone(x: number, y: number): Shape {
     return new CircleAdapter(
-      this.roughCanvas,
       new Circle(
         this.roughCanvas,
         x,

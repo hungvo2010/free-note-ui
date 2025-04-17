@@ -5,12 +5,13 @@ import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 import { distance } from "utils/GeometryUtils";
 
-export class FreeStyleShape implements Shape {
+export class FreeStyleShape extends Shape {
   private drawable: Drawable | undefined;
   constructor(
-    public roughCanvas: RoughCanvas | undefined,
     public points: [number, number][]
-  ) {}
+  ) {
+    super();
+  }
   getBoundingRect(): Rectangle {
     const minX = Math.min(...this.points.map((point) => point[0]));
     const maxX = Math.max(...this.points.map((point) => point[0]));
@@ -38,7 +39,7 @@ export class FreeStyleShape implements Shape {
     const newPoints = this.points.map(
       (point) => [point[0] + changeX, point[1] + changeY] as [number, number]
     );
-    return new FreeStyleShape(this.roughCanvas, newPoints);
+    return new FreeStyleShape( newPoints);
   }
 
   draw(offsetX: number, offsetY: number): void {
@@ -60,6 +61,6 @@ export class FreeStyleShape implements Shape {
   }
 
   clone(x: number, y: number): Shape {
-    return new FreeStyleShape(this.roughCanvas, [...this.points, [x, y]]);
+    return new FreeStyleShape([...this.points, [x, y]]);
   }
 }

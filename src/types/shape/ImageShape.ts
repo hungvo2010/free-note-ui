@@ -2,7 +2,7 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
 
-export class ImageShape implements Shape {
+export class ImageShape extends Shape {
   private image: HTMLImageElement;
   private isLoaded: boolean = false;
   // Add a static redraw callback that can be set by WhiteBoard
@@ -14,13 +14,13 @@ export class ImageShape implements Shape {
   }
 
   constructor(
-    public roughCanvas: RoughCanvas | undefined,
     private url: string,
     public x: number,
     public y: number,
     public width: number,
     public height: number
   ) {
+    super();
     this.image = new Image();
 
     // Set up load handler before setting src
@@ -153,7 +153,6 @@ export class ImageShape implements Shape {
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {
     const newImageShape = new ImageShape(
-      this.roughCanvas,
       this.url,
       this.x + changeX,
       this.y + changeY,
@@ -171,7 +170,6 @@ export class ImageShape implements Shape {
 
   clone(x: number, y: number): Shape {
     return new ImageShape(
-      this.roughCanvas,
       this.url,
       x,
       y,

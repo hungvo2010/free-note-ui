@@ -1,19 +1,16 @@
-import { RoughCanvas } from "roughjs/bin/canvas";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
-export class RectangleAdapter implements Shape {
-  private readonly roughCanvas: RoughCanvas | undefined;
+export class RectangleAdapter extends Shape {
   private rectangle: Rectangle;
   constructor(
-    roughCanvas: RoughCanvas | undefined,
     rectangle: Rectangle,
     private readonly id: number
-  ) {
-    this.roughCanvas = roughCanvas;
-    this.rectangle = rectangle;
-  }
+) {
+  super();
+  this.rectangle = rectangle;
+}
   getBoundingRect(): Rectangle {
     return new Rectangle(
       this.roughCanvas,
@@ -62,7 +59,6 @@ export class RectangleAdapter implements Shape {
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {
     return new RectangleAdapter(
-      this.roughCanvas,
       new Rectangle(
         this.roughCanvas,
         this.rectangle.getStartPoint().x + changeX,
@@ -76,7 +72,6 @@ export class RectangleAdapter implements Shape {
 
   clone(x: number, y: number): Shape {
     return new RectangleAdapter(
-      this.roughCanvas,
       new Rectangle(
         this.roughCanvas,
         this.rectangle.getStartPoint().x,
@@ -100,6 +95,7 @@ export class RectangleAdapter implements Shape {
 
   draw(offsetX: number, offsetY: number): void {
     if (offsetX === 0 && offsetY === 0) {
+      console.log(this.rectangle)
       this.rectangle.drawRectangle();
       return;
     }

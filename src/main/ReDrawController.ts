@@ -62,8 +62,8 @@ export class ReDrawController {
   }
 
   public reDraw(offsetX: number, offsetY: number) {
-    const strokeOptions = this.getStrokeOptions();
     for (const shape of this.shapes) {
+      shape.setRoughCanvas(this.roughCanvas)
       shape.draw(offsetX, offsetY);
     }
   }

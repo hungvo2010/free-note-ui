@@ -4,18 +4,18 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
-export class TextShape implements Shape, TextEditor {
+export class TextShape extends Shape implements TextEditor {
   private textEditor: TextEditor;
   private fontSize: number;
   private font: string;
   private maxWidth: number = 500;
 
   constructor(
-    private roughCanvas: RoughCanvas | undefined,
     private x: number,
     private y: number,
     initialText: string = ""
   ) {
+    super();
     // this.textEditor = new PieceTableTextEditor(null, initialText, "");
     this.textEditor = new SimpleTextEditor([initialText]);
     this.fontSize = 20;
@@ -219,7 +219,6 @@ export class TextShape implements Shape, TextEditor {
 
   clone(x: number, y: number): Shape {
     return new TextShape(
-      this.roughCanvas,
       this.x,
       this.y,
       this.textEditor.getContent().join("\n")

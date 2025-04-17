@@ -4,15 +4,16 @@ import { distance, isInLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
-export class Diamond implements Shape {
+export class Diamond extends Shape {
   private drawable: Drawable | undefined;
   public x2: number = 0;
   public y2: number = 0;
   constructor(
-    public roughCanvas: RoughCanvas | undefined,
     public x1: number,
     public y1: number
-  ) {}
+  ) {
+    super();
+  }
   getBoundingRect(): Rectangle {
     return new Rectangle(
       this.roughCanvas,
@@ -52,7 +53,6 @@ export class Diamond implements Shape {
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {
     const newDiamond = new Diamond(
-      this.roughCanvas,
       this.x1 + changeX,
       this.y1 + changeY
     );
@@ -62,7 +62,7 @@ export class Diamond implements Shape {
   }
 
   clone(x: number, y: number): Shape {
-    const newDiamond = new Diamond(this.roughCanvas, this.x1, this.y1);
+    const newDiamond = new Diamond(this.x1, this.y1);
     newDiamond.x2 = x;
     newDiamond.y2 = y;
     return newDiamond;

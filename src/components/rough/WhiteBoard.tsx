@@ -47,7 +47,6 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
 
     // Update canvas stroke style based on theme
     const ctx = canvas.getContext('2d');
-    console.log("theme in whiteboard: " + theme);
     if (ctx) {
       ctx.strokeStyle = theme === 'dark' ? '#ffffff' : '#000000';
     }

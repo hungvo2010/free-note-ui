@@ -1,9 +1,9 @@
-import React, { createContext, useState, useRef, useEffect } from "react";
-import { Shape } from "types/shape/Shape";
-import { ReDrawController } from "main/ReDrawController";
 import { useCanvas } from "hooks/useCanvas";
-import { drawBoundingBox } from "utils/GeometryUtils";
 import { useTheme } from "hooks/useTheme";
+import { ReDrawController } from "main/ReDrawController";
+import React, { createContext, useRef, useState } from "react";
+import { Shape } from "types/shape/Shape";
+import { drawBoundingBox } from "utils/GeometryUtils";
 
 interface WhiteboardContextType {
   shapes: React.MutableRefObject<Shape[]>;
@@ -32,24 +32,17 @@ export const WhiteboardProvider: React.FC<{
   );
   const [isLocked, setIsLocked] = useState(initialLocked);
   const { theme } = useTheme();
-  console.log("theme: " + theme);
   
   const { canvas, roughCanvas, canvasRef } = useCanvas({
     options: {
       stroke: theme === "dark" ? "white" : "#000000",
     },
   });
-  console.log(roughCanvas)
 
   const reDrawController = React.useMemo(
     () => new ReDrawController(roughCanvas, shapes.current),
     [roughCanvas]
   );
-
-  // Update theme in ReDrawController when it changes
-  useEffect(() => {
-    reDrawController.setTheme(theme);
-  }, [theme, reDrawController]);
 
   const reDraw = React.useCallback(
     (offsetX: number, offsetY: number) => {
