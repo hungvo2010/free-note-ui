@@ -21,7 +21,6 @@ export class Circle {
     }
     this.drawable = this.roughCanvas?.circle(this.x, this.y, this.radius * 2, {
       roughness: 1,
-      stroke: "black",
       seed: 1,
     });
   }

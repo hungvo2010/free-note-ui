@@ -4,7 +4,7 @@ import { useWhiteboardEvents } from "hooks/useWhiteboardEvents";
 import { LockIndicator } from "components/LockIndicator";
 import "./WhiteBoard.scss";
 import { useWhiteboard } from "hooks/useWhiteboard";
-import { useTheme } from "../../contexts/ThemeContext";
+import { useTheme } from "hooks/useTheme";
 
 type DrawTypeProps = {
   type: string;
@@ -46,10 +46,9 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
     if (!canvas) return;
 
     // Update canvas stroke style based on theme
-    const ctx = canvas.getContext('2d');
-    console.log("theme in whiteboard: " + theme);
+    const ctx = canvas.getContext("2d");
     if (ctx) {
-      ctx.strokeStyle = theme === 'dark' ? '#ffffff' : '#000000';
+      ctx.strokeStyle = theme === "dark" ? "#ffffff" : "#000000";
     }
 
     canvas.addEventListener("mousedown", handleMouseDown);

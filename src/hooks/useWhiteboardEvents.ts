@@ -11,7 +11,7 @@ import { ShapeFactory } from "utils/ShapeFactory";
 export function useWhiteboardEvents(
   shapes: React.MutableRefObject<Shape[]>,
   canvasRef: React.RefObject<HTMLCanvasElement>,
-  roughCanvas: RoughCanvas,
+  roughCanvas: RoughCanvas | undefined,
   reDrawController: ReDrawController,
   reDraw: (offsetX: number, offsetY: number) => void,
   isLocked: boolean,
@@ -303,9 +303,10 @@ export function useWhiteboardEvents(
         case "Backspace":
           selectedTextShape.delete({
             line: selectedTextShape.getContent().length - 1,
-            col: selectedTextShape.getContent()[
-              selectedTextShape.getContent().length - 1
-            ].length - 1,
+            col:
+              selectedTextShape.getContent()[
+                selectedTextShape.getContent().length - 1
+              ].length - 1,
           });
           break;
         case "Enter":

@@ -1,7 +1,6 @@
 import clsx from "clsx";
 import styles from "./Toolbar.module.scss";
-import { useTheme } from "../../contexts/ThemeContext";
-
+import { useTheme } from "hooks/useTheme";
 type ToolbarProps = {
   selected: number;
   handleSelected: (val: number) => void;
@@ -24,11 +23,8 @@ const Toolbar: React.FC<ToolbarProps> = (props: ToolbarProps) => {
             {option}
           </li>
         ))}
-        <li
-          onClick={toggleTheme}
-          className={clsx(styles.themeToggle)}
-        >
-          {theme === 'light' ? '🌙' : '☀️'}
+        <li onClick={toggleTheme} className={clsx(styles.themeToggle)}>
+          {theme === "light" ? "🌙" : "☀️"}
         </li>
       </ul>
     </div>

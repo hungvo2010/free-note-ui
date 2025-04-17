@@ -3,12 +3,13 @@ import { Shape } from "types/shape/Shape";
 import { ReDrawController } from "main/ReDrawController";
 import { useCanvas } from "hooks/useCanvas";
 import { drawBoundingBox } from "utils/GeometryUtils";
-import { useTheme } from "./ThemeContext";
+import { useTheme } from "hooks/useTheme";
+import { RoughCanvas } from "roughjs/bin/canvas";
 
 interface WhiteboardContextType {
   shapes: React.MutableRefObject<Shape[]>;
   canvas: HTMLCanvasElement | undefined;
-  roughCanvas: any;
+  roughCanvas: RoughCanvas | undefined;
   canvasRef: React.RefObject<HTMLCanvasElement>;
   selectedShape: Shape | undefined;
   setSelectedShape: (shape: Shape | undefined) => void;
@@ -33,13 +34,13 @@ export const WhiteboardProvider: React.FC<{
   const [isLocked, setIsLocked] = useState(initialLocked);
   const { theme } = useTheme();
   console.log("theme: " + theme);
-  
+
   const { canvas, roughCanvas, canvasRef } = useCanvas({
     options: {
       stroke: theme === "dark" ? "white" : "#000000",
     },
   });
-  console.log(roughCanvas)
+  console.log(roughCanvas);
 
   const reDrawController = React.useMemo(
     () => new ReDrawController(roughCanvas, shapes.current),
