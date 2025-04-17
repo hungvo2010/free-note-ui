@@ -5,9 +5,10 @@ import { distance, isPointInShape } from "utils/GeometryUtils";
 
 export class ReDrawController {
   private theme: 'light' | 'dark' = 'light';
-
+  
   constructor(
     public roughCanvas: RoughCanvas | undefined,
+    public canvas: HTMLCanvasElement | undefined,
     public shapes: Shape[] = []
   ) {}
 

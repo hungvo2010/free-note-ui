@@ -32,7 +32,7 @@ export const WhiteboardProvider: React.FC<{
   );
   const [isLocked, setIsLocked] = useState(initialLocked);
   const { theme } = useTheme();
-  
+
   const { canvas, roughCanvas, canvasRef } = useCanvas({
     options: {
       stroke: theme === "dark" ? "white" : "#000000",
@@ -40,8 +40,8 @@ export const WhiteboardProvider: React.FC<{
   });
 
   const reDrawController = React.useMemo(
-    () => new ReDrawController(roughCanvas, shapes.current),
-    [roughCanvas]
+    () => new ReDrawController(roughCanvas, canvas, shapes.current),
+    [roughCanvas, canvas]
   );
 
   const reDraw = React.useCallback(
