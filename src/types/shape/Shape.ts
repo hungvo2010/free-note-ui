@@ -8,7 +8,12 @@ export abstract class Shape implements Observer {
   abstract isPointInShape(x: number, y: number): boolean;
   abstract applyNewCoordinates(x: number, y: number): Shape;
   abstract toVirtualCoordinates(x: number, y: number): void;
-  abstract draw(offsetX: number, offsetY: number): void;
+  public draw(offsetX: number, offsetY: number): void {
+    if (this.checkReUsedDrawable(offsetX, offsetY)) return;
+    this.drawNew(offsetX, offsetY);
+  }
+  abstract checkReUsedDrawable(offsetX: number, offsetY: number): boolean;
+  abstract drawNew(offsetX: number, offsetY: number): void;
   abstract clone(x: number, y: number): Shape;
   public setRoughCanvas(roughCanvas: RoughCanvas | undefined) {
     this.roughCanvas = roughCanvas;

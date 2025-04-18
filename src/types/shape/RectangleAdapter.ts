@@ -4,6 +4,24 @@ import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
 export class RectangleAdapter extends Shape {
+  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+    const result = Object.is(this.roughCanvas, this.rectangle.getRoughCanvas());
+    if (result) {
+      this.rectangle.drawRectangle();
+    }
+    return result;
+  }
+  drawNew(offsetX: number, offsetY: number): void {
+    const newRectangle = new Rectangle(
+      this.roughCanvas,
+      toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
+      toVirtualY(this.rectangle.getStartPoint().y, offsetY, 1),
+      this.rectangle.getWidth,
+      this.rectangle.getHeight
+    );
+    newRectangle.drawRectangle();
+  }
+
   private rectangle: Rectangle;
   constructor(
     roughCanvas: RoughCanvas | undefined,
@@ -95,17 +113,6 @@ export class RectangleAdapter extends Shape {
       this.rectangle.getWidth,
       this.rectangle.getHeight
     );
-  }
-
-  draw(offsetX: number, offsetY: number): void {
-    const newRectangle = new Rectangle(
-      this.roughCanvas,
-      toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
-      toVirtualY(this.rectangle.getStartPoint().y, offsetY, 1),
-      this.rectangle.getWidth,
-      this.rectangle.getHeight
-    );
-    newRectangle.drawRectangle();
   }
 
   getStartPoint(): { x: number; y: number } {

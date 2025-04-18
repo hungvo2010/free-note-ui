@@ -11,10 +11,10 @@ export class Rectangle {
     private height: number
   ) {}
   drawRectangle() {
-    // if (this.drawable) {
-    //   this.roughCanvas?.draw(this.drawable);
-    //   return;
-    // }
+    if (this.drawable) {
+      this.roughCanvas?.draw(this.drawable);
+      return;
+    }
     this.drawable = this.roughCanvas?.rectangle(
       this.x,
       this.y,
@@ -37,5 +37,9 @@ export class Rectangle {
 
   public get getHeight(): number {
     return this.height;
+  }
+
+  public getRoughCanvas(): RoughCanvas | undefined {
+    return this.roughCanvas;
   }
 }
