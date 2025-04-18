@@ -2,6 +2,9 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
 
 export class Circle {
+  getRoughCanvas(): RoughCanvas | undefined {
+    return this.roughCanvas;
+  }
   private drawable: Drawable | undefined;
   constructor(
     private roughCanvas: RoughCanvas | undefined,

@@ -5,6 +5,25 @@ import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
 export class Diamond extends Shape {
+  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+    if (!this.x2 || !this.y2) {
+      return true;
+    }
+    if (this.drawable && offsetX === 0 && offsetY === 0) {
+      this.roughCanvas?.draw(this.drawable);
+      return true;
+    }
+    return false;
+  }
+
+  drawNew(offsetX: number, offsetY: number): void {
+    this.drawable = this.drawDiamond(
+      this.x1 + offsetX,
+      this.y1 + offsetY,
+      this.x2 + offsetX,
+      this.y2 + offsetY
+    );
+  }
   private drawable: Drawable | undefined;
   public x2: number = 0;
   public y2: number = 0;
@@ -68,22 +87,6 @@ export class Diamond extends Shape {
     newDiamond.x2 = x;
     newDiamond.y2 = y;
     return newDiamond;
-  }
-
-  draw(offsetX: number, offsetY: number): void {
-    // if (!this.x2 || !this.y2) {
-    //   return;
-    // }
-    // if (this.drawable && offsetX === 0 && offsetY === 0) {
-    //   this.roughCanvas?.draw(this.drawable);
-    //   return;
-    // }
-    this.drawable = this.drawDiamond(
-      this.x1 + offsetX,
-      this.y1 + offsetY,
-      this.x2 + offsetX,
-      this.y2 + offsetY
-    );
   }
 
   drawDiamond(x1: number, y1: number, x2: number, y2: number) {
