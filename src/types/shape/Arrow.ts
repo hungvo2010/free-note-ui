@@ -69,21 +69,21 @@ export default class Arrow extends Shape {
   }
 
   draw(offsetX: number, offsetY: number): void {
-    if (
-      this.mainDrawable &&
-      this.leftDrawable &&
-      this.rightDrawable &&
-      offsetX === 0 &&
-      offsetY === 0
-    ) {
-      this.roughCanvas?.draw(this.mainDrawable);
-      this.roughCanvas?.draw(this.leftDrawable);
-      this.roughCanvas?.draw(this.rightDrawable);
-      return;
-    }
-    if (!this.x1 || !this.y1 || !this.x2 || !this.y2) {
-      return;
-    }
+    // if (
+    //   this.mainDrawable &&
+    //   this.leftDrawable &&
+    //   this.rightDrawable &&
+    //   offsetX === 0 &&
+    //   offsetY === 0
+    // ) {
+    //   this.roughCanvas?.draw(this.mainDrawable);
+    //   this.roughCanvas?.draw(this.leftDrawable);
+    //   this.roughCanvas?.draw(this.rightDrawable);
+    //   return;
+    // }
+    // if (!this.x1 || !this.y1 || !this.x2 || !this.y2) {
+    //   return;
+    // }
     this.mainDrawable = drawLine(
       this.roughCanvas,
       this.x1 + offsetX,

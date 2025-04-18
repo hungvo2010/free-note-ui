@@ -71,13 +71,13 @@ export class Diamond extends Shape {
   }
 
   draw(offsetX: number, offsetY: number): void {
-    if (!this.x2 || !this.y2) {
-      return;
-    }
-    if (this.drawable && offsetX === 0 && offsetY === 0) {
-      this.roughCanvas?.draw(this.drawable);
-      return;
-    }
+    // if (!this.x2 || !this.y2) {
+    //   return;
+    // }
+    // if (this.drawable && offsetX === 0 && offsetY === 0) {
+    //   this.roughCanvas?.draw(this.drawable);
+    //   return;
+    // }
     this.drawable = this.drawDiamond(
       this.x1 + offsetX,
       this.y1 + offsetY,
@@ -119,7 +119,6 @@ export class Diamond extends Shape {
       ],
       {
         roughness: 1,
-        stroke: "black",
         seed: 1,
       }
     );

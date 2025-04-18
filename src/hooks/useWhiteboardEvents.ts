@@ -8,6 +8,7 @@ import { updateCursorType } from "utils/CommonUtils";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { ShapeFactory } from "utils/ShapeFactory";
+import { useTheme } from "./useTheme";
 export function useWhiteboardEvents(
   shapes: React.MutableRefObject<Shape[]>,
   roughCanvas: RoughCanvas | undefined,
@@ -28,6 +29,7 @@ export function useWhiteboardEvents(
   const prevLockedRef = useRef(isLocked);
   const isDraggingShapeRef = useRef(false);
   const isEditingTextRef = useRef(false);
+  const { theme } = useTheme();
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -95,7 +97,7 @@ export function useWhiteboardEvents(
       if (type === "eraser") {
         // Just set eraser mode to true, don't erase yet
         eraserModeRef.current = true;
-        updateCursorType(canvas!, "eraser");
+        updateCursorType(canvas, "eraser");
         return;
       } else if (type === "image") {
         ImageService.openImageDialog(
@@ -170,7 +172,7 @@ export function useWhiteboardEvents(
           // Draw after the main redraw to ensure it's on top
           ctx.beginPath();
           ctx.arc(x, y, eraserSizeRef.current, 0, Math.PI * 2);
-          ctx.strokeStyle = "#000000";
+          ctx.strokeStyle = theme === "dark" ? "#ffffff" : "#000000";
           ctx.stroke();
 
           // Clear previous timeout if exists
@@ -236,6 +238,7 @@ export function useWhiteboardEvents(
     },
     [
       type,
+      theme,
       eraserModeRef,
       shapes,
       reDrawController,

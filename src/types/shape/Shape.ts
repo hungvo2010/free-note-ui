@@ -1,8 +1,9 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { Rectangle } from "./Rectangle";
+import { Observer, UpdateState } from "types/Observer";
 import { calculatePadding } from "utils/GeometryUtils";
+import { Rectangle } from "./Rectangle";
 
-export abstract class Shape {
+export abstract class Shape implements Observer {
   abstract getBoundingRect(): Rectangle;
   abstract isPointInShape(x: number, y: number): boolean;
   abstract applyNewCoordinates(x: number, y: number): Shape;
@@ -14,6 +15,9 @@ export abstract class Shape {
   }
 
   constructor(protected roughCanvas: RoughCanvas | undefined) {}
+  public update(state: UpdateState): void {
+    this.roughCanvas = state.roughCanvas;
+  }
 
   public drawBoundingBox(canvas: HTMLCanvasElement | undefined) {
     const boundingRect = this.getBoundingRect();

@@ -55,13 +55,13 @@ export class Line extends Shape {
   }
 
   draw(offsetX: number, offsetY: number): void {
-    if (!this.x2 || !this.y2) {
-      return;
-    }
-    if (this.drawable && offsetX === 0 && offsetY === 0) {
-      this.roughCanvas?.draw(this.drawable);
-      return;
-    }
+    // if (!this.x2 || !this.y2) {
+    //   return;
+    // }
+    // if (this.drawable && offsetX === 0 && offsetY === 0) {
+    //   this.roughCanvas?.draw(this.drawable);
+    //   return;
+    // }
     this.drawable = this.roughCanvas?.line(
       toVirtualX(this.x1, offsetX, 1),
       toVirtualY(this.y1, offsetY, 1),
@@ -70,7 +70,6 @@ export class Line extends Shape {
       {
         roughness: 3,
         seed: 1,
-        stroke: "black",
         strokeWidth: 1,
       }
     );

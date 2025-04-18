@@ -48,6 +48,7 @@ export const WhiteboardProvider: React.FC<{
     canvas,
     shapes.current
   );
+  reDrawController.current.notifyObservers();
 
   const value = {
     shapes,

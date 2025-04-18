@@ -2,8 +2,10 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { CircleAdapter } from "types/shape/CircleAdapter";
 import { Shape } from "types/shape/Shape";
 import { distance, isPointInShape } from "utils/GeometryUtils";
+import { Subject } from "types/Subject";
+import { Observer } from "types/Observer";
 
-export class ReDrawController {
+export class ReDrawController implements Subject {
   private theme: 'light' | 'dark' = 'light';
   
   constructor(
@@ -11,6 +13,19 @@ export class ReDrawController {
     public canvas: HTMLCanvasElement | undefined,
     public shapes: Shape[] = []
   ) {}
+  registerObserver(observer: Observer): void {
+    throw new Error("Method not implemented.");
+  }
+  removeObserver(observer: Observer): void {
+    throw new Error("Method not implemented.");
+  }
+  notifyObservers(): void {
+    for (const shape of this.shapes) {
+      shape.update({
+        roughCanvas: this.roughCanvas,
+      });
+    }
+  }
 
   public setTheme(theme: 'light' | 'dark') {
     this.theme = theme;

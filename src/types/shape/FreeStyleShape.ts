@@ -44,10 +44,10 @@ export class FreeStyleShape extends Shape {
   }
 
   draw(offsetX: number, offsetY: number): void {
-    if (this.drawable && offsetX === 0 && offsetY === 0) {
-      this.roughCanvas?.draw(this.drawable);
-      return;
-    }
+    // if (this.drawable && offsetX === 0 && offsetY === 0) {
+    //   this.roughCanvas?.draw(this.drawable);
+    //   return;
+    // }
     const newPoints = this.points.map(
       (point) =>
         [

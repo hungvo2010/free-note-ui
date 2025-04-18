@@ -98,10 +98,6 @@ export class RectangleAdapter extends Shape {
   }
 
   draw(offsetX: number, offsetY: number): void {
-    if (offsetX === 0 && offsetY === 0) {
-      this.rectangle.drawRectangle();
-      return;
-    }
     const newRectangle = new Rectangle(
       this.roughCanvas,
       toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
