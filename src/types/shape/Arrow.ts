@@ -96,7 +96,6 @@ export default class Arrow extends Shape {
   }
 
   drawNew(offsetX: number, offsetY: number): void {
-    
     this.mainDrawable = drawLine(
       this.roughCanvas,
       this.x1 + offsetX,

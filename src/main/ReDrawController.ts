@@ -6,8 +6,8 @@ import { Subject } from "types/Subject";
 import { Observer } from "types/Observer";
 
 export class ReDrawController implements Subject {
-  private theme: 'light' | 'dark' = 'light';
-  
+  private theme: "light" | "dark" = "light";
+
   constructor(
     public roughCanvas: RoughCanvas | undefined,
     public canvas: HTMLCanvasElement | undefined,
@@ -23,17 +23,18 @@ export class ReDrawController implements Subject {
     for (const shape of this.shapes) {
       shape.update({
         roughCanvas: this.roughCanvas,
+        theme: this.theme,
       });
     }
   }
 
-  public setTheme(theme: 'light' | 'dark') {
+  public setTheme(theme: "light" | "dark") {
     this.theme = theme;
   }
 
   private getStrokeOptions() {
     return {
-      stroke: this.theme === 'dark' ? '#ffffff' : '#000000',
+      stroke: this.theme === "dark" ? "#ffffff" : "#000000",
       strokeWidth: 1,
     };
   }
@@ -83,7 +84,7 @@ export class ReDrawController implements Subject {
       ctx.clearRect(0, 0, this.canvas?.width || 0, this.canvas?.height || 0);
     }
     for (const shape of this.shapes) {
-      shape.setRoughCanvas(this.roughCanvas)
+      shape.setRoughCanvas(this.roughCanvas);
       shape.draw(offsetX, offsetY);
     }
   }
@@ -103,12 +104,12 @@ export class ReDrawController implements Subject {
   }
 
   public getShapesUnderPoint(x: number, y: number): Shape[] {
-    return this.shapes.filter(shape => isPointInShape(shape, x, y));
+    return this.shapes.filter((shape) => isPointInShape(shape, x, y));
   }
 
   public removeShapes(shapesToRemove: Shape[]): void {
-    this.shapes = this.shapes.filter(shape => 
-      !shapesToRemove.includes(shape)
+    this.shapes = this.shapes.filter(
+      (shape) => !shapesToRemove.includes(shape)
     );
   }
 }

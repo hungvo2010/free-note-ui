@@ -3,6 +3,7 @@ import { Drawable } from "roughjs/bin/core";
 import { distance, isInLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
+import { UpdateState } from "types/Observer";
 
 export class Diamond extends Shape {
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
@@ -14,6 +15,11 @@ export class Diamond extends Shape {
       return true;
     }
     return false;
+  }
+
+  public update(state: UpdateState): void {
+    super.update(state);
+    this.drawable = undefined;
   }
 
   drawNew(offsetX: number, offsetY: number): void {

@@ -3,6 +3,10 @@ import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
 
 export class ImageShape extends Shape {
+  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+    return false;
+  }
+
   private image: HTMLImageElement;
   private isLoaded: boolean = false;
   // Add a static redraw callback that can be set by WhiteBoard
@@ -62,7 +66,7 @@ export class ImageShape extends Shape {
     this.image.src = url;
   }
 
-  draw(offsetX: number, offsetY: number): void {
+  drawNew(offsetX: number, offsetY: number): void {
     if (!this.roughCanvas) return;
     const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
     const ctx = canvas.getContext("2d");

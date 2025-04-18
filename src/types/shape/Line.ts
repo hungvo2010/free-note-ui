@@ -4,7 +4,37 @@ import { distanceToLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { UpdateState } from "types/Observer";
 export class Line extends Shape {
+  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+    if (!this.x2 || !this.y2) {
+      return true;
+    }
+    if (this.drawable && offsetX === 0 && offsetY === 0) {
+      this.roughCanvas?.draw(this.drawable);
+      return true;
+    }
+    return false;
+  }
+
+  drawNew(offsetX: number, offsetY: number): void {
+    this.drawable = this.roughCanvas?.line(
+      toVirtualX(this.x1, offsetX, 1),
+      toVirtualY(this.y1, offsetY, 1),
+      toVirtualX(this.x2 || 0, offsetX, 1),
+      toVirtualY(this.y2 || 0, offsetY, 1),
+      {
+        roughness: 3,
+        seed: 1,
+        strokeWidth: 1,
+      }
+    );
+  }
+
+  public update(state: UpdateState): void {
+    super.update(state);
+    this.drawable = undefined;
+  }
   private drawable: Drawable | undefined;
   public x2: number = 0;
   public y2: number = 0;
@@ -52,26 +82,5 @@ export class Line extends Shape {
     newLine.x2 = x;
     newLine.y2 = y;
     return newLine;
-  }
-
-  draw(offsetX: number, offsetY: number): void {
-    // if (!this.x2 || !this.y2) {
-    //   return;
-    // }
-    // if (this.drawable && offsetX === 0 && offsetY === 0) {
-    //   this.roughCanvas?.draw(this.drawable);
-    //   return;
-    // }
-    this.drawable = this.roughCanvas?.line(
-      toVirtualX(this.x1, offsetX, 1),
-      toVirtualY(this.y1, offsetY, 1),
-      toVirtualX(this.x2 || 0, offsetX, 1),
-      toVirtualY(this.y2 || 0, offsetY, 1),
-      {
-        roughness: 3,
-        seed: 1,
-        strokeWidth: 1,
-      }
-    );
   }
 }

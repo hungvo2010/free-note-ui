@@ -3,11 +3,16 @@ import TextEditor, { Position } from "components/editor/TextEditor";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
+import { UpdateState } from "types/Observer";
 
 export class TextShape extends Shape implements TextEditor {
+  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+    return false;
+  }
   private textEditor: TextEditor;
   private fontSize: number;
   private font: string;
+  private fillStyle: string = "black";
   private maxWidth: number = 500;
 
   constructor(
@@ -41,7 +46,7 @@ export class TextShape extends Shape implements TextEditor {
     this.textEditor.appendText(text);
   }
 
-  draw(offsetX: number = 0, offsetY: number = 0): void {
+  drawNew(offsetX: number = 0, offsetY: number = 0): void {
     if (!this.roughCanvas) return;
     // Get canvas from the DOM directly since we know its ID
     const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
@@ -49,11 +54,15 @@ export class TextShape extends Shape implements TextEditor {
     if (!ctx) return;
 
     ctx.font = `${this.fontSize}px ${this.font}`;
-    ctx.fillStyle = "black";
+    ctx.fillStyle = this.fillStyle;
 
     const content = this.getContent();
 
     this.wrapText(ctx, content, this.x + offsetX, this.y + offsetY);
+  }
+
+  public update(state: UpdateState): void {
+    this.fillStyle = state.theme === "dark" ? "white" : "black";
   }
 
   wrapText(
@@ -62,7 +71,6 @@ export class TextShape extends Shape implements TextEditor {
     x: number,
     y: number
   ) {
-    console.log(content);
     const lineHeight = content.reduce(
       (a, b) => Math.max(a, this.getLineHeight(ctx, b)),
       0

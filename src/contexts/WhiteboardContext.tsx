@@ -48,6 +48,7 @@ export const WhiteboardProvider: React.FC<{
     canvas,
     shapes.current
   );
+  reDrawController.current.setTheme(theme);
   reDrawController.current.notifyObservers();
 
   const value = {

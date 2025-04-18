@@ -4,21 +4,52 @@ import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 import { distance } from "utils/GeometryUtils";
+import { UpdateState } from "types/Observer";
 
 export class FreeStyleShape extends Shape {
+  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+    if (this.drawable && offsetX === 0 && offsetY === 0) {
+      this.roughCanvas?.draw(this.drawable);
+      return true;
+    }
+    return false;
+  }
+  public update(state: UpdateState): void {
+    super.update(state);
+    this.drawable = undefined;
+  }
+  drawNew(offsetX: number, offsetY: number): void {
+    const newPoints = this.points.map(
+      (point) =>
+        [
+          toVirtualX(point[0], offsetX, 1),
+          toVirtualY(point[1], offsetY, 1),
+        ] as [number, number]
+    );
+    this.drawable = this.roughCanvas?.curve(newPoints, {
+      roughness: 0.1,
+      strokeWidth: 2,
+    });
+  }
   private drawable: Drawable | undefined;
   constructor(
     roughCanvas: RoughCanvas | undefined,
-    public points: [number, number][],
+    public points: [number, number][]
   ) {
-    super(roughCanvas); 
+    super(roughCanvas);
   }
   getBoundingRect(): Rectangle {
     const minX = Math.min(...this.points.map((point) => point[0]));
     const maxX = Math.max(...this.points.map((point) => point[0]));
     const minY = Math.min(...this.points.map((point) => point[1]));
     const maxY = Math.max(...this.points.map((point) => point[1]));
-    return new Rectangle(this.roughCanvas, minX, minY, maxX - minX, maxY - minY);
+    return new Rectangle(
+      this.roughCanvas,
+      minX,
+      minY,
+      maxX - minX,
+      maxY - minY
+    );
   }
   isPointInShape(x: number, y: number): boolean {
     for (let i = 0; i < this.points.length - 1; i++) {
@@ -42,25 +73,6 @@ export class FreeStyleShape extends Shape {
     );
     return new FreeStyleShape(this.roughCanvas, newPoints);
   }
-
-  draw(offsetX: number, offsetY: number): void {
-    // if (this.drawable && offsetX === 0 && offsetY === 0) {
-    //   this.roughCanvas?.draw(this.drawable);
-    //   return;
-    // }
-    const newPoints = this.points.map(
-      (point) =>
-        [
-          toVirtualX(point[0], offsetX, 1),
-          toVirtualY(point[1], offsetY, 1),
-        ] as [number, number]
-    );
-    this.drawable = this.roughCanvas?.curve(newPoints, {
-      roughness: 0.1,
-      strokeWidth: 2,
-    });
-  }
-
   clone(x: number, y: number): Shape {
     return new FreeStyleShape(this.roughCanvas, [...this.points, [x, y]]);
   }
