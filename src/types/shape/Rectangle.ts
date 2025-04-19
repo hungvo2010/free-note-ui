@@ -22,7 +22,6 @@ export class Rectangle {
       this.height,
       {
         roughness: 1,
-        stroke: "black",
         seed: 1,
       }
     );
@@ -38,5 +37,9 @@ export class Rectangle {
 
   public get getHeight(): number {
     return this.height;
+  }
+
+  public getRoughCanvas(): RoughCanvas | undefined {
+    return this.roughCanvas;
   }
 }

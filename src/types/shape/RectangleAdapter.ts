@@ -3,15 +3,32 @@ import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
-export class RectangleAdapter implements Shape {
-  private readonly roughCanvas: RoughCanvas | undefined;
+export class RectangleAdapter extends Shape {
+  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+    const result = Object.is(this.roughCanvas, this.rectangle.getRoughCanvas());
+    if (result) {
+      this.rectangle.drawRectangle();
+    }
+    return result;
+  }
+  drawNew(offsetX: number, offsetY: number): void {
+    const newRectangle = new Rectangle(
+      this.roughCanvas,
+      toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
+      toVirtualY(this.rectangle.getStartPoint().y, offsetY, 1),
+      this.rectangle.getWidth,
+      this.rectangle.getHeight
+    );
+    newRectangle.drawRectangle();
+  }
+
   private rectangle: Rectangle;
   constructor(
     roughCanvas: RoughCanvas | undefined,
     rectangle: Rectangle,
     private readonly id: number
   ) {
-    this.roughCanvas = roughCanvas;
+    super(roughCanvas);
     this.rectangle = rectangle;
   }
   getBoundingRect(): Rectangle {
@@ -96,21 +113,6 @@ export class RectangleAdapter implements Shape {
       this.rectangle.getWidth,
       this.rectangle.getHeight
     );
-  }
-
-  draw(offsetX: number, offsetY: number): void {
-    if (offsetX === 0 && offsetY === 0) {
-      this.rectangle.drawRectangle();
-      return;
-    }
-    const newRectangle = new Rectangle(
-      this.roughCanvas,
-      toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
-      toVirtualY(this.rectangle.getStartPoint().y, offsetY, 1),
-      this.rectangle.getWidth,
-      this.rectangle.getHeight
-    );
-    newRectangle.drawRectangle();
   }
 
   getStartPoint(): { x: number; y: number } {

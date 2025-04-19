@@ -1,87 +1,72 @@
-import React, { useEffect } from 'react';
-import { WhiteboardProvider, useWhiteboard } from 'contexts/WhiteboardContext';
-import { useWhiteboardEvents } from 'hooks/useWhiteboardEvents';
-import { TextEditor } from 'components/TextEditor';
-import { LockIndicator } from 'components/LockIndicator';
-import './WhiteBoard.scss';
+import { LockIndicator } from "components/LockIndicator";
+import { WhiteboardProvider } from "contexts/WhiteboardContext";
+import { useTheme } from "hooks/useTheme";
+import { useWhiteboard } from "hooks/useWhiteboard";
+import { useWhiteboardEvents } from "hooks/useWhiteboardEvents";
+import React, { useEffect } from "react";
+import "./WhiteBoard.scss";
 
 type DrawTypeProps = {
   type: string;
   isLocked?: boolean;
 };
 
-const WhiteboardContent: React.FC<DrawTypeProps> = ({ type, isLocked = false }) => {
+const WhiteboardContent: React.FC<DrawTypeProps> = ({
+  type,
+  isLocked = false,
+}) => {
   const {
     shapes,
     canvas,
     roughCanvas,
-    canvasRef,
     selectedShape,
     setSelectedShape,
-    isDraggingShape,
-    setIsDraggingShape,
-    isEditingText,
-    setIsEditingText,
     reDrawController,
-    reDraw
   } = useWhiteboard();
-  
-  const {
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
-    handleKeyDown
-  } = useWhiteboardEvents(
-    shapes,
-    canvasRef,
-    roughCanvas,
-    reDrawController,
-    reDraw,
-    isLocked,
-    type,
-    selectedShape,
-    setSelectedShape,
-    isDraggingShape,
-    setIsDraggingShape,
-    isEditingText,
-    setIsEditingText,
-    canvas
-  );
-  
+
+  const { theme } = useTheme();
+
+  const { handleMouseDown, handleMouseMove, handleMouseUp, handleKeyDown } =
+    useWhiteboardEvents(
+      shapes,
+      roughCanvas,
+      reDrawController,
+      isLocked,
+      type,
+      selectedShape,
+      setSelectedShape,
+      canvas
+    );
+
   useEffect(() => {
-    const myCanvas = canvasRef.current;
-    if (!myCanvas) return;
-    
-    myCanvas.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-    
+    if (!canvas) return;
+
+    // Update canvas stroke style based on theme
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.strokeStyle = theme === "dark" ? "#ffffff" : "#000000";
+    }
+
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mouseup", handleMouseUp);
+
     return () => {
-      myCanvas.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      canvas.removeEventListener("mousedown", handleMouseDown);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp, canvasRef]);
-  
+  }, [handleMouseDown, handleMouseMove, handleMouseUp, canvas, theme]);
+
   return (
     <div style={{ position: "relative" }}>
       <canvas
         id="myCanvas"
-        className={`full-canvas ${isLocked ? 'locked-canvas' : ''}`}
-        ref={canvasRef}
+        className={`full-canvas ${isLocked ? "locked-canvas" : ""}`}
         tabIndex={0}
         onKeyDown={handleKeyDown}
       ></canvas>
-      
-      <TextEditor
-        selectedShape={selectedShape}
-        roughCanvas={roughCanvas}
-        isEditingText={isEditingText}
-        setIsEditingText={setIsEditingText}
-        setSelectedShape={setSelectedShape}
-        isLocked={isLocked}
-      />
-      
+
       <LockIndicator isLocked={isLocked} />
     </div>
   );

@@ -1,24 +1,51 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { CircleAdapter } from "types/shape/CircleAdapter";
 import { Shape } from "types/shape/Shape";
-import { distance } from "utils/GeometryUtils";
+import { distance, isPointInShape } from "utils/GeometryUtils";
+import { Subject } from "types/Subject";
+import { Observer } from "types/Observer";
 
-export class ReDrawController {
-  redrawUsingVirtualCoordinates(newOffsetX: number, newOffsetY: number) {
-    for (let i = 0; i < this.shapes.length; i++) {
-     this.shapes[i].toVirtualCoordinates(
-        newOffsetX,
-        newOffsetY
-      );
-    }
-  }
+export class ReDrawController implements Subject {
+  private theme: "light" | "dark" = "light";
+
   constructor(
     public roughCanvas: RoughCanvas | undefined,
+    public canvas: HTMLCanvasElement | undefined,
     public shapes: Shape[] = []
   ) {}
+  registerObserver(observer: Observer): void {
+    throw new Error("Method not implemented.");
+  }
+  removeObserver(observer: Observer): void {
+    throw new Error("Method not implemented.");
+  }
+  notifyObservers(): void {
+    for (const shape of this.shapes) {
+      shape.update({
+        roughCanvas: this.roughCanvas,
+        theme: this.theme,
+      });
+    }
+  }
+
+  public setTheme(theme: "light" | "dark") {
+    this.theme = theme;
+  }
+
+  private getStrokeOptions() {
+    return {
+      stroke: this.theme === "dark" ? "#ffffff" : "#000000",
+      strokeWidth: 1,
+    };
+  }
 
   public addShape(shape: Shape) {
     this.shapes.push(shape);
+  }
+
+  public checkSelectedShape(x: number, y: number): Shape | undefined {
+    const shape = this.shapes.find((shape) => isPointInShape(shape, x, y));
+    return shape;
   }
 
   public updateLastShape(
@@ -52,12 +79,37 @@ export class ReDrawController {
   }
 
   public reDraw(offsetX: number, offsetY: number) {
+    const ctx = this.canvas?.getContext("2d");
+    if (ctx) {
+      ctx.clearRect(0, 0, this.canvas?.width || 0, this.canvas?.height || 0);
+    }
     for (const shape of this.shapes) {
+      shape.setRoughCanvas(this.roughCanvas);
       shape.draw(offsetX, offsetY);
     }
   }
 
   public updateShapes(shapes: Shape[]): void {
     this.shapes = shapes;
+  }
+
+  public redrawUsingVirtualCoordinates(newOffsetX: number, newOffsetY: number) {
+    for (let i = 0; i < this.shapes.length; i++) {
+      this.shapes[i].toVirtualCoordinates(newOffsetX, newOffsetY);
+    }
+  }
+
+  public getShapes() {
+    return this.shapes;
+  }
+
+  public getShapesUnderPoint(x: number, y: number): Shape[] {
+    return this.shapes.filter((shape) => isPointInShape(shape, x, y));
+  }
+
+  public removeShapes(shapesToRemove: Shape[]): void {
+    this.shapes = this.shapes.filter(
+      (shape) => !shapesToRemove.includes(shape)
+    );
   }
 }

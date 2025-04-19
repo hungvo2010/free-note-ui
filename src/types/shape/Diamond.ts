@@ -3,16 +3,43 @@ import { Drawable } from "roughjs/bin/core";
 import { distance, isInLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
+import { UpdateState } from "types/Observer";
 
-export class Diamond implements Shape {
+export class Diamond extends Shape {
+  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+    if (!this.x2 || !this.y2) {
+      return true;
+    }
+    if (this.drawable && offsetX === 0 && offsetY === 0) {
+      this.roughCanvas?.draw(this.drawable);
+      return true;
+    }
+    return false;
+  }
+
+  public update(state: UpdateState): void {
+    super.update(state);
+    this.drawable = undefined;
+  }
+
+  drawNew(offsetX: number, offsetY: number): void {
+    this.drawable = this.drawDiamond(
+      this.x1 + offsetX,
+      this.y1 + offsetY,
+      this.x2 + offsetX,
+      this.y2 + offsetY
+    );
+  }
   private drawable: Drawable | undefined;
   public x2: number = 0;
   public y2: number = 0;
   constructor(
-    public roughCanvas: RoughCanvas | undefined,
+    roughCanvas: RoughCanvas | undefined,
     public x1: number,
     public y1: number
-  ) {}
+  ) {
+    super(roughCanvas);
+  }
   getBoundingRect(): Rectangle {
     return new Rectangle(
       this.roughCanvas,
@@ -68,22 +95,6 @@ export class Diamond implements Shape {
     return newDiamond;
   }
 
-  draw(offsetX: number, offsetY: number): void {
-    if (!this.x2 || !this.y2) {
-      return;
-    }
-    if (this.drawable && offsetX === 0 && offsetY === 0) {
-      this.roughCanvas?.draw(this.drawable);
-      return;
-    }
-    this.drawable = this.drawDiamond(
-      this.x1 + offsetX,
-      this.y1 + offsetY,
-      this.x2 + offsetX,
-      this.y2 + offsetY
-    );
-  }
-
   drawDiamond(x1: number, y1: number, x2: number, y2: number) {
     const angle = Math.atan2(y2 - y1, x2 - x1);
     const mainPoint = {
@@ -117,7 +128,6 @@ export class Diamond implements Shape {
       ],
       {
         roughness: 1,
-        stroke: "black",
         seed: 1,
       }
     );

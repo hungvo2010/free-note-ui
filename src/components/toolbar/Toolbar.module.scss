@@ -4,7 +4,10 @@
   max-width: fit-content;
   border-radius: 5px;
   font-size: large;
+  font-family: "iA Writer Quattro S";
   padding: 3px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   box-shadow: 0px 0px 0.9310142993927002px 0px rgba(0, 0, 0, 0.17),
     0px 0px 3.1270833015441895px 0px rgba(0, 0, 0, 0.08),
     0px 7px 14px 0px rgba(0, 0, 0, 0.05);
@@ -14,6 +17,8 @@
   list-style: none;
   display: flex;
   align-items: center;
+  margin: 0;
+  padding: 0;
   > li {
     padding: 12px;
     border-radius: 7px;
@@ -30,7 +35,27 @@
     }
 
     &.selected {
-      background-color: var(--button-hover-bg);
+      background-color: var(--accent-primary);
+      color: var(--bg-primary);
+    }
+
+    &.themeToggle {
+      margin-left: 8px;
+      font-size: 1.2em;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+
+      &:before {
+        content: "";
+        display: inline-block;
+        border-left: 1px solid var(--text-primary);
+        height: 20px;
+        margin-right: 12px;
+        position: relative;
+      }
     }
 
     &:first-child {

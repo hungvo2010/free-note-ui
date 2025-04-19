@@ -53,7 +53,7 @@ export function calculatePadding(
   return [0, 0];
 }
 
-export function getCanvasCoordinates(e: MouseEvent, canvas: HTMLCanvasElement | null) {
+export function getCanvasCoordinates(e: MouseEvent, canvas: HTMLCanvasElement | undefined) {
   if (!canvas) {
     return { x: 0, y: 0 };
   }
@@ -70,29 +70,6 @@ export const isPointInShape = (shape: Shape, x: number, y: number): boolean => {
 export const checkSelectedShape = (shapes: Shape[], x: number, y: number) => {
   const shape = shapes.find((shape) => isPointInShape(shape, x, y));
   return shape;
-};
-
-export const drawBoundingBox = (
-  canvas: HTMLCanvasElement | undefined,
-  shape: Shape
-) => {
-  const boundingRect = shape.getBoundingRect();
-  const ctx = canvas?.getContext("2d");
-  if (ctx) {
-    ctx.strokeStyle = "red"; // Highlight color
-    ctx.lineWidth = 2;
-    const startPoint = boundingRect.getStartPoint();
-    const angle =
-      (Math.atan2(boundingRect.getHeight, boundingRect.getWidth) * 180) /
-      Math.PI;
-    const padding = calculatePadding(angle, 4);
-    ctx.strokeRect(
-      startPoint.x - padding[0],
-      startPoint.y - padding[1],
-      boundingRect.getWidth + padding[0] * 2,
-      boundingRect.getHeight + padding[1] * 2
-    );
-  }
 };
 
 export function getShapesUnderPoint(

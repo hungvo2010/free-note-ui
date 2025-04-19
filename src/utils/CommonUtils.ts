@@ -101,7 +101,6 @@ export const drawLine = (
 ) => {
   return roughCanvas?.line(x1, y1, x2, y2, {
     roughness: 1,
-    stroke: "black",
     seed: 3,
   });
 };
@@ -122,7 +121,6 @@ const drawCircle = (
     (distance(x1, y1, x, y) * Math.cos(angle)) / 2,
     {
       roughness: 1,
-      stroke: "black",
       curveFitting: 0.95,
     }
   );
@@ -131,12 +129,11 @@ const drawCircle = (
 const drawRect = (roughCanvas: RoughCanvas, x: number, y: number, x1: number, y1: number) => {
     roughCanvas?.rectangle(x, y, x1 - x, y1 - y, {
         roughness: 1,
-        stroke: "black",
     });
 };
 
 
-export function updateCursorType(canvas: HTMLCanvasElement, type: string) {
+export function updateCursorType(canvas: HTMLCanvasElement | undefined, type: string) {
   if (!canvas) return;
   
   // Remove any previous custom cursor classes

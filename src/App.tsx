@@ -1,8 +1,9 @@
-import { Profiler, useState } from "react";
+import { StrictMode, useState } from "react";
 import "./App.css";
 import WhiteBoard from "./components/rough/WhiteBoard";
 import Toolbar from "./components/toolbar/Toolbar";
 import "./styles/global.scss";
+import { ThemeProvider } from "./contexts/ThemeContext";
 const options = [
   "lock",
   "hand",
@@ -26,16 +27,19 @@ function App() {
   };
 
   return (
-    <>
+    <ThemeProvider>
       <Toolbar
         options={options}
         selected={selected}
         handleSelected={handleSelected}
       />
-      <Profiler id="App" onRender={onRender}>
-        <WhiteBoard type={options[selected]} />
-      </Profiler>
-    </>
+      <StrictMode>
+        <WhiteBoard
+          type={options[selected]}
+          isLocked={options[selected] === "lock"}
+        />
+      </StrictMode>
+    </ThemeProvider>
   );
 }
 

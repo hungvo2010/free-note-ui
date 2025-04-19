@@ -1,22 +1,37 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { distance } from "utils/GeometryUtils";
 import { Circle } from "./Circle";
-import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
+import { Shape } from "./Shape";
 
-export class CircleAdapter implements Shape {
+export class CircleAdapter extends Shape {
+  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+    const result = Object.is(this.roughCanvas, this.circle.getRoughCanvas());
+    if (result) {
+      this.circle.drawCircle();
+    }
+    return result;
+  }
+  drawNew(offsetX: number, offsetY: number): void {
+    const newCircle = new Circle(
+      this.roughCanvas,
+      this.circle.getX + offsetX,
+      this.circle.getY + offsetY,
+      this.circle.getRadius
+    );
+    newCircle.drawCircle();
+  }
   updateRadius(radius: number) {
     this.circle.setRadius(radius);
   }
   private circle: Circle;
-  private roughCanvas: RoughCanvas | undefined;
   constructor(
     roughCanvas: RoughCanvas | undefined,
     circle: Circle,
     private readonly id: number
   ) {
+    super(roughCanvas);
     this.circle = circle;
-    this.roughCanvas = roughCanvas;
     this.id = id;
   }
   getBoundingRect(): Rectangle {
@@ -65,16 +80,6 @@ export class CircleAdapter implements Shape {
       ),
       new Date().getMilliseconds()
     );
-  }
-
-  draw(offsetX: number, offsetY: number): void {
-    const newCircle = new Circle(
-      this.roughCanvas,
-      this.circle.getX + offsetX,
-      this.circle.getY + offsetY,
-      this.circle.getRadius
-    );
-    newCircle.drawCircle();
   }
 
   getCenterPoint(): { x: number; y: number } {
