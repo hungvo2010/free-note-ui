@@ -92,9 +92,18 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         isEditingTextRef.current = false;
         return;
       }
-      await socketSonnection.connect()
-      socketSonnection.sendAction(JSON.stringify({"messageId":"","payload":{"content":{"type":"UPDATE","details": "WRITE AT SERVICES"}}}))
-
+      await socketSonnection.connect();
+      socketSonnection.setInitHandler(() => {
+        console.log("init handler");
+        socketSonnection.sendAction(
+          JSON.stringify({
+            messageId: "",
+            payload: {
+              content: { type: "UPDATE", details: "WRITE AT SERVICES" },
+            },
+          })
+        );
+      });
       if (type === "eraser") {
         // Just set eraser mode to true, don't erase yet
         eraserModeRef.current = true;
