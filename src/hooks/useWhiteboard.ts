@@ -1,10 +1,10 @@
-import { useContext } from 'react';
-import { WhiteboardContext } from '../contexts/WhiteboardContext';
+import { useContext } from "react";
+import { WhiteboardContext } from "../contexts/WhiteboardContext";
 
 export const useWhiteboard = () => {
   const context = useContext(WhiteboardContext);
   if (context === undefined) {
-    throw new Error('useWhiteboard must be used within a WhiteboardProvider');
+    throw new Error("useWhiteboard must be used within a WhiteboardProvider");
   }
   return context;
-}; 
+};

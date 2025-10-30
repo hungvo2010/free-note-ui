@@ -1,3 +1,4 @@
+import { createConnection, WebSocketConnection } from "apis/WebSocket";
 import { useCanvas } from "hooks/useCanvas";
 import { useTheme } from "hooks/useTheme";
 import { ReDrawController } from "main/ReDrawController";
@@ -14,6 +15,7 @@ interface WhiteboardContextType {
   reDrawController: ReDrawController;
   isLocked: boolean;
   setIsLocked: (isLocked: boolean) => void;
+  socketSonnection: WebSocketConnection;
 }
 
 export const WhiteboardContext = createContext<
@@ -31,6 +33,9 @@ export const WhiteboardProvider: React.FC<{
   );
   const [isLocked, setIsLocked] = useState(initialLocked);
   const { theme } = useTheme();
+  const socketSonnection = useMemo(() => {
+    return createConnection();
+  }, []);
 
   const options = useMemo(
     () => ({
@@ -52,6 +57,7 @@ export const WhiteboardProvider: React.FC<{
   reDrawController.current.notifyObservers();
 
   const value = {
+    socketSonnection,
     shapes,
     canvas,
     roughCanvas,

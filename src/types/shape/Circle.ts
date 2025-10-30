@@ -12,6 +12,7 @@ export class Circle {
     private y: number,
     private radius: number
   ) {}
+
   drawCircle() {
     if (this.radius < 3) {
       console.log("radius < 3");

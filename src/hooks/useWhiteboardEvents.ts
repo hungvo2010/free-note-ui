@@ -1,24 +1,14 @@
-import { ReDrawController } from "main/ReDrawController";
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import { RoughCanvas } from "roughjs/bin/canvas";
 import { ImageService } from "services/ImageService";
-import { Shape } from "types/shape/Shape";
 import { TextShape } from "types/shape/Text";
 import { updateCursorType } from "utils/CommonUtils";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { ShapeFactory } from "utils/ShapeFactory";
 import { useTheme } from "./useTheme";
-export function useWhiteboardEvents(
-  shapes: React.MutableRefObject<Shape[]>,
-  roughCanvas: RoughCanvas | undefined,
-  reDrawController: ReDrawController,
-  isLocked: boolean,
-  type: string,
-  selectedShape: Shape | undefined,
-  setSelectedShape: (shape: Shape | undefined) => void,
-  canvas: HTMLCanvasElement | undefined
-) {
+import { useWebSocket } from "./useWebSocket";
+import { useWhiteboard } from "./useWhiteboard";
+export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const drawingRef = useRef(false);
   const positionRef = useRef({ x: 0, y: 0 });
   const dragStartPosRef = useRef({ x: 0, y: 0 });
@@ -30,6 +20,15 @@ export function useWhiteboardEvents(
   const isDraggingShapeRef = useRef(false);
   const isEditingTextRef = useRef(false);
   const { theme } = useTheme();
+  const {
+    reDrawController,
+    roughCanvas,
+    selectedShape,
+    shapes,
+    canvas,
+    setSelectedShape,
+  } = useWhiteboard();
+  const socketSonnection = useWebSocket();
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -80,7 +79,7 @@ export function useWhiteboardEvents(
   );
 
   const handleMouseDown = useCallback(
-    (e: MouseEvent) => {
+    async (e: MouseEvent) => {
       if (isLocked) {
         return;
       }
@@ -93,7 +92,18 @@ export function useWhiteboardEvents(
         isEditingTextRef.current = false;
         return;
       }
-
+      await socketSonnection.connect();
+      socketSonnection.setInitHandler(() => {
+        console.log("init handler");
+        socketSonnection.sendAction(
+          JSON.stringify({
+            messageId: "",
+            payload: {
+              content: { type: "UPDATE", details: "WRITE AT SERVICES" },
+            },
+          })
+        );
+      });
       if (type === "eraser") {
         // Just set eraser mode to true, don't erase yet
         eraserModeRef.current = true;
@@ -240,7 +250,6 @@ export function useWhiteboardEvents(
       type,
       theme,
       eraserModeRef,
-      shapes,
       reDrawController,
       canvas,
       handleMouseEnter,
@@ -248,6 +257,7 @@ export function useWhiteboardEvents(
       moveBoardRef,
       isDraggingShapeRef,
       isEditingTextRef,
+      shapes,
     ]
   );
 
