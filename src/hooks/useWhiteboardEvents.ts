@@ -6,6 +6,7 @@ import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { ShapeFactory } from "utils/ShapeFactory";
 import { useTheme } from "./useTheme";
+import { useWebSocket } from "./useWebSocket";
 import { useWhiteboard } from "./useWhiteboard";
 export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const drawingRef = useRef(false);
@@ -27,6 +28,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     canvas,
     setSelectedShape,
   } = useWhiteboard();
+  const socketSonnection = useWebSocket();
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -77,7 +79,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
   );
 
   const handleMouseDown = useCallback(
-    (e: MouseEvent) => {
+    async (e: MouseEvent) => {
       if (isLocked) {
         return;
       }
@@ -90,6 +92,8 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         isEditingTextRef.current = false;
         return;
       }
+      await socketSonnection.connect()
+      socketSonnection.sendAction(JSON.stringify({"messageId":"","payload":{"content":{"type":"UPDATE","details": "WRITE AT SERVICES"}}}))
 
       if (type === "eraser") {
         // Just set eraser mode to true, don't erase yet

@@ -2,6 +2,10 @@ import { getRemoteUrl } from "./Environment";
 const remoteUrl = getRemoteUrl();
 
 export class WebSocketConnection {
+  async connect() {
+    this.socket = new WebSocket(remoteUrl);
+  }
+
   private socket: WebSocket | null;
   constructor() {
     this.socket = new WebSocket(remoteUrl);
