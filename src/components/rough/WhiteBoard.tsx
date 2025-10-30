@@ -15,28 +15,12 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
   type,
   isLocked = false,
 }) => {
-  const {
-    shapes,
-    canvas,
-    roughCanvas,
-    selectedShape,
-    setSelectedShape,
-    reDrawController,
-  } = useWhiteboard();
+  const { canvas } = useWhiteboard();
 
   const { theme } = useTheme();
 
   const { handleMouseDown, handleMouseMove, handleMouseUp, handleKeyDown } =
-    useWhiteboardEvents(
-      shapes,
-      roughCanvas,
-      reDrawController,
-      isLocked,
-      type,
-      selectedShape,
-      setSelectedShape,
-      canvas
-    );
+    useWhiteboardEvents(isLocked, type);
 
   useEffect(() => {
     if (!canvas) return;
