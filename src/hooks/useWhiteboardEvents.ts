@@ -1,4 +1,15 @@
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { ActionType, DraftAction } from "apis/DraftAction";
+import { MessagePayload } from "apis/resources/protocol";
+import { generateUUID } from "apis/resources/WebSocketConnection";
+import { WebSocketContext } from "contexts/WebSocketContext";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
+import { useParams } from "react-router";
 import { ImageService } from "services/ImageService";
 import { TextShape } from "types/shape/Text";
 import { updateCursorType } from "utils/CommonUtils";
@@ -6,8 +17,8 @@ import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { ShapeFactory } from "utils/ShapeFactory";
 import { useTheme } from "./useTheme";
-import { useWebSocket } from "./useWebSocket";
 import { useWhiteboard } from "./useWhiteboard";
+
 export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const drawingRef = useRef(false);
   const positionRef = useRef({ x: 0, y: 0 });
@@ -28,7 +39,12 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     canvas,
     setSelectedShape,
   } = useWhiteboard();
-  const socketSonnection = useWebSocket();
+  const context = useContext(WebSocketContext);
+  if (!context) {
+    throw new Error("useWebSocket must be used within a WhiteboardProvider");
+  }
+  const webSocketConnection = context.webSocketConnection;
+  const params = useParams();
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -78,6 +94,14 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     [canvas, reDrawController, setSelectedShape]
   );
 
+  const getDraftId = useCallback(() => {
+    return params.draftId;
+  }, [params]);
+
+  const getDraftName = useCallback(() => {
+    return params.draftName;
+  }, [params]);
+
   const handleMouseDown = useCallback(
     async (e: MouseEvent) => {
       if (isLocked) {
@@ -92,18 +116,24 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         isEditingTextRef.current = false;
         return;
       }
-      await socketSonnection.connect();
-      socketSonnection.setInitHandler(() => {
-        console.log("init handler");
-        socketSonnection.sendAction(
-          JSON.stringify({
-            messageId: "",
-            payload: {
-              content: { type: "UPDATE", details: "WRITE AT SERVICES" },
-            },
-          })
-        );
-      });
+      await webSocketConnection?.connect();
+      const draftRequest = {
+        draftId: getDraftId(),
+        draftName: getDraftName(),
+        draftActions: new Array<DraftAction>().push({
+          type: ActionType.INIT,
+          data: {
+            x,
+            y,
+          },
+        }),
+      };
+      const firstActionPayload: MessagePayload = {
+        messageId: generateUUID(),
+        payload: JSON.stringify(draftRequest),
+      };
+      webSocketConnection?.sendAction(JSON.stringify(firstActionPayload));
+
       if (type === "eraser") {
         // Just set eraser mode to true, don't erase yet
         eraserModeRef.current = true;
