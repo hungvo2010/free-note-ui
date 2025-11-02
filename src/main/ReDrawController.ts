@@ -13,6 +13,7 @@ export class ReDrawController implements Subject {
     public canvas: HTMLCanvasElement | undefined,
     public shapes: Shape[] = []
   ) {}
+  
   registerObserver(observer: Observer): void {
     throw new Error("Method not implemented.");
   }

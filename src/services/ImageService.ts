@@ -3,11 +3,11 @@ import { ImageShape } from "types/shape/ImageShape";
 
 export class ImageService {
   static openImageDialog(
-    callback: (imageShape: ImageShape) => void,
+    onShapeCreated: (imageShape: ImageShape) => void,
     roughCanvas: RoughCanvas | undefined,
     x: number,
     y: number,
-    loadCallback: () => void
+    onReDraw: () => void
   ): void {
     const input = document.createElement("input");
     input.type = "file";
@@ -15,13 +15,13 @@ export class ImageService {
     input.onchange = (event) => {
       const file = (event.target as HTMLInputElement).files?.[0];
       if (file && roughCanvas) {
-        const blob = new Blob([file], { type: file.type });
-        const url = URL.createObjectURL(blob);
+        // const blob = new Blob([file], { type: file.type });
+        const url = URL.createObjectURL(file);
         const imageShape = new ImageShape(roughCanvas, url, x, y, 0, 0);
-        callback(imageShape);
+        onShapeCreated(imageShape);
       }
     };
     input.click();
-    ImageShape.setRedrawCallback(loadCallback);
+    ImageShape.setRedrawCallback(onReDraw);
   }
 }

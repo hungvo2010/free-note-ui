@@ -36,9 +36,10 @@ export class Diamond extends Shape {
   constructor(
     roughCanvas: RoughCanvas | undefined,
     public x1: number,
-    public y1: number
+    public y1: number,
+    id?: string
   ) {
-    super(roughCanvas);
+    super(roughCanvas, id);
   }
   getBoundingRect(): Rectangle {
     return new Rectangle(
@@ -89,7 +90,7 @@ export class Diamond extends Shape {
   }
 
   clone(x: number, y: number): Shape {
-    const newDiamond = new Diamond(this.roughCanvas, this.x1, this.y1);
+    const newDiamond = new Diamond(this.roughCanvas, this.x1, this.y1, this.getId());
     newDiamond.x2 = x;
     newDiamond.y2 = y;
     return newDiamond;

@@ -34,9 +34,10 @@ export class FreeStyleShape extends Shape {
   private drawable: Drawable | undefined;
   constructor(
     roughCanvas: RoughCanvas | undefined,
-    public points: [number, number][]
+    public points: [number, number][],
+    id?: string
   ) {
-    super(roughCanvas);
+    super(roughCanvas, id);
   }
   getBoundingRect(): Rectangle {
     const minX = Math.min(...this.points.map((point) => point[0]));

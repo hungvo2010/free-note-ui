@@ -16,8 +16,8 @@ export const WebSocketContext = createContext<WebSocketContextType | undefined>(
 
 export const WebSocketProvider: React.FC<{
   children: React.ReactNode;
-  type: INSTANCE_TYPE;
-}> = ({ children, type }) => {
+  type?: INSTANCE_TYPE;
+}> = ({ children, type = INSTANCE_TYPE.ECHO_ONLY }) => {
   const connectionManager = useWebSocketManager();
   const sessionId = useSessionStorage().getItem("sessionId");
   const connection = connectionManager.getConnectionById(sessionId);

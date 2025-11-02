@@ -1,4 +1,5 @@
 import { LockIndicator } from "components/LockIndicator";
+import { WebSocketProvider } from "contexts/WebSocketContext";
 import { WhiteboardProvider } from "contexts/WhiteboardContext";
 import { useTheme } from "hooks/useTheme";
 import { useWhiteboard } from "hooks/useWhiteboard";
@@ -58,8 +59,10 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
 
 export default function WhiteBoard(props: DrawTypeProps) {
   return (
-    <WhiteboardProvider isLocked={props.isLocked}>
-      <WhiteboardContent {...props} />
-    </WhiteboardProvider>
+    <WebSocketProvider>
+      <WhiteboardProvider isLocked={props.isLocked}>
+        <WhiteboardContent {...props} />
+      </WhiteboardProvider>
+    </WebSocketProvider>
   );
 }

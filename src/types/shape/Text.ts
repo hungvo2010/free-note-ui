@@ -19,9 +19,10 @@ export class TextShape extends Shape implements TextEditor {
     roughCanvas: RoughCanvas | undefined,
     private x: number,
     private y: number,
-    initialText: string = ""
+    initialText: string = "",
+    id?: string
   ) {
-    super(roughCanvas);
+    super(roughCanvas, id);
     // this.textEditor = new PieceTableTextEditor(null, initialText, "");
     this.textEditor = new SimpleTextEditor([initialText]);
     this.fontSize = 20;
@@ -232,7 +233,8 @@ export class TextShape extends Shape implements TextEditor {
       this.roughCanvas,
       this.x,
       this.y,
-      this.textEditor.getContent().join("\n")
+      this.textEditor.getContent().join("\n"),
+      this.getId()
     );
   }
 
