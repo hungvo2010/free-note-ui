@@ -30,7 +30,7 @@ export class CircleAdapter extends Shape {
     circle: Circle,
     private readonly id: number
   ) {
-    super(roughCanvas);
+    super(roughCanvas, String(id));
     this.circle = circle;
     this.id = id;
   }
@@ -78,11 +78,14 @@ export class CircleAdapter extends Shape {
         y,
         distance(x, y, this.circle.getX, this.circle.getY) / 2
       ),
-      new Date().getMilliseconds()
+      this.id
     );
   }
 
   getCenterPoint(): { x: number; y: number } {
     return this.circle.getCenterPoint();
+  }
+  getRadius(): number {
+    return this.circle.getRadius;
   }
 }

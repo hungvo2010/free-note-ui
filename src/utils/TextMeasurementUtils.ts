@@ -1,7 +1,8 @@
 import { FontFamilyCodeIcon, FontFamilyNormalIcon } from "components/icons";
 import { FontFamilyHeadingIcon } from "components/icons";
 import { FreedrawIcon } from "components/icons";
-import { FONT_FAMILY, FONT_FAMILY_FALLBACKS } from "constants";
+// Avoid Node's built-in "constants" module by using a relative import
+import { FONT_FAMILY, FONT_FAMILY_FALLBACKS } from "../constants";
 import { FontMetadata } from "fonts/FontMetadata";
 
 export const getLineHeightInPx = (fontSize: number, lineHeight: number) => {

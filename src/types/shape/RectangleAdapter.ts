@@ -28,7 +28,7 @@ export class RectangleAdapter extends Shape {
     rectangle: Rectangle,
     private readonly id: number
   ) {
-    super(roughCanvas);
+    super(roughCanvas, String(id));
     this.rectangle = rectangle;
   }
   getBoundingRect(): Rectangle {
@@ -117,5 +117,8 @@ export class RectangleAdapter extends Shape {
 
   getStartPoint(): { x: number; y: number } {
     return this.rectangle.getStartPoint();
+  }
+  getSize(): { width: number; height: number } {
+    return { width: this.rectangle.getWidth, height: this.rectangle.getHeight };
   }
 }

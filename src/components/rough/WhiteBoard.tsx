@@ -1,4 +1,5 @@
 import { LockIndicator } from "components/LockIndicator";
+import { WebSocketProvider } from "contexts/WebSocketContext";
 import { WhiteboardProvider } from "contexts/WhiteboardContext";
 import { useTheme } from "hooks/useTheme";
 import { useWhiteboard } from "hooks/useWhiteboard";
@@ -15,28 +16,12 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
   type,
   isLocked = false,
 }) => {
-  const {
-    shapes,
-    canvas,
-    roughCanvas,
-    selectedShape,
-    setSelectedShape,
-    reDrawController,
-  } = useWhiteboard();
+  const { canvas } = useWhiteboard();
 
   const { theme } = useTheme();
 
   const { handleMouseDown, handleMouseMove, handleMouseUp, handleKeyDown } =
-    useWhiteboardEvents(
-      shapes,
-      roughCanvas,
-      reDrawController,
-      isLocked,
-      type,
-      selectedShape,
-      setSelectedShape,
-      canvas
-    );
+    useWhiteboardEvents(isLocked, type);
 
   useEffect(() => {
     if (!canvas) return;
@@ -74,8 +59,10 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
 
 export default function WhiteBoard(props: DrawTypeProps) {
   return (
-    <WhiteboardProvider isLocked={props.isLocked}>
-      <WhiteboardContent {...props} />
-    </WhiteboardProvider>
+    <WebSocketProvider>
+      <WhiteboardProvider isLocked={props.isLocked}>
+        <WhiteboardContent {...props} />
+      </WhiteboardProvider>
+    </WebSocketProvider>
   );
 }

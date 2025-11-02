@@ -1,24 +1,26 @@
-import { ReDrawController } from "main/ReDrawController";
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
-import { RoughCanvas } from "roughjs/bin/canvas";
+import { ActionType, DraftAction } from "apis/DraftAction";
+import { MessagePayload } from "apis/resources/protocol";
+import { generateUUID } from "apis/resources/WebSocketConnection";
+import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
+import { WebSocketContext } from "contexts/WebSocketContext";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
+import { useParams } from "react-router";
 import { ImageService } from "services/ImageService";
-import { Shape } from "types/shape/Shape";
 import { TextShape } from "types/shape/Text";
 import { updateCursorType } from "utils/CommonUtils";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { ShapeFactory } from "utils/ShapeFactory";
 import { useTheme } from "./useTheme";
-export function useWhiteboardEvents(
-  shapes: React.MutableRefObject<Shape[]>,
-  roughCanvas: RoughCanvas | undefined,
-  reDrawController: ReDrawController,
-  isLocked: boolean,
-  type: string,
-  selectedShape: Shape | undefined,
-  setSelectedShape: (shape: Shape | undefined) => void,
-  canvas: HTMLCanvasElement | undefined
-) {
+import { useWhiteboard } from "./useWhiteboard";
+
+export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const drawingRef = useRef(false);
   const positionRef = useRef({ x: 0, y: 0 });
   const dragStartPosRef = useRef({ x: 0, y: 0 });
@@ -30,6 +32,21 @@ export function useWhiteboardEvents(
   const isDraggingShapeRef = useRef(false);
   const isEditingTextRef = useRef(false);
   const { theme } = useTheme();
+  const {
+    reDrawController,
+    roughCanvas,
+    selectedShape,
+    shapes,
+    canvas,
+    setSelectedShape,
+  } = useWhiteboard();
+  const context = useContext(WebSocketContext);
+  if (!context) {
+    throw new Error("useWebSocket must be used within a WhiteboardProvider");
+  }
+  const webSocketConnection = context.webSocketConnection;
+  const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
+  const params = useParams();
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -79,8 +96,16 @@ export function useWhiteboardEvents(
     [canvas, reDrawController, setSelectedShape]
   );
 
+  const getDraftId = useCallback(() => {
+    return params.draftId;
+  }, [params]);
+
+  const getDraftName = useCallback(() => {
+    return params.draftName;
+  }, [params]);
+
   const handleMouseDown = useCallback(
-    (e: MouseEvent) => {
+    async (e: MouseEvent) => {
       if (isLocked) {
         return;
       }
@@ -93,8 +118,21 @@ export function useWhiteboardEvents(
         isEditingTextRef.current = false;
         return;
       }
+      await webSocketConnection?.connect();
+      if (!dispatcherRef.current && webSocketConnection) {
+        dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
+          draftId: getDraftId(),
+          draftName: getDraftName(),
+        });
+      } else {
+        dispatcherRef.current?.setDraft({
+          draftId: getDraftId(),
+          draftName: getDraftName(),
+        });
+      }
 
       if (type === "eraser") {
+        // dont need to send action for eraser
         // Just set eraser mode to true, don't erase yet
         eraserModeRef.current = true;
         updateCursorType(canvas, "eraser");
@@ -103,12 +141,15 @@ export function useWhiteboardEvents(
         ImageService.openImageDialog(
           (imageShape) => {
             reDrawController.addShape(imageShape);
+            console.log(imageShape);
+            setSelectedShape(imageShape);
           },
           roughCanvas,
           x,
           y,
           () => {
             reDrawController.reDraw(0, 0);
+            console.log("redraw image shape if any: ", selectedShape);
             selectedShape?.drawBoundingBox(canvas);
           }
         );
@@ -135,6 +176,7 @@ export function useWhiteboardEvents(
       const newShape = ShapeFactory.createShape(type, roughCanvas, x, y);
       if (newShape) {
         reDrawController.addShape(newShape);
+        dispatcherRef.current?.addShape(newShape);
       }
     },
     [
@@ -144,7 +186,6 @@ export function useWhiteboardEvents(
       selectedShape,
       roughCanvas,
       reDrawController,
-      setSelectedShape,
       isEditingTextRef,
     ]
   );
@@ -158,11 +199,18 @@ export function useWhiteboardEvents(
         // Find and remove shapes under the eraser
         const shapesToRemove = reDrawController.getShapesUnderPoint(x, y);
         if (shapesToRemove.length > 0) {
-          // Remove the shapes
+          // Compute indices being removed for dispatching
+          const ids = reDrawController
+            .getShapes()
+            .filter((s) => shapesToRemove.includes(s))
+            .map((s) => s.getId());
+          // Remove locally
           reDrawController.removeShapes(shapesToRemove);
           shapes.current = shapes.current.filter(
             (shape) => !shapesToRemove.includes(shape)
           );
+          // Dispatch deletion
+          dispatcherRef.current?.deleteShapes(ids);
           reDrawController.reDraw(0, 0);
         }
 
@@ -205,6 +253,8 @@ export function useWhiteboardEvents(
           y: y - startPosition.y,
         };
         reDrawController.reDraw(offset.x, offset.y);
+        // Dispatch pan (board move) as an event
+        dispatcherRef.current?.pan(offset);
         return;
       }
 
@@ -217,6 +267,8 @@ export function useWhiteboardEvents(
           y - dragStartPosRef.current.y
         );
         dragStartPosRef.current = { x, y };
+        // Dispatch move of existing shape
+        dispatcherRef.current?.updateShape(selectedShape.getId(), selectedShape);
         reDrawController.reDraw(0, 0);
         return;
       }
@@ -232,15 +284,16 @@ export function useWhiteboardEvents(
         type === "image"
       )
         return;
-      console.log("update last shape");
+      // console.log("update last shape");
       reDrawController.updateLastShape(startPosition.x, startPosition.y, x, y);
+      const last = reDrawController.getShapes()[reDrawController.getShapes().length - 1];
+      if (last) dispatcherRef.current?.updateShape(last.getId(), last);
       reDrawController.reDraw(0, 0);
     },
     [
       type,
       theme,
       eraserModeRef,
-      shapes,
       reDrawController,
       canvas,
       handleMouseEnter,
@@ -248,6 +301,7 @@ export function useWhiteboardEvents(
       moveBoardRef,
       isDraggingShapeRef,
       isEditingTextRef,
+      shapes,
     ]
   );
 
@@ -258,6 +312,11 @@ export function useWhiteboardEvents(
       }
 
       drawingRef.current = false;
+      // finalize shape if we were drawing a new one (not moving/panning/eraser)
+      if (type !== "hand" && type !== "eraser" && type !== "mouse" && type !== "word") {
+        const last = reDrawController.getShapes()[reDrawController.getShapes().length - 1];
+        if (last) dispatcherRef.current?.finalizeShape(last.getId());
+      }
       if (type === "hand") {
         moveBoardRef.current = false;
         const { x, y } = getCanvasCoordinates(e, canvas);

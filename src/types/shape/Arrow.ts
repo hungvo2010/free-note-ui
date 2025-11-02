@@ -42,9 +42,10 @@ export default class Arrow extends Shape {
   constructor(
     roughCanvas: RoughCanvas | undefined,
     public x1: number,
-    public y1: number
+    public y1: number,
+    id?: string
   ) {
-    super(roughCanvas);
+    super(roughCanvas, id);
   }
 
   getBoundingRect(): Rectangle {
@@ -89,7 +90,7 @@ export default class Arrow extends Shape {
   }
 
   clone(x: number, y: number): Shape {
-    const newArrow = new Arrow(this.roughCanvas, this.x1, this.y1);
+    const newArrow = new Arrow(this.roughCanvas, this.x1, this.y1, this.getId());
     newArrow.x2 = x;
     newArrow.y2 = y;
     return newArrow;

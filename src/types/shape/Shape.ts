@@ -4,6 +4,7 @@ import { calculatePadding } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 
 export abstract class Shape implements Observer {
+  private readonly _id: string;
   abstract getBoundingRect(): Rectangle;
   abstract isPointInShape(x: number, y: number): boolean;
   abstract applyNewCoordinates(x: number, y: number): Shape;
@@ -19,7 +20,12 @@ export abstract class Shape implements Observer {
     this.roughCanvas = roughCanvas;
   }
 
-  constructor(protected roughCanvas: RoughCanvas | undefined) {}
+  constructor(protected roughCanvas: RoughCanvas | undefined, id?: string) {
+    this._id = id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  }
+  public getId(): string {
+    return this._id;
+  }
   public update(state: UpdateState): void {
     this.roughCanvas = state.roughCanvas;
   }

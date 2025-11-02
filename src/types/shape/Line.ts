@@ -41,9 +41,10 @@ export class Line extends Shape {
   constructor(
     roughCanvas: RoughCanvas | undefined,
     public x1: number,
-    public y1: number
+    public y1: number,
+    id?: string
   ) {
-    super(roughCanvas);
+    super(roughCanvas, id);
   }
   getBoundingRect(): Rectangle {
     return new Rectangle(
@@ -78,7 +79,7 @@ export class Line extends Shape {
   }
 
   clone(x: number, y: number): Shape {
-    const newLine = new Line(this.roughCanvas, this.x1, this.y1);
+    const newLine = new Line(this.roughCanvas, this.x1, this.y1, this.getId());
     newLine.x2 = x;
     newLine.y2 = y;
     return newLine;
