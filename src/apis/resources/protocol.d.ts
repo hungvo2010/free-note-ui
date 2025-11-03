@@ -17,3 +17,8 @@ export type DraftRequest = {
   port: string;
   socket: WebSocketConnection;
 };
+
+export enum RequestType {
+  CONNECT = 1,
+  INVALID = -1,
+}

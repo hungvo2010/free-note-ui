@@ -23,7 +23,7 @@ export const WebSocketProvider: React.FC<{
   const connection = connectionManager.getConnectionById(sessionId);
 
   if (!connection.alreadySetUpHandler()) {
-    setupCorrectHandlers(connection, type);
+    setupCorrectHandlers(connection);
   }
 
   return (
@@ -36,24 +36,15 @@ export const WebSocketProvider: React.FC<{
 };
 
 // TODO: Move to other classes to maintain single responsibility
-function setupCorrectHandlers(
-  connection: WebSocketConnection,
-  type: INSTANCE_TYPE
-) {
-  if (type === INSTANCE_TYPE.ECHO_ONLY) {
-    connection.setOpenHandler((socket, event) => {
-      console.log("WebSocket opened");
-    });
-    connection.setCloseHandler((socket, closeEvent) => {
-      console.log("WebSocket closed");
-    });
-    connection.setErrorHandler((socket, errorEvent) => {
-      console.log("WebSocket error");
-    });
-    connection.setHandler((socket, message) => {
-      console.log("WebSocket message");
-    });
-  }
-  if (type === INSTANCE_TYPE.CORE_APPLICATION) {
-  }
+function setupCorrectHandlers(connection: WebSocketConnection) {
+  connection.setOpenHandler((socket, event) => {
+    console.log("WebSocket opened");
+  });
+  connection.setCloseHandler((socket, closeEvent) => {
+    console.log("WebSocket closed");
+  });
+  connection.setErrorHandler((socket, errorEvent) => {
+    console.log("WebSocket error");
+  });
+  connection.setHandler((socket, message) => {});
 }

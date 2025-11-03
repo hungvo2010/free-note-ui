@@ -1,29 +1,22 @@
 import { ActionType, DraftAction } from "apis/DraftAction";
-import { Draft, MessagePayload } from "apis/resources/protocol";
-import { WebSocketConnection, generateUUID } from "apis/resources/WebSocketConnection";
-import { Shape } from "types/shape/Shape";
 import { ShapeSerializer } from "apis/resources/ShapeSerializer";
+import {
+  WebSocketConnection,
+  generateUUID,
+} from "apis/resources/WebSocketConnection";
+import { Shape } from "types/shape/Shape";
+import { RequestType } from "./protocol";
 
-type DraftIds = { draftId?: string; draftName?: string };
+type DraftEntity = { draftId?: string; draftName?: string };
 
 export class ShapeEventDispatcher {
-  constructor(private socket: WebSocketConnection, private ids: DraftIds) {}
+  constructor(
+    private socket: WebSocketConnection,
+    private draftEntities: DraftEntity
+  ) {}
 
-  private send(actions: DraftAction[]) {
-    const draft: Draft = {
-      draftId: this.ids.draftId || "",
-      draftName: this.ids.draftName || "",
-      draftActions: actions,
-    };
-    const payload: MessagePayload = {
-      messageId: generateUUID(),
-      payload: JSON.stringify(draft),
-    };
-    this.socket.sendAction(JSON.stringify(payload));
-  }
-
-  public setDraft(ids: DraftIds) {
-    this.ids = ids;
+  public setDraft(entities: DraftEntity) {
+    this.draftEntities = entities;
   }
 
   // shapeData should be a serializable description of the shape
@@ -32,10 +25,10 @@ export class ShapeEventDispatcher {
       ? ShapeSerializer.serialize(shapeData as Shape)
       : { type: (shapeData as any).type, data: shapeData };
     const action: DraftAction = {
-      type: ActionType.INIT,
+      type: ActionType.UPDATE,
       data: { op: "add", shape: payload },
     };
-    this.send([action]);
+    this.sendOne(action);
   }
 
   updateShape(id: string, patch: Record<string, any> | Shape) {
@@ -46,7 +39,7 @@ export class ShapeEventDispatcher {
       type: ActionType.UPDATE,
       data: { op: "update", id, patch: payload },
     };
-    this.send([action]);
+    this.sendOne(action);
   }
 
   pan(offset: { x: number; y: number }) {
@@ -54,7 +47,7 @@ export class ShapeEventDispatcher {
       type: ActionType.UPDATE,
       data: { op: "pan", offset },
     };
-    this.send([action]);
+    this.sendOne(action);
   }
 
   deleteShapes(ids: string[]) {
@@ -62,7 +55,7 @@ export class ShapeEventDispatcher {
       type: ActionType.UPDATE,
       data: { op: "delete", ids },
     };
-    this.send([action]);
+    this.sendOne(action);
   }
 
   finalizeShape(id: string) {
@@ -70,6 +63,22 @@ export class ShapeEventDispatcher {
       type: ActionType.UPDATE,
       data: { op: "finalize", id },
     };
-    this.send([action]);
+    this.sendOne(action);
+  }
+
+  private sendOne(action: DraftAction) {
+    const wireMessage = {
+      messageId: generateUUID(),
+      payload: {
+        draftId: this.draftEntities.draftId,
+        draftName: this.draftEntities.draftName,
+        requestType: RequestType.CONNECT,
+        content: {
+          type: action.type,
+          details: action.data,
+        },
+      },
+    } as const;
+    this.socket.sendAction(JSON.stringify(wireMessage));
   }
 }

@@ -17,6 +17,8 @@ export class WebSocketConnection {
   }
 
   public sendAction(action: string): void {
+    console.log("Sending action");
+    console.log(this.socket)
     if (this.socket) {
       this.socket.send(action);
     }
@@ -71,5 +73,5 @@ export class WebSocketConnection {
 }
 
 export function generateUUID(): string {
-  return new Date().getMilliseconds().toString();
+  return crypto.randomUUID();
 }

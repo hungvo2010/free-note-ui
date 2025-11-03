@@ -1,6 +1,3 @@
-import { ActionType, DraftAction } from "apis/DraftAction";
-import { MessagePayload } from "apis/resources/protocol";
-import { generateUUID } from "apis/resources/WebSocketConnection";
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketContext } from "contexts/WebSocketContext";
 import {
@@ -97,11 +94,17 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
   );
 
   const getDraftId = useCallback(() => {
-    return params.draftId;
+    console.log("get draft id: ", params);
+    const value = (params as Record<string, any>).draftId;
+    console.log(value);
+    return typeof value === "string" && value !== "" ? value : undefined;
   }, [params]);
 
   const getDraftName = useCallback(() => {
-    return params.draftName;
+    console.log("get draft name: ", params);
+    const value = (params as Record<string, any>).draftName;
+    console.log(value);
+    return typeof value === "string" && value !== "" ? value : undefined;
   }, [params]);
 
   const handleMouseDown = useCallback(
@@ -120,6 +123,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
       }
       await webSocketConnection?.connect();
       if (!dispatcherRef.current && webSocketConnection) {
+        console.log("Creating dispatcher");
         dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
           draftId: getDraftId(),
           draftName: getDraftName(),
@@ -268,7 +272,10 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         );
         dragStartPosRef.current = { x, y };
         // Dispatch move of existing shape
-        dispatcherRef.current?.updateShape(selectedShape.getId(), selectedShape);
+        dispatcherRef.current?.updateShape(
+          selectedShape.getId(),
+          selectedShape
+        );
         reDrawController.reDraw(0, 0);
         return;
       }
@@ -286,7 +293,8 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         return;
       // console.log("update last shape");
       reDrawController.updateLastShape(startPosition.x, startPosition.y, x, y);
-      const last = reDrawController.getShapes()[reDrawController.getShapes().length - 1];
+      const last =
+        reDrawController.getShapes()[reDrawController.getShapes().length - 1];
       if (last) dispatcherRef.current?.updateShape(last.getId(), last);
       reDrawController.reDraw(0, 0);
     },
@@ -313,8 +321,14 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
 
       drawingRef.current = false;
       // finalize shape if we were drawing a new one (not moving/panning/eraser)
-      if (type !== "hand" && type !== "eraser" && type !== "mouse" && type !== "word") {
-        const last = reDrawController.getShapes()[reDrawController.getShapes().length - 1];
+      if (
+        type !== "hand" &&
+        type !== "eraser" &&
+        type !== "mouse" &&
+        type !== "word"
+      ) {
+        const last =
+          reDrawController.getShapes()[reDrawController.getShapes().length - 1];
         if (last) dispatcherRef.current?.finalizeShape(last.getId());
       }
       if (type === "hand") {
