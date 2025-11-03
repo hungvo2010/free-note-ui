@@ -1,9 +1,9 @@
 import { ActionType, DraftAction } from "apis/DraftAction";
-import { ShapeSerializer } from "apis/resources/ShapeSerializer";
+import { ShapeSerializer } from "core/ShapeSerializer";
 import {
   WebSocketConnection,
   generateUUID,
-} from "apis/resources/WebSocketConnection";
+} from "apis/resources/connection/SocketConnection";
 import { Shape } from "types/shape/Shape";
 import { RequestType } from "./protocol";
 

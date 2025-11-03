@@ -1,14 +1,13 @@
-import { ConnectionManager } from "apis/resources/ConnectionManager";
-import { WebSocketConnection } from "apis/resources/WebSocketConnection";
+import { ConnectionManager } from "apis/resources/connection/ConnectionManager";
+import { WebSocketConnection } from "apis/resources/connection/SocketConnection";
 import { useContext, useMemo } from "react";
 import { WebSocketContext } from "../contexts/WebSocketContext";
 import { useSessionStorage } from "./useSessionStorage";
 
 export const useWebSocketManager: () => ConnectionManager = () => {
-  const sessionId = useSessionStorage().getItem("sessionId");
   const connectionManager = useMemo(() => {
     return new ConnectionManager();
-  }, [sessionId]);
+  }, []);
   return connectionManager;
 };
 

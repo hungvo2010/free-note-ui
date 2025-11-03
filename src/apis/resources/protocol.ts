@@ -1,5 +1,5 @@
 import { DraftAction } from "../DraftAction";
-import { WebSocketConnection } from "./WebSocketConnection";
+import { WebSocketConnection } from "./connection/SocketConnection";
 
 export type MessagePayload = {
   messageId: string;

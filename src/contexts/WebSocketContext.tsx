@@ -1,5 +1,5 @@
-import { ConnectionManager } from "apis/resources/ConnectionManager";
-import { WebSocketConnection } from "apis/resources/WebSocketConnection";
+import { ConnectionManager } from "apis/resources/connection/ConnectionManager";
+import { WebSocketConnection } from "apis/resources/connection/SocketConnection";
 import { useSessionStorage } from "hooks/useSessionStorage";
 import { useWebSocketManager } from "hooks/useWebSocket";
 import { createContext } from "react";
@@ -19,9 +19,17 @@ export const WebSocketProvider: React.FC<{
   type?: INSTANCE_TYPE;
 }> = ({ children, type = INSTANCE_TYPE.ECHO_ONLY }) => {
   const connectionManager = useWebSocketManager();
-  const sessionId = useSessionStorage().getItem("sessionId");
+  const storage = useSessionStorage();
+  let sessionId: string | null = storage.getItem("sessionId");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    storage.setItem("sessionId", sessionId);
+  }
   const connection = connectionManager.getConnectionById(sessionId);
 
+  if (!connection.isHealthy()) {
+    connection.connect();
+  }
   if (!connection.alreadySetUpHandler()) {
     setupCorrectHandlers(connection);
   }
@@ -46,5 +54,8 @@ function setupCorrectHandlers(connection: WebSocketConnection) {
   connection.setErrorHandler((socket, errorEvent) => {
     console.log("WebSocket error");
   });
-  connection.setHandler((socket, message) => {});
+  connection.setHandler((socket, message) => {
+    console.log("websocket received message: ", message);
+    
+  });
 }

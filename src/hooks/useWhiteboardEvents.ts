@@ -1,3 +1,4 @@
+import EventBus from "apis/resources/event/EventBus";
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketContext } from "contexts/WebSocketContext";
 import {
@@ -28,6 +29,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const prevLockedRef = useRef(isLocked);
   const isDraggingShapeRef = useRef(false);
   const isEditingTextRef = useRef(false);
+  const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
   const { theme } = useTheme();
   const {
     reDrawController,
@@ -42,7 +44,6 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     throw new Error("useWebSocket must be used within a WhiteboardProvider");
   }
   const webSocketConnection = context.webSocketConnection;
-  const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
   const params = useParams();
 
   useLayoutEffect(() => {
@@ -94,16 +95,14 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
   );
 
   const getDraftId = useCallback(() => {
-    console.log("get draft id: ", params);
     const value = (params as Record<string, any>).draftId;
-    console.log(value);
+    console.log("get draft id: ", value);
     return typeof value === "string" && value !== "" ? value : undefined;
   }, [params]);
 
   const getDraftName = useCallback(() => {
-    console.log("get draft name: ", params);
     const value = (params as Record<string, any>).draftName;
-    console.log(value);
+    console.log("get draft name: ", value);
     return typeof value === "string" && value !== "" ? value : undefined;
   }, [params]);
 
@@ -127,6 +126,23 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
           draftId: getDraftId(),
           draftName: getDraftName(),
+        });
+        EventBus.setHandler(async (message) => {
+          console.log("EventBus: ", message);
+          if (message instanceof Blob) {
+            const text = await message.text();
+            console.log('Message text:', text);
+
+            // If it’s JSON, parse it:
+            try {
+              const json = JSON.parse(text);
+              console.log('Parsed JSON:', json);
+            } catch (e) {
+              console.log('Not JSON:', text);
+            }
+          } else {
+            console.log('Message:', message);
+          }
         });
       } else {
         dispatcherRef.current?.setDraft({

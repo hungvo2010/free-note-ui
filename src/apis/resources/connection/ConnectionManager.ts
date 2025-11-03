@@ -1,4 +1,4 @@
-import { WebSocketConnection } from "./WebSocketConnection";
+import { WebSocketConnection } from "./SocketConnection";
 
 export class ConnectionManager {
   constructor() {}
@@ -12,9 +12,10 @@ export class ConnectionManager {
   }
 
   getConnectionById(sid: string): WebSocketConnection {
-    var connection = this.connectionsMap.get(sid);
+    const key = sid || "default";
+    var connection = this.connectionsMap.get(key);
     if (!connection) {
-      connection = this.initConnection(sid);
+      connection = this.initConnection(key);
     }
     return connection;
   }
