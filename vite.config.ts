@@ -5,11 +5,11 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const reactAppKeys = [
-    'REACT_APP_WS_URL',
-    'REACT_APP_WS_HOST',
-    'REACT_APP_WS_PORT',
-    'REACT_APP_WS_PATH',
-    'REACT_APP_WS_SECURE',
+    'VITE_WS_URL',
+    'VITE_WS_HOST',
+    'VITE_WS_PORT',
+    'VITE_WS_PATH',
+    'VITE_WS_SECURE',
   ] as const
 
   const define: Record<string, string> = {}

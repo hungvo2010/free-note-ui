@@ -8,22 +8,22 @@
 export const getRemoteUrl = (): string => {
   const env = (import.meta as any).env || {};
 
-  // Prefer REACT_APP_* variables for compatibility
-  const explicitUrl: string | undefined = env.REACT_APP_WS_URL || env.VITE_WS_URL;
+  // Prefer VITE_* variables for compatibility
+  const explicitUrl: string | undefined = env.VITE_WS_URL || env.VITE_WS_URL;
   if (explicitUrl) return explicitUrl;
 
   const hasWindow = typeof window !== "undefined";
-  const path = (env.REACT_APP_WS_PATH as string) || (env.VITE_WS_PATH as string) || "/freeNote";
+  const path = (env.VITE_WS_PATH as string) || (env.VITE_WS_PATH as string) || "/freeNote";
   const secureFromEnv =
-    String(env.REACT_APP_WS_SECURE || env.VITE_WS_SECURE || "").toLowerCase() === "true";
+    String(env.VITE_WS_SECURE || env.VITE_WS_SECURE || "").toLowerCase() === "true";
   const protocol = secureFromEnv
     ? "wss"
     : hasWindow && window.location.protocol === "https:"
     ? "wss"
     : "ws";
 
-  const envHost = (env.REACT_APP_WS_HOST as string | undefined) || (env.VITE_WS_HOST as string | undefined);
-  const envPort = (env.REACT_APP_WS_PORT as string | undefined) || (env.VITE_WS_PORT as string | undefined);
+  const envHost = (env.VITE_WS_HOST as string | undefined) || (env.VITE_WS_HOST as string | undefined);
+  const envPort = (env.VITE_WS_PORT as string | undefined) || (env.VITE_WS_PORT as string | undefined);
 
   let hostPort: string;
   if (envHost) {
