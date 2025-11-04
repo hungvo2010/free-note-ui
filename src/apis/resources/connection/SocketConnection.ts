@@ -30,7 +30,7 @@ export class WebSocketConnection {
   }
 
   public setHandler(
-    handler: (socket: WebSocket, message: string) => void
+    handler: (socket: WebSocket | null, message: string) => void
   ): void {
     console.log(
       "about to setting handler, but wait this socket is:  " + this.socket
@@ -59,7 +59,7 @@ export class WebSocketConnection {
   }
 
   public setErrorHandler(
-    handler: (socket: WebSocket, errorEvent: Event) => void
+    handler: (socket: WebSocket | null, errorEvent: Event) => void
   ): void {
     if (this.socket) {
       this.socket.onerror = (errorEvent: Event) => {
@@ -69,7 +69,7 @@ export class WebSocketConnection {
   }
 
   public setCloseHandler(
-    handler: (socket: WebSocket, closeEvent: CloseEvent) => void
+    handler: (socket: WebSocket | null, closeEvent: CloseEvent) => void
   ): void {
     if (this.socket) {
       this.socket.onclose = (closeEvent: CloseEvent) => {
@@ -78,7 +78,7 @@ export class WebSocketConnection {
     }
   }
   public setOpenHandler(
-    handler: (socket: WebSocket, event: Event) => void
+    handler: (socket: WebSocket | null, event: Event) => void
   ): void {
     if (this.socket) {
       this.socket.onopen = (event: Event) => {
