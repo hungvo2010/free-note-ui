@@ -120,7 +120,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         isEditingTextRef.current = false;
         return;
       }
-      await webSocketConnection?.connect();
+      // await webSocketConnection?.connect();
       if (!dispatcherRef.current && webSocketConnection) {
         console.log("Creating dispatcher");
         dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {

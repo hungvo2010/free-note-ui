@@ -1,8 +1,9 @@
-import { getRemoteUrl } from "../../../environment/Environment";
+import { getRemoteUrl } from "environment/Environment";
 import EventBus from "../event/EventBus";
 const remoteUrl = getRemoteUrl();
 
 export class WebSocketConnection {
+  public static numberOfConnections: number = 0;
   private socket: WebSocket | null = null;
   private sessionId: string;
   constructor() {
@@ -13,8 +14,14 @@ export class WebSocketConnection {
     if (this.socket && this.socket.readyState === WebSocket.OPEN) {
       return;
     }
-    if (!this.socket || this.socket.readyState === WebSocket.CLOSED) {
+
+    if (!this.socket) {
+      console.log("Creating new socket");
       this.socket = new WebSocket(remoteUrl);
+      WebSocketConnection.numberOfConnections++;
+      console.log(
+        "Number of connections: " + WebSocketConnection.numberOfConnections
+      );
     }
   }
 
