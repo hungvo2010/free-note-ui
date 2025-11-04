@@ -20,7 +20,7 @@ export class WebSocketConnection {
 
   public sendAction(action: string): void {
     try {
-      console.log("Sending action");
+      // console.log("Sending action");
       if (this.socket) {
         this.socket.send(action);
       }
@@ -37,7 +37,7 @@ export class WebSocketConnection {
     );
     if (this.socket) {
       this.socket.onmessage = async (event) => {
-        console.log("Received message:  ", event.data);
+        // console.log("Received message:  ", event.data);
         if (event.data instanceof Blob) {
           const text = await event.data.text();
           console.log("Message text:", text);

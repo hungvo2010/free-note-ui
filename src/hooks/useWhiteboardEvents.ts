@@ -128,7 +128,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
           draftName: getDraftName(),
         });
         EventBus.setHandler(async (message) => {
-          console.log("EventBus: ", message);
+          // console.log("EventBus: ", message);
           if (message instanceof Blob) {
             const text = await message.text();
             console.log('Message text:', text);

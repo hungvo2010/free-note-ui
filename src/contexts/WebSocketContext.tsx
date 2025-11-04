@@ -55,7 +55,7 @@ function setupCorrectHandlers(connection: WebSocketConnection) {
     console.log("WebSocket error");
   });
   connection.setHandler((socket, message) => {
-    console.log("websocket received message: ", message);
+    // console.log("websocket received message: ", message);
     
   });
 }
