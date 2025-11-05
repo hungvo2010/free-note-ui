@@ -72,7 +72,7 @@ export class ShapeEventDispatcher {
       payload: {
         draftId: this.draftEntities.draftId,
         draftName: this.draftEntities.draftName,
-        requestType: RequestType.CONNECT,
+        requestType: RequestType.DATA,
         content: {
           type: action.type,
           details: action.data,

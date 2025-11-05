@@ -20,5 +20,6 @@ export type DraftRequest = {
 
 export enum RequestType {
   CONNECT = 1,
+  DATA = 2,
   INVALID = -1,
 }
