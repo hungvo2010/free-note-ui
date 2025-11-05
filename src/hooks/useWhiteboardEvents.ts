@@ -1,4 +1,5 @@
 import EventBus from "apis/resources/event/EventBus";
+import { RequestType } from "apis/resources/protocol";
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketContext } from "contexts/WebSocketContext";
 import {
@@ -132,12 +133,14 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
           // console.log("EventBus: ", message);
           if (message instanceof Blob) {
             const text = await message.text();
-            console.log("Message text:", text);
+            // console.log("Message text:", text);
             // If it’s JSON, parse it:
             try {
               const json = JSON.parse(text);
-              console.log("Parsed JSON:", json);
-              navigate(`/draft/${json.payload.draftId}`);
+              console.log("Parsed JSON: ", json);
+              if (json.payload.draftId) {
+                navigate(`/draft/${json.payload.draftId}`);
+              }
             } catch (e) {
               console.log("Not JSON:", text);
             }

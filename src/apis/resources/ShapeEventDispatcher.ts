@@ -1,9 +1,9 @@
 import { ActionType, DraftAction } from "apis/DraftAction";
-import { ShapeSerializer } from "core/ShapeSerializer";
 import {
   WebSocketConnection,
   generateUUID,
 } from "apis/resources/connection/SocketConnection";
+import { ShapeSerializer } from "core/ShapeSerializer";
 import { Shape } from "types/shape/Shape";
 import { RequestType } from "./protocol";
 
@@ -17,6 +17,7 @@ export class ShapeEventDispatcher {
 
   public setDraft(entities: DraftEntity) {
     this.draftEntities = entities;
+    this.creatingDraft();
   }
 
   // shapeData should be a serializable description of the shape
@@ -58,6 +59,14 @@ export class ShapeEventDispatcher {
     this.sendOne(action);
   }
 
+  creatingDraft() {
+    const action: DraftAction = {
+      type: ActionType.UPDATE,
+      data: { op: "creating" },
+    };
+    this.sendOne(action, RequestType.CONNECT);
+  }
+
   finalizeShape(id: string) {
     const action: DraftAction = {
       type: ActionType.UPDATE,
@@ -66,13 +75,16 @@ export class ShapeEventDispatcher {
     this.sendOne(action);
   }
 
-  private sendOne(action: DraftAction) {
+  private sendOne(
+    action: DraftAction,
+    requestType: RequestType = RequestType.DATA
+  ) {
     const wireMessage = {
       messageId: generateUUID(),
       payload: {
         draftId: this.draftEntities.draftId,
         draftName: this.draftEntities.draftName,
-        requestType: RequestType.DATA,
+        requestType,
         content: {
           type: action.type,
           details: action.data,
