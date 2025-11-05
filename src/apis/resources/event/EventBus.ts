@@ -1,10 +1,10 @@
 const EventBus = {
-  handler: (msg: any) => {},
-  onEvent(message: any) {
+  handler: (msg: Blob | string) => {},
+  onEvent(message: Blob | string) {
     this.handler(message);
   },
 
-  setHandler(handler: (message: any) => void) {
+  setHandler(handler: (message: Blob | string) => void) {
     this.handler = handler;
   },
 };

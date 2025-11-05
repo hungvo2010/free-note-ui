@@ -8,7 +8,7 @@ import {
   useLayoutEffect,
   useRef,
 } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { ImageService } from "services/ImageService";
 import { TextShape } from "types/shape/Text";
 import { updateCursorType } from "utils/CommonUtils";
@@ -40,6 +40,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     setSelectedShape,
   } = useWhiteboard();
   const context = useContext(WebSocketContext);
+  const navigate = useNavigate();
   if (!context) {
     throw new Error("useWebSocket must be used within a WhiteboardProvider");
   }
@@ -131,17 +132,17 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
           // console.log("EventBus: ", message);
           if (message instanceof Blob) {
             const text = await message.text();
-            console.log('Message text:', text);
-
+            console.log("Message text:", text);
             // If it’s JSON, parse it:
             try {
               const json = JSON.parse(text);
-              console.log('Parsed JSON:', json);
+              console.log("Parsed JSON:", json);
+              navigate(`/draft/${json.payload.draftId}`);
             } catch (e) {
-              console.log('Not JSON:', text);
+              console.log("Not JSON:", text);
             }
           } else {
-            console.log('Message:', message);
+            console.log("Message:", message);
           }
         });
       } else {

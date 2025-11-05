@@ -1,9 +1,8 @@
-import { StrictMode, useState } from "react";
+import { useState } from "react";
+import { BrowserRouter, Route, Routes } from "react-router";
+import WhiteboardPage from "WhiteBoardPage";
 import "./App.css";
-import WhiteBoard from "./components/rough/WhiteBoard";
-import Toolbar from "./components/toolbar/Toolbar";
 import "./styles/global.scss";
-import { ThemeProvider } from "./contexts/ThemeContext";
 const options = [
   "lock",
   "hand",
@@ -27,19 +26,12 @@ function App() {
   };
 
   return (
-    <ThemeProvider>
-      <Toolbar
-        options={options}
-        selected={selected}
-        handleSelected={handleSelected}
-      />
-      <StrictMode>
-        <WhiteBoard
-          type={options[selected]}
-          isLocked={options[selected] === "lock"}
-        />
-      </StrictMode>
-    </ThemeProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/draft/:draftId" element={<WhiteboardPage />} />
+        <Route path="/" element={<WhiteboardPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

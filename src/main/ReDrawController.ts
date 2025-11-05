@@ -84,13 +84,13 @@ export class ReDrawController implements Subject {
     if (ctx) {
       ctx.clearRect(0, 0, this.canvas?.width || 0, this.canvas?.height || 0);
     }
-    for (const shape of this.shapes) {
+    for (const shape of this.shapes || []) {
       shape.setRoughCanvas(this.roughCanvas);
       shape.draw(offsetX, offsetY);
     }
   }
 
-  public updateShapes(shapes: Shape[]): void {
+  public setShapes(shapes: Shape[]): void {
     this.shapes = shapes;
   }
 
