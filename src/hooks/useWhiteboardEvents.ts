@@ -1,5 +1,4 @@
 import EventBus from "apis/resources/event/EventBus";
-import { RequestType } from "apis/resources/protocol";
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketContext } from "contexts/WebSocketContext";
 import {
@@ -97,13 +96,13 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
   );
 
   const getDraftId = useCallback(() => {
-    const value = (params as Record<string, any>).draftId;
+    const value = params.draftId;
     console.log("get draft id: ", value);
     return typeof value === "string" && value !== "" ? value : undefined;
   }, [params]);
 
   const getDraftName = useCallback(() => {
-    const value = (params as Record<string, any>).draftName;
+    const value = params.draftName;
     console.log("get draft name: ", value);
     return typeof value === "string" && value !== "" ? value : undefined;
   }, [params]);
@@ -130,11 +129,8 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
           draftName: getDraftName(),
         });
         EventBus.setHandler(async (message) => {
-          // console.log("EventBus: ", message);
           if (message instanceof Blob) {
             const text = await message.text();
-            // console.log("Message text:", text);
-            // If it’s JSON, parse it:
             try {
               const json = JSON.parse(text);
               console.log("Parsed JSON: ", json);
@@ -211,6 +207,9 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
       roughCanvas,
       reDrawController,
       isEditingTextRef,
+      webSocketConnection,
+      getDraftId,
+      getDraftName,
     ]
   );
 

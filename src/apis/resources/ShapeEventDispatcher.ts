@@ -12,11 +12,11 @@ type DraftEntity = { draftId?: string; draftName?: string };
 export class ShapeEventDispatcher {
   constructor(
     private socket: WebSocketConnection,
-    private draftEntities: DraftEntity
+    private currentDraft: DraftEntity
   ) {}
 
-  public setDraft(entities: DraftEntity) {
-    this.draftEntities = entities;
+  public setDraft(draft: DraftEntity) {
+    this.currentDraft = draft;
     this.creatingDraft();
   }
 
@@ -82,8 +82,8 @@ export class ShapeEventDispatcher {
     const wireMessage = {
       messageId: generateUUID(),
       payload: {
-        draftId: this.draftEntities.draftId,
-        draftName: this.draftEntities.draftName,
+        draftId: this.currentDraft.draftId,
+        draftName: this.currentDraft.draftName,
         requestType,
         content: {
           type: action.type,
