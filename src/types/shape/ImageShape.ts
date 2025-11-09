@@ -1,8 +1,23 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
+import { SerializedShape } from "core/ShapeSerializer";
 
 export class ImageShape extends Shape {
+  serialize(): SerializedShape {
+    return {
+      type: "image",
+      data: {
+        id: this.getId(),
+        url: this.url,
+        x: this.x,
+        y: this.y,
+        width: this.width,
+        height: this.height,
+      },
+    };
+  }
+
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
     return false;
   }

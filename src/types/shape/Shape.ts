@@ -2,6 +2,7 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { Observer, UpdateState } from "types/Observer";
 import { calculatePadding } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
+import { SerializedShape } from "core/ShapeSerializer";
 
 export abstract class Shape implements Observer {
   private readonly _id: string;
@@ -19,6 +20,7 @@ export abstract class Shape implements Observer {
   public setRoughCanvas(roughCanvas: RoughCanvas | undefined) {
     this.roughCanvas = roughCanvas;
   }
+  abstract serialize(): SerializedShape;
 
   constructor(protected roughCanvas: RoughCanvas | undefined, id?: string) {
     this._id = id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;

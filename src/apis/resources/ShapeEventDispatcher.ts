@@ -21,10 +21,8 @@ export class ShapeEventDispatcher {
   }
 
   // shapeData should be a serializable description of the shape
-  addShape(shapeData: Record<string, any> | Shape) {
-    const payload = (shapeData as Shape).draw
-      ? ShapeSerializer.serialize(shapeData as Shape)
-      : { type: (shapeData as any).type, data: shapeData };
+  addShape(shapeData: Shape) {
+    const payload = ShapeSerializer.serialize(shapeData);
     const action: DraftAction = {
       type: ActionType.UPDATE,
       data: { op: "add", shape: payload },
@@ -32,10 +30,8 @@ export class ShapeEventDispatcher {
     this.sendOne(action);
   }
 
-  updateShape(id: string, patch: Record<string, any> | Shape) {
-    const payload = (patch as Shape).draw
-      ? ShapeSerializer.serialize(patch as Shape)
-      : { type: (patch as any).type, data: patch };
+  updateShape(id: string, patch: Shape) {
+    const payload = ShapeSerializer.serialize(patch);
     const action: DraftAction = {
       type: ActionType.UPDATE,
       data: { op: "update", id, patch: payload },

@@ -5,8 +5,15 @@ import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 import { distance } from "utils/GeometryUtils";
 import { UpdateState } from "types/Observer";
+import { SerializedShape } from "core/ShapeSerializer";
 
 export class FreeStyleShape extends Shape {
+  serialize(): SerializedShape {
+    return {
+      type: "freestyle",
+      data: { id: this.getId(), points: this.points },
+    };
+  }
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
     if (this.drawable && offsetX === 0 && offsetY === 0) {
       this.roughCanvas?.draw(this.drawable);

@@ -4,6 +4,7 @@ import { distance, isInLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 import { UpdateState } from "types/Observer";
+import { SerializedShape } from "core/ShapeSerializer";
 
 export class Diamond extends Shape {
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
@@ -132,5 +133,13 @@ export class Diamond extends Shape {
         seed: 1,
       }
     );
+  }
+
+
+  serialize(): SerializedShape {
+    return {
+        type: "diamond",
+        data: { id: this.getId(), x1: this.x1, y1: this.y1, x2: this.x2, y2: this.y2 },
+      };
   }
 }

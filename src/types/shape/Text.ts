@@ -1,11 +1,20 @@
 import SimpleTextEditor from "components/editor/SimpleTextEditor";
 import TextEditor, { Position } from "components/editor/TextEditor";
+import { SerializedShape } from "core/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { UpdateState } from "types/Observer";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { UpdateState } from "types/Observer";
 
 export class TextShape extends Shape implements TextEditor {
+  serialize(): SerializedShape {
+    const pos = this.getPosition();
+    return {
+      type: "text",
+      data: { id: this.getId(), x: pos.x, y: pos.y, text: this.getText() },
+    };
+  }
+
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
     return false;
   }

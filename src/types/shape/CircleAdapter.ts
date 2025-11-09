@@ -3,6 +3,7 @@ import { distance } from "utils/GeometryUtils";
 import { Circle } from "./Circle";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
+import { SerializedShape } from "core/ShapeSerializer";
 
 export class CircleAdapter extends Shape {
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
@@ -87,5 +88,18 @@ export class CircleAdapter extends Shape {
   }
   getRadius(): number {
     return this.circle.getRadius;
+  }
+
+  serialize(): SerializedShape {
+    const center = this.circle.getCenterPoint();
+    return {
+      type: "circle",
+      data: {
+        id: this.getId(),
+        x: center.x,
+        y: center.y,
+        radius: this.getRadius(),
+      },
+    };
   }
 }

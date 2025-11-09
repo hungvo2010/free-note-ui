@@ -1,9 +1,25 @@
+import { SerializedShape } from "core/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
 export class RectangleAdapter extends Shape {
+  serialize(): SerializedShape {
+    const start = this.getStartPoint();
+    const size = this.getSize();
+    return {
+      type: "rectangle",
+      data: {
+        id: this.getId(),
+        x: start.x,
+        y: start.y,
+        width: size.width,
+        height: size.height,
+      },
+    };
+  }
+
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
     const result = Object.is(this.roughCanvas, this.rectangle.getRoughCanvas());
     if (result) {
@@ -11,6 +27,7 @@ export class RectangleAdapter extends Shape {
     }
     return result;
   }
+
   drawNew(offsetX: number, offsetY: number): void {
     const newRectangle = new Rectangle(
       this.roughCanvas,
