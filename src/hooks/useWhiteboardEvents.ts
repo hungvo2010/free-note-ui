@@ -9,7 +9,6 @@ import {
   useRef,
 } from "react";
 import { useNavigate, useParams } from "react-router";
-import { ImageService } from "services/ImageService";
 import { TextShape } from "types/shape/Text";
 import { updateCursorType } from "utils/CommonUtils";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
@@ -17,6 +16,13 @@ import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { ShapeFactory } from "utils/ShapeFactory";
 import { useTheme } from "./useTheme";
 import { useWhiteboard } from "./useWhiteboard";
+import { createDispatcherApi } from "./whiteboard/dispatcher";
+import { createEraserTool } from "./whiteboard/tools/eraser";
+import { createImageTool } from "./whiteboard/tools/image";
+import { createPanTool } from "./whiteboard/tools/pan";
+import { createSelectTool } from "./whiteboard/tools/select";
+import { createTextTool } from "./whiteboard/tools/text";
+import { ToolDeps } from "./whiteboard/types";
 
 export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const drawingRef = useRef(false);
@@ -46,6 +52,37 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
   }
   const webSocketConnection = context.webSocketConnection;
   const params = useParams();
+  const dispatcherApi = createDispatcherApi(dispatcherRef);
+  const refs = {
+    drawingRef,
+    positionRef,
+    dragStartPosRef,
+    moveBoardRef,
+    eraserModeRef,
+    eraserSizeRef,
+    eraserCursorTimeoutRef,
+    isDraggingShapeRef,
+    isEditingTextRef,
+  };
+  const getSelectedShape = () => selectedShape;
+  const toolDeps: ToolDeps = {
+    canvas,
+    roughCanvas,
+    reDrawController,
+    shapes,
+    theme,
+    setSelectedShape,
+    getSelectedShape,
+    dispatcher: dispatcherApi,
+    refs,
+  };
+  const toolsMap = {
+    image: createImageTool(toolDeps),
+    text: createTextTool(toolDeps),
+    select: createSelectTool(toolDeps),
+    pan: createPanTool(toolDeps),
+    eraser: createEraserTool(toolDeps),
+  };
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -152,27 +189,10 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
       }
 
       if (type === "eraser") {
-        // dont need to send action for eraser
-        // Just set eraser mode to true, don't erase yet
-        eraserModeRef.current = true;
-        updateCursorType(canvas, "eraser");
+        toolsMap[type].onDown({ x, y });
         return;
       } else if (type === "image") {
-        ImageService.openImageDialog(
-          (imageShape) => {
-            reDrawController.addShape(imageShape);
-            console.log(imageShape);
-            setSelectedShape(imageShape);
-          },
-          roughCanvas,
-          x,
-          y,
-          () => {
-            reDrawController.reDraw(0, 0);
-            console.log("redraw image shape if any: ", selectedShape);
-            selectedShape?.drawBoundingBox(canvas);
-          }
-        );
+        toolsMap[type].onDown({ x, y });
         return;
       } else if (type === "word") {
         const textShape = new TextShape(roughCanvas, x, y, "");
