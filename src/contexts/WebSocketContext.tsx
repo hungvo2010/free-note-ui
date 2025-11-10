@@ -6,13 +6,14 @@ import { createContext } from "react";
 import { INSTANCE_TYPE } from "../hooks/useWebSocket";
 
 interface WebSocketContextType {
-  webSocketConnection: WebSocketConnection;
-  connectionManager: ConnectionManager;
+  webSocketConnection: WebSocketConnection | null;
+  connectionManager: ConnectionManager | null;
 }
 
-export const WebSocketContext = createContext<WebSocketContextType | undefined>(
-  undefined
-);
+export const WebSocketContext = createContext<WebSocketContextType>({
+  webSocketConnection: null,
+  connectionManager: null,
+});
 
 export const WebSocketProvider: React.FC<{
   children: React.ReactNode;
