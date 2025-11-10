@@ -6,13 +6,15 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
 } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate } from "react-router";
 import { TextShape } from "types/shape/Text";
 import { updateCursorType } from "utils/CommonUtils";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
+import { useDraft } from "./useDraft";
 import { useTheme } from "./useTheme";
 import { useWhiteboard } from "./useWhiteboard";
 import { createDispatcherApi } from "./whiteboard/dispatcher";
@@ -51,7 +53,6 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     throw new Error("useWebSocket must be used within a WhiteboardProvider");
   }
   const webSocketConnection = context.webSocketConnection;
-  const params = useParams();
   const dispatcherApi = createDispatcherApi(dispatcherRef);
   const refs = {
     drawingRef,
@@ -64,6 +65,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     isDraggingShapeRef,
     isEditingTextRef,
   };
+  const { draftId, draftName } = useDraft();
   const getSelectedShape = () => selectedShape;
   const toolDeps: ToolDeps = {
     canvas,
@@ -76,14 +78,17 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     dispatcher: dispatcherApi,
     refs,
   };
-  const toolsMap = {
-    image: createImageTool(toolDeps),
-    text: createTextTool(toolDeps),
-    select: createSelectTool(toolDeps),
-    pan: createPanTool(toolDeps),
-    eraser: createEraserTool(toolDeps),
-    draw: createDrawTool(type, toolDeps),
-  };
+
+  const toolsMap = useMemo(() => {
+    return {
+      image: createImageTool(toolDeps),
+      text: createTextTool(toolDeps),
+      select: createSelectTool(toolDeps),
+      hand: createPanTool(toolDeps),
+      eraser: createEraserTool(toolDeps),
+      draw: createDrawTool(type, toolDeps),
+    };
+  }, [type, toolDeps]);
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -120,30 +125,37 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     };
   }, []);
 
-  const handleMouseEnter = useCallback(
-    (x: number, y: number, cursorType: string, eventType: string) => {
-      const selectedShape = reDrawController.checkSelectedShape(x, y);
-      setSelectedShape(selectedShape);
-      updateCursorType(canvas, selectedShape ? cursorType : "default");
-      if (eventType === "mousedown") {
-        updateCursorType(canvas, "move");
-        return;
-      }
-    },
-    [canvas, reDrawController, setSelectedShape]
-  );
-
-  const getDraftId = useCallback(() => {
-    const value = params.draftId;
-    console.log("get draft id: ", value);
-    return typeof value === "string" && value !== "" ? value : undefined;
-  }, [params]);
-
-  const getDraftName = useCallback(() => {
-    const value = params.draftName;
-    console.log("get draft name: ", value);
-    return typeof value === "string" && value !== "" ? value : undefined;
-  }, [params]);
+  const setupDispatcherAndEventBus = useCallback(() => {
+    // TODO: temporarily only
+    if (!dispatcherRef.current && webSocketConnection) {
+      console.log("Creating dispatcher");
+      dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
+        draftId,
+        draftName,
+      });
+      EventBus.setHandler(async (message) => {
+        if (message instanceof Blob) {
+          const text = await message.text();
+          try {
+            const json = JSON.parse(text);
+            console.log("Parsed JSON: ", json);
+            if (json.payload.draftId) {
+              navigate(`/draft/${json.payload.draftId}`);
+            }
+          } catch (e) {
+            console.log("Not JSON:", text);
+          }
+        } else {
+          console.log("Message:", message);
+        }
+      });
+    } else {
+      dispatcherRef.current?.setDraft({
+        draftId,
+        draftName,
+      });
+    }
+  }, [webSocketConnection, draftId, draftName, navigate]);
 
   const handleMouseDown = useCallback(
     async (e: MouseEvent) => {
@@ -154,102 +166,34 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
       const { x, y } = getCanvasCoordinates(e, canvas);
       positionRef.current = { x, y };
       dragStartPosRef.current = { x, y };
+      setupDispatcherAndEventBus();
 
-      if (isEditingTextRef.current && type !== "word") {
-        isEditingTextRef.current = false;
-        return;
-      }
-      // await webSocketConnection?.connect();
-      if (!dispatcherRef.current && webSocketConnection) {
-        console.log("Creating dispatcher");
-        dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
-          draftId: getDraftId(),
-          draftName: getDraftName(),
-        });
-        EventBus.setHandler(async (message) => {
-          if (message instanceof Blob) {
-            const text = await message.text();
-            try {
-              const json = JSON.parse(text);
-              console.log("Parsed JSON: ", json);
-              if (json.payload.draftId) {
-                navigate(`/draft/${json.payload.draftId}`);
-              }
-            } catch (e) {
-              console.log("Not JSON:", text);
-            }
-          } else {
-            console.log("Message:", message);
-          }
-        });
-      } else {
-        dispatcherRef.current?.setDraft({
-          draftId: getDraftId(),
-          draftName: getDraftName(),
-        });
-      }
+      const commonType = ["eraser", "image", "hand", "select", "text"];
 
-      if (type === "eraser") {
-        toolsMap[type].onDown({ x, y });
+      if (commonType.includes(type)) {
+        toolsMap[type as keyof typeof toolsMap].onDown({ x, y });
         return;
-      } else if (type === "image") {
-        toolsMap[type].onDown({ x, y });
-        return;
-      } else if (type === "word") {
-        toolsMap["text"].onDown({ x, y });
-        return;
-      } else if (type === "mouse") {
-        toolsMap["select"].onDown({ x, y });
-        return;
-      } else if (type === "hand") {
-        toolsMap["pan"].onDown({ x, y });
       }
 
       toolsMap["draw"].onDown({ x, y });
     },
-    [
-      isLocked,
-      canvas,
-      type,
-      selectedShape,
-      roughCanvas,
-      reDrawController,
-      isEditingTextRef,
-      webSocketConnection,
-      getDraftId,
-      getDraftName,
-    ]
+    [isLocked, canvas, type, setupDispatcherAndEventBus, toolsMap]
   );
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       const { x, y } = getCanvasCoordinates(e, canvas);
+      const commonType = ["eraser", "hand", "select", "text"];
 
       // Handle eraser dragging - move this to the top
-      if (type === "eraser") {
-        toolsMap[type].onMove({ x, y });
-        return;
-      }
-
-      if (type === "hand") {
-        toolsMap["pan"].onMove({ x, y });
-        return;
-      }
-
-      // If locked, only allow cursor changes for better UX, but no edits
-      if (type === "mouse") {
-        toolsMap["select"].onMove({ x, y });
-        return;
-      }
-
-      if (type === "word") {
-        toolsMap["text"].onMove({ x, y });
+      if (commonType.includes(type)) {
+        toolsMap[type as keyof typeof toolsMap].onMove({ x, y });
         return;
       }
 
       toolsMap["draw"].onMove({ x, y });
     },
-    [type]
+    [canvas, toolsMap, type]
   );
 
   const handleMouseUp = useCallback(
@@ -263,29 +207,19 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
       if (
         type !== "hand" &&
         type !== "eraser" &&
-        type !== "mouse" &&
-        type !== "word"
+        type !== "select" &&
+        type !== "text"
       ) {
         toolsMap[type.toString() as keyof typeof toolsMap].onUp({ x: 0, y: 0 });
       }
+      const { x, y } = getCanvasCoordinates(e, canvas);
 
-      if (type === "hand") {
-        const { x, y } = getCanvasCoordinates(e, canvas);
-        toolsMap["pan"].onUp({ x, y });
-        return;
-      }
-
-      if (type === "eraser") {
-        toolsMap["eraser"].onUp({ x: 0, y: 0 });
-        return;
-      }
-
-      if (type === "mouse") {
-        toolsMap["select"].onUp({ x: 0, y: 0 });
+      if (type === "hand" || type === "eraser" || type === "select") {
+        toolsMap[type].onUp({ x, y });
         return;
       }
     },
-    [isLocked, type, canvas, reDrawController]
+    [isLocked, type, toolsMap, canvas]
   );
 
   const handleKeyDown = useCallback(
@@ -320,11 +254,5 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     handleMouseMove,
     handleMouseUp,
     handleKeyDown,
-    drawingRef,
-    positionRef,
-    dragStartPosRef,
-    moveBoardRef,
-    eraserModeRef,
-    eraserSizeRef,
   };
 }

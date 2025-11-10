@@ -1,4 +1,7 @@
+import { ReDrawController } from "main/ReDrawController";
 import type React from "react";
+import { RoughCanvas } from "roughjs/bin/canvas";
+import { Shape } from "types/shape/Shape";
 
 export type Point = { x: number; y: number };
 
@@ -22,8 +25,8 @@ export type InteractionRefs = {
 
 export type DispatcherApi = {
   ensureDraft: () => void;
-  addShape: (shape: any) => void;
-  updateShape: (id: string, shape: any) => void;
+  addShape: (shape: Shape) => void;
+  updateShape: (id: string, shape: Shape) => void;
   finalizeShape: (id: string) => void;
   deleteShapes: (ids: string[]) => void;
   pan: (offset: Point) => void;
@@ -31,12 +34,12 @@ export type DispatcherApi = {
 
 export type ToolDeps = {
   canvas: HTMLCanvasElement | undefined;
-  roughCanvas: any;
-  reDrawController: any;
-  shapes: React.MutableRefObject<any[]>;
+  roughCanvas: RoughCanvas | undefined;
+  reDrawController: ReDrawController;
+  shapes: React.MutableRefObject<Shape[]>;
   theme: string | undefined;
-  setSelectedShape: (shape: any | null) => void;
-  getSelectedShape: () => any | null;
+  setSelectedShape: (shape: Shape | undefined) => void;
+  getSelectedShape: () => Shape | undefined;
   dispatcher: DispatcherApi;
   refs: InteractionRefs;
 };

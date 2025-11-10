@@ -1,10 +1,10 @@
 // Finite state machine to orchestrate whiteboard pointer interactions
 
 export type ToolName =
-  | "mouse"
+  | "select"
   | "hand"
   | "eraser"
-  | "word"
+  | "text"
   | "image"
   // drawing tools
   | "line"
@@ -60,7 +60,7 @@ export function transition(state: State, event: Event): State {
       if (event.type === "PointerDown") {
         if (ctx.locked) return { tag: "Idle", ctx: { ...ctx, pos: event.pos } };
         switch (ctx.currentTool) {
-          case "mouse": {
+          case "select": {
             if (event.hit) {
               return {
                 tag: "Dragging",
@@ -79,7 +79,7 @@ export function transition(state: State, event: Event): State {
               tag: "Erasing",
               ctx: { ...ctx, startPos: event.pos, pos: event.pos },
             };
-          case "word":
+          case "text":
             return {
               tag: "EditingText",
               ctx: { ...ctx, startPos: event.pos, pos: event.pos },

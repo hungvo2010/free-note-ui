@@ -13,7 +13,7 @@ export class ConnectionManager {
 
   getConnectionById(sid: string): WebSocketConnection {
     const key = sid || "default";
-    var connection = ConnectionManager.connectionsMap.get(key);
+    let connection = ConnectionManager.connectionsMap.get(key);
     if (!connection) {
       connection = this.initConnection(key);
     }

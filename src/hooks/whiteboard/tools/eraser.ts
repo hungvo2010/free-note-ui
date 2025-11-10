@@ -1,3 +1,4 @@
+import { Shape } from "types/shape/Shape";
 import type { Tool, ToolDeps } from "../types";
 
 export function createEraserTool(deps: ToolDeps): Tool {
@@ -29,8 +30,8 @@ export function createEraserTool(deps: ToolDeps): Tool {
       if (shapesToRemove.length) {
         const ids = reDrawController
           .getShapes()
-          .filter((s: any) => shapesToRemove.includes(s))
-          .map((s: any) => s.getId());
+          .filter((s: Shape) => shapesToRemove.includes(s))
+          .map((s: Shape) => s.getId());
         reDrawController.removeShapes(shapesToRemove);
         shapes.current = shapes.current.filter((shape) => !shapesToRemove.includes(shape));
         dispatcher.deleteShapes(ids);
