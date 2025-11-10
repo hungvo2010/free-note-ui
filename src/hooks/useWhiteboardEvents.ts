@@ -150,12 +150,12 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         }
       });
     } else {
-      dispatcherRef.current?.setDraft({
+      dispatcherApi.ensureDraft({
         draftId,
         draftName,
       });
     }
-  }, [webSocketConnection, draftId, draftName, navigate]);
+  }, [webSocketConnection, draftId, draftName, navigate, dispatcherApi]);
 
   const handleMouseDown = useCallback(
     async (e: MouseEvent) => {

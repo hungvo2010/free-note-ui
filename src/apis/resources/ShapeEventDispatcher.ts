@@ -6,8 +6,7 @@ import {
 import { ShapeSerializer } from "core/ShapeSerializer";
 import { Shape } from "types/shape/Shape";
 import { RequestType } from "./protocol";
-
-type DraftEntity = { draftId?: string; draftName?: string };
+import { DraftEntity } from "hooks/whiteboard/types";
 
 export class ShapeEventDispatcher {
   constructor(

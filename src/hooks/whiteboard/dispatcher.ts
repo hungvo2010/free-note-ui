@@ -1,13 +1,14 @@
 import type React from "react";
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
-import { DispatcherApi, Point } from "./types";
+import { DispatcherApi, DraftEntity, Point } from "./types";
 
 export function createDispatcherApi(
   dispatcherRef: React.MutableRefObject<ShapeEventDispatcher | null>,
 ): DispatcherApi {
   return {
-    ensureDraft: () => {
+    ensureDraft: (draftEntity: DraftEntity) => {
       // no-op here; hook will set draft on the underlying dispatcher
+      dispatcherRef.current?.setDraft(draftEntity);
     },
     addShape: (shape) => dispatcherRef.current?.addShape(shape),
     updateShape: (id, shape) => dispatcherRef.current?.updateShape(id, shape),

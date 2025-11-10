@@ -24,7 +24,7 @@ export type InteractionRefs = {
 };
 
 export type DispatcherApi = {
-  ensureDraft: () => void;
+  ensureDraft: (draftEntity: DraftEntity) => void;
   addShape: (shape: Shape) => void;
   updateShape: (id: string, shape: Shape) => void;
   finalizeShape: (id: string) => void;
@@ -43,3 +43,5 @@ export type ToolDeps = {
   dispatcher: DispatcherApi;
   refs: InteractionRefs;
 };
+
+export type DraftEntity = { draftId?: string; draftName?: string };
