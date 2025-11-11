@@ -6,6 +6,17 @@ import { Subject } from "types/Subject";
 import { distance, isPointInShape } from "utils/GeometryUtils";
 
 export class ReDrawController implements Subject {
+  mergeShape(shape: Shape) {
+    const existingIndex = this.shapes.findIndex(
+      (s) => s.getId() === shape.getId()
+    );
+    if (existingIndex >= 0) {
+      this.shapes[existingIndex] = shape;
+      return;
+    }
+    this.shapes.push(shape);
+  }
+
   private theme: "light" | "dark" = "light";
 
   constructor(

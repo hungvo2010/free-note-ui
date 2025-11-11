@@ -112,8 +112,12 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         const draftAction = parseDraftAction(jsonData);
         const shapesToUpdate = getShapesToUpdate(draftAction);
         for (const shape of shapesToUpdate) {
-          reDrawController.updateShape(shape.getId(), shape);
+          // attach current roughCanvas so it can draw
+          shape.setRoughCanvas(roughCanvas);
+          reDrawController.mergeShape(shape);
         }
+        // trigger redraw after applying updates
+        reDrawController.reDraw(0, 0);
 
         function getShapesToUpdate(
           draftAction: DraftAction | undefined
@@ -128,7 +132,9 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         function parseDraftAction(
           jsonData: Record<string, any>
         ): DraftAction | undefined {
-          return jsonData.payload as DraftAction;
+          const content = jsonData?.payload?.data;
+          if (!content) return undefined;
+          return { type: content.type, data: content.details } as DraftAction;
         }
       });
     } else {
