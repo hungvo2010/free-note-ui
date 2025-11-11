@@ -109,23 +109,26 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
           navigate(`/draft/${jsonData.payload.draftId}`);
         }
 
-        const draftAction = parseDraftAction(message);
+        const draftAction = parseDraftAction(jsonData);
         const shapesToUpdate = getShapesToUpdate(draftAction);
         for (const shape of shapesToUpdate) {
-          reDrawController.updateShape(shape.id, shape);
+          reDrawController.updateShape(shape.getId(), shape);
         }
 
-        function getShapesToUpdate(draftAction: DraftAction): Shape[] {
-          if (draftAction.type !== ActionType.UPDATE) {
+        function getShapesToUpdate(
+          draftAction: DraftAction | undefined
+        ): Shape[] {
+          if (draftAction?.type !== ActionType.UPDATE) {
             return [];
           }
           const draftData = draftAction.data;
           return ShapeSerialization.deserialize(draftData);
         }
 
-        function parseDraftAction(message: string): DraftAction | undefined {
-          const messagePayload = JSON.parse(message);
-          return messagePayload.payload as DraftAction;
+        function parseDraftAction(
+          jsonData: Record<string, any>
+        ): DraftAction | undefined {
+          return jsonData.payload as DraftAction;
         }
       });
     } else {
