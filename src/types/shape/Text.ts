@@ -56,7 +56,7 @@ export class TextShape extends Shape implements TextEditor {
     this.textEditor.appendText(text);
   }
 
-  drawNew(offsetX: number = 0, offsetY: number = 0): void {
+  drawFreshShape(offsetX: number = 0, offsetY: number = 0): void {
     if (!this.roughCanvas) return;
     // Get canvas from the DOM directly since we know its ID
     const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
@@ -71,7 +71,7 @@ export class TextShape extends Shape implements TextEditor {
     this.wrapText(ctx, content, this.x + offsetX, this.y + offsetY);
   }
 
-  public update(state: UpdateState): void {
+  public observerUpdate(state: UpdateState): void {
     this.fillStyle = state.theme === "dark" ? "white" : "black";
   }
 
@@ -232,7 +232,7 @@ export class TextShape extends Shape implements TextEditor {
     return this;
   }
 
-  toVirtualCoordinates(x: number, y: number): void {
+  drawInVirtualCoordinates(x: number, y: number): void {
     this.x += x;
     this.y += y;
   }

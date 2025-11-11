@@ -21,7 +21,7 @@ export function createSelectTool(deps: ToolDeps): Tool {
       }
       const selectedShape = getSelectedShape();
       if (!selectedShape) return;
-      selectedShape.toVirtualCoordinates(
+      selectedShape.drawInVirtualCoordinates(
         pos.x - refs.dragStartPosRef.current.x,
         pos.y - refs.dragStartPosRef.current.y,
       );

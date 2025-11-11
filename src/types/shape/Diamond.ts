@@ -18,12 +18,12 @@ export class Diamond extends Shape {
     return false;
   }
 
-  public update(state: UpdateState): void {
-    super.update(state);
+  public observerUpdate(state: UpdateState): void {
+    super.observerUpdate(state);
     this.drawable = undefined;
   }
 
-  drawNew(offsetX: number, offsetY: number): void {
+  drawFreshShape(offsetX: number, offsetY: number): void {
     this.drawable = this.drawDiamond(
       this.x1 + offsetX,
       this.y1 + offsetY,
@@ -71,7 +71,7 @@ export class Diamond extends Shape {
     );
   }
 
-  toVirtualCoordinates(x: number, y: number): void {
+  drawInVirtualCoordinates(x: number, y: number): void {
     this.x1 += x;
     this.y1 += y;
     this.drawable = undefined;

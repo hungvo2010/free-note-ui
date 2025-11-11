@@ -1,9 +1,9 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { Observer } from "types/Observer";
 import { CircleAdapter } from "types/shape/CircleAdapter";
 import { Shape } from "types/shape/Shape";
-import { distance, isPointInShape } from "utils/GeometryUtils";
 import { Subject } from "types/Subject";
-import { Observer } from "types/Observer";
+import { distance, isPointInShape } from "utils/GeometryUtils";
 
 export class ReDrawController implements Subject {
   private theme: "light" | "dark" = "light";
@@ -13,7 +13,7 @@ export class ReDrawController implements Subject {
     public canvas: HTMLCanvasElement | undefined,
     public shapes: Shape[] = []
   ) {}
-  
+
   registerObserver(observer: Observer): void {
     throw new Error("Method not implemented.");
   }
@@ -22,7 +22,7 @@ export class ReDrawController implements Subject {
   }
   notifyObservers(): void {
     for (const shape of this.shapes) {
-      shape.update({
+      shape.observerUpdate({
         roughCanvas: this.roughCanvas,
         theme: this.theme,
       });
@@ -69,8 +69,11 @@ export class ReDrawController implements Subject {
     this.shapes[this.shapes.length - 1] = newShape;
   }
 
-  public updateShape(newShape: Shape) {
-    this.shapes[this.shapes.length - 1] = newShape;
+  public updateShape(shapeId: string, newShape: Shape) {
+    const shape = this.shapes.find((shape) => shape.getId() === shapeId);
+    if (shape) {
+      this.shapes[this.shapes.indexOf(shape)] = newShape;
+    }
   }
 
   public updateCoordinates(changeX: number, changeY: number) {
@@ -96,7 +99,7 @@ export class ReDrawController implements Subject {
 
   public redrawUsingVirtualCoordinates(newOffsetX: number, newOffsetY: number) {
     for (let i = 0; i < this.shapes.length; i++) {
-      this.shapes[i].toVirtualCoordinates(newOffsetX, newOffsetY);
+      this.shapes[i].drawInVirtualCoordinates(newOffsetX, newOffsetY);
     }
   }
 

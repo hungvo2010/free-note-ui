@@ -1,21 +1,21 @@
+import { SerializedShape } from "core/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Observer, UpdateState } from "types/Observer";
 import { calculatePadding } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
-import { SerializedShape } from "core/ShapeSerializer";
 
 export abstract class Shape implements Observer {
   private readonly _id: string;
   abstract getBoundingRect(): Rectangle;
   abstract isPointInShape(x: number, y: number): boolean;
   abstract applyNewCoordinates(x: number, y: number): Shape;
-  abstract toVirtualCoordinates(x: number, y: number): void;
+  abstract drawInVirtualCoordinates(x: number, y: number): void;
   public draw(offsetX: number, offsetY: number): void {
     if (this.checkReUsedDrawable(offsetX, offsetY)) return;
-    this.drawNew(offsetX, offsetY);
+    this.drawFreshShape(offsetX, offsetY);
   }
   abstract checkReUsedDrawable(offsetX: number, offsetY: number): boolean;
-  abstract drawNew(offsetX: number, offsetY: number): void;
+  abstract drawFreshShape(offsetX: number, offsetY: number): void;
   abstract clone(x: number, y: number): Shape;
   public setRoughCanvas(roughCanvas: RoughCanvas | undefined) {
     this.roughCanvas = roughCanvas;
@@ -28,7 +28,7 @@ export abstract class Shape implements Observer {
   public getId(): string {
     return this._id;
   }
-  public update(state: UpdateState): void {
+  public observerUpdate(state: UpdateState): void {
     this.roughCanvas = state.roughCanvas;
   }
 

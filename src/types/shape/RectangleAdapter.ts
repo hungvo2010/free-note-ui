@@ -28,7 +28,7 @@ export class RectangleAdapter extends Shape {
     return result;
   }
 
-  drawNew(offsetX: number, offsetY: number): void {
+  drawFreshShape(offsetX: number, offsetY: number): void {
     const newRectangle = new Rectangle(
       this.roughCanvas,
       toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
@@ -122,7 +122,7 @@ export class RectangleAdapter extends Shape {
     );
   }
 
-  toVirtualCoordinates(offsetX: number, offsetY: number): void {
+  drawInVirtualCoordinates(offsetX: number, offsetY: number): void {
     this.rectangle = new Rectangle(
       this.roughCanvas,
       this.rectangle.getStartPoint().x + offsetX,

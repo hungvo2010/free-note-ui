@@ -21,11 +21,11 @@ export class FreeStyleShape extends Shape {
     }
     return false;
   }
-  public update(state: UpdateState): void {
-    super.update(state);
+  public observerUpdate(state: UpdateState): void {
+    super.observerUpdate(state);
     this.drawable = undefined;
   }
-  drawNew(offsetX: number, offsetY: number): void {
+  drawFreshShape(offsetX: number, offsetY: number): void {
     const newPoints = this.points.map(
       (point) =>
         [
@@ -68,7 +68,7 @@ export class FreeStyleShape extends Shape {
     return false;
   }
 
-  toVirtualCoordinates(x: number, y: number): void {
+  drawInVirtualCoordinates(x: number, y: number): void {
     this.points = this.points.map(
       (point) => [point[0] + x, point[1] + y] as [number, number]
     );

@@ -50,17 +50,17 @@ export class WebSocketConnection {
           console.log("Message text:", text);
 
           // If it’s JSON, parse it:
-          try {
-            const json = JSON.parse(text);
-            console.log("Parsed JSON:", json);
-          } catch (e) {
-            console.log("Not JSON:", text);
-          }
+          // try {
+          //   const json = JSON.parse(text);
+          //   console.log("Parsed JSON:", json);
+          // } catch (e) {
+          //   console.log("Not JSON:", text);
+          // }
+          handler(this.socket, text);
+          EventBus.onEvent(text);
         } else {
           console.log("Message:", event.data);
         }
-        handler(this.socket, event.data);
-        EventBus.onEvent(event.data);
       };
     }
   }

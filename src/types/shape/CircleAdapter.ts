@@ -13,7 +13,7 @@ export class CircleAdapter extends Shape {
     }
     return result;
   }
-  drawNew(offsetX: number, offsetY: number): void {
+  drawFreshShape(offsetX: number, offsetY: number): void {
     const newCircle = new Circle(
       this.roughCanvas,
       this.circle.getX + offsetX,
@@ -51,7 +51,7 @@ export class CircleAdapter extends Shape {
     return Math.abs(distanceFromCenter - this.circle.getRadius) <= 4;
   }
 
-  toVirtualCoordinates(offsetX: number, offsetY: number): void {
+  drawInVirtualCoordinates(offsetX: number, offsetY: number): void {
     this.circle = new Circle(
       this.roughCanvas,
       this.circle.getX + offsetX,

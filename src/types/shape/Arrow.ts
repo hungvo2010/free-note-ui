@@ -27,8 +27,8 @@ export default class Arrow extends Shape {
     return false;
   }
 
-  public update(state: UpdateState): void {
-    super.update(state);
+  public observerUpdate(state: UpdateState): void {
+    super.observerUpdate(state);
     this.mainDrawable = undefined;
     this.leftDrawable = undefined;
     this.rightDrawable = undefined;
@@ -69,7 +69,7 @@ export default class Arrow extends Shape {
     return dToLine <= 4;
   }
 
-  toVirtualCoordinates(offsetX: number, offsetY: number): void {
+  drawInVirtualCoordinates(offsetX: number, offsetY: number): void {
     this.x1 += offsetX;
     this.y1 += offsetY;
     this.x2 += offsetX;
@@ -102,7 +102,7 @@ export default class Arrow extends Shape {
     return newArrow;
   }
 
-  drawNew(offsetX: number, offsetY: number): void {
+  drawFreshShape(offsetX: number, offsetY: number): void {
     this.mainDrawable = drawLine(
       this.roughCanvas,
       this.x1 + offsetX,

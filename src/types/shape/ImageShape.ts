@@ -81,7 +81,7 @@ export class ImageShape extends Shape {
     this.image.src = url;
   }
 
-  drawNew(offsetX: number, offsetY: number): void {
+  drawFreshShape(offsetX: number, offsetY: number): void {
     if (!this.roughCanvas) return;
     const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
     const ctx = canvas.getContext("2d");
@@ -184,7 +184,7 @@ export class ImageShape extends Shape {
     return newImageShape;
   }
 
-  toVirtualCoordinates(x: number, y: number): void {
+  drawInVirtualCoordinates(x: number, y: number): void {
     this.x += x;
     this.y += y;
   }

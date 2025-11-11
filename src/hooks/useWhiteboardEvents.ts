@@ -1,6 +1,8 @@
+import { ActionType, DraftAction } from "apis/DraftAction";
 import EventBus from "apis/resources/event/EventBus";
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketContext } from "contexts/WebSocketContext";
+import { ShapeSerialization } from "core/ShapeSerializer";
 import {
   useCallback,
   useContext,
@@ -10,6 +12,7 @@ import {
   useRef,
 } from "react";
 import { useNavigate } from "react-router";
+import { Shape } from "types/shape/Shape";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { useDraft } from "./useDraft";
@@ -36,9 +39,8 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     canvas,
     setSelectedShape,
   } = useWhiteboard();
-  const context = useContext(WebSocketContext);
+  const { webSocketConnection } = useContext(WebSocketContext);
   const navigate = useNavigate();
-  const webSocketConnection = context.webSocketConnection;
   const dispatcherApi = createDispatcherApi(dispatcherRef);
   const refs = useInteractionRefs();
   const { draftId, draftName } = useDraft();
@@ -89,26 +91,41 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
 
   const setupDispatcherAndEventBus = useCallback(() => {
     // TODO: temporarily only
-    if (!dispatcherRef.current && webSocketConnection) {
+    if (webSocketConnection && !dispatcherRef.current) {
       console.log("Creating dispatcher");
       dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
         draftId,
         draftName,
       });
       EventBus.setHandler(async (message) => {
+        let jsonData: Record<string, any> = {};
         if (message instanceof Blob) {
           const text = await message.text();
-          try {
-            const json = JSON.parse(text);
-            console.log("Parsed JSON: ", json);
-            if (json.payload.draftId) {
-              navigate(`/draft/${json.payload.draftId}`);
-            }
-          } catch (e) {
-            console.log("Not JSON:", text);
-          }
+          jsonData = JSON.parse(text);
         } else {
-          console.log("Message:", message);
+          jsonData = JSON.parse(message);
+        }
+        if (jsonData.payload.draftId && jsonData.payload.draftId !== draftId) {
+          navigate(`/draft/${jsonData.payload.draftId}`);
+        }
+
+        const draftAction = parseDraftAction(message);
+        const shapesToUpdate = getShapesToUpdate(draftAction);
+        for (const shape of shapesToUpdate) {
+          reDrawController.updateShape(shape.id, shape);
+        }
+
+        function getShapesToUpdate(draftAction: DraftAction): Shape[] {
+          if (draftAction.type !== ActionType.UPDATE) {
+            return [];
+          }
+          const draftData = draftAction.data;
+          return ShapeSerialization.deserialize(draftData);
+        }
+
+        function parseDraftAction(message: string): DraftAction | undefined {
+          const messagePayload = JSON.parse(message);
+          return messagePayload.payload as DraftAction;
         }
       });
     } else {

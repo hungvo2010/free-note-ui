@@ -3,7 +3,7 @@ import {
   WebSocketConnection,
   generateUUID,
 } from "apis/resources/connection/SocketConnection";
-import { ShapeSerializer } from "core/ShapeSerializer";
+import { ShapeSerialization } from "core/ShapeSerializer";
 import { Shape } from "types/shape/Shape";
 import { RequestType } from "./protocol";
 import { DraftEntity } from "hooks/whiteboard/types";
@@ -21,7 +21,7 @@ export class ShapeEventDispatcher {
 
   // shapeData should be a serializable description of the shape
   addShape(shapeData: Shape) {
-    const payload = ShapeSerializer.serialize(shapeData);
+    const payload = ShapeSerialization.serialize(shapeData);
     const action: DraftAction = {
       type: ActionType.UPDATE,
       data: { op: "add", shape: payload },
@@ -30,7 +30,7 @@ export class ShapeEventDispatcher {
   }
 
   updateShape(id: string, patch: Shape) {
-    const payload = ShapeSerializer.serialize(patch);
+    const payload = ShapeSerialization.serialize(patch);
     const action: DraftAction = {
       type: ActionType.UPDATE,
       data: { op: "update", id, patch: payload },
