@@ -1,7 +1,6 @@
 import { LockIndicator } from "components/LockIndicator";
 import { WebSocketProvider } from "contexts/WebSocketContext";
 import { WhiteboardProvider } from "contexts/WhiteboardContext";
-import { useTheme } from "hooks/useTheme";
 import { useWhiteboard } from "hooks/useWhiteboard";
 import { useWhiteboardEvents } from "hooks/useWhiteboardEvents";
 import React, { useEffect } from "react";
@@ -18,20 +17,11 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
 }) => {
   const { canvas } = useWhiteboard();
 
-  const { theme } = useTheme();
-
   const { handleMouseDown, handleMouseMove, handleMouseUp, handleKeyDown } =
     useWhiteboardEvents(isLocked, type);
 
   useEffect(() => {
     if (!canvas) return;
-
-    // Update canvas stroke style based on theme
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.strokeStyle = theme === "dark" ? "#ffffff" : "#000000";
-    }
-
     canvas.addEventListener("mousedown", handleMouseDown);
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseup", handleMouseUp);
@@ -41,7 +31,7 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [handleMouseDown, handleMouseMove, handleMouseUp, canvas, theme]);
+  }, [handleMouseDown, handleMouseMove, handleMouseUp, canvas]);
 
   return (
     <div style={{ position: "relative" }}>

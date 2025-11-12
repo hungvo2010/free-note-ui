@@ -1,5 +1,6 @@
 import { ConnectionManager } from "apis/resources/connection/ConnectionManager";
 import { WebSocketConnection } from "apis/resources/connection/SocketConnection";
+import EventBus from "apis/resources/event/EventBus";
 import { useSessionStorage } from "hooks/useSessionStorage";
 import { useWebSocketManager } from "hooks/useWebSocket";
 import { createContext } from "react";
@@ -53,10 +54,16 @@ function setupCorrectHandlers(connection: WebSocketConnection) {
     console.log("WebSocket closed");
   });
   connection.setErrorHandler((socket, errorEvent) => {
-    console.log("WebSocket error");
+    let retryCount = 0;
+    const intervalId = setInterval(() => {
+      connection.setOpenHandler((socket, event) => {
+        clearInterval(intervalId);
+      });
+      console.log(`WebSocket error, retrying connection: ${retryCount++} time`);
+      connection.connect();
+    }, 5000);
   });
   connection.setHandler((socket, message) => {
-    // console.log("websocket received message: ", message);
-    
+    EventBus.onEvent(message);
   });
 }

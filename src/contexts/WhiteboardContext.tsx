@@ -5,6 +5,12 @@ import React, { createContext, useMemo, useRef, useState } from "react";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Shape } from "types/shape/Shape";
 
+export type WhiteboardStyles = {
+  strokeColor: string;
+  strokeWidth: number;
+  fillColor: string;
+};
+
 interface WhiteboardContextType {
   shapes: React.MutableRefObject<Shape[]>;
   canvas: HTMLCanvasElement | undefined;
@@ -14,6 +20,7 @@ interface WhiteboardContextType {
   reDrawController: ReDrawController;
   isLocked: boolean;
   setIsLocked: (isLocked: boolean) => void;
+  whiteboardStyles: WhiteboardStyles;
 }
 
 export const WhiteboardContext = createContext<
@@ -32,13 +39,24 @@ export const WhiteboardProvider: React.FC<{
   const [isLocked, setIsLocked] = useState(initialLocked);
   const { theme } = useTheme();
 
+  const whiteboardStyles = useMemo(
+    () => ({
+      strokeColor: theme === "dark" ? "white" : "#000000",
+      strokeWidth: 3,
+      fillColor: "none",
+    }),
+    [theme]
+  );
+
   const options = useMemo(
     () => ({
       options: {
-        stroke: theme === "dark" ? "white" : "#000000",
+        stroke: whiteboardStyles.strokeColor,
+        strokeWidth: whiteboardStyles.strokeWidth,
+        fillColor: whiteboardStyles.fillColor,
       },
     }),
-    [theme]
+    [whiteboardStyles]
   );
 
   const { canvas, roughCanvas } = useCanvas(options);
@@ -60,6 +78,7 @@ export const WhiteboardProvider: React.FC<{
     reDrawController: reDrawController.current,
     isLocked,
     setIsLocked,
+    whiteboardStyles,
   };
 
   return (

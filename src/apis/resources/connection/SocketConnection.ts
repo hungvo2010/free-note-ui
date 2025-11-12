@@ -1,5 +1,4 @@
 import { getRemoteUrl } from "environment/Environment";
-import EventBus from "../event/EventBus";
 const remoteUrl = getRemoteUrl();
 
 export class WebSocketConnection {
@@ -15,14 +14,14 @@ export class WebSocketConnection {
       return;
     }
 
-    if (!this.socket) {
+    // if (!this.socket) {
       console.log("Creating new socket");
       this.socket = new WebSocket(remoteUrl);
       WebSocketConnection.numberOfConnections++;
       console.log(
         "Number of connections: " + WebSocketConnection.numberOfConnections
       );
-    }
+    // }
   }
 
   public sendAction(action: string): void {
@@ -48,16 +47,7 @@ export class WebSocketConnection {
         if (event.data instanceof Blob) {
           const text = await event.data.text();
           console.log("Message text:", text);
-
-          // If it’s JSON, parse it:
-          // try {
-          //   const json = JSON.parse(text);
-          //   console.log("Parsed JSON:", json);
-          // } catch (e) {
-          //   console.log("Not JSON:", text);
-          // }
           handler(this.socket, text);
-          EventBus.onEvent(text);
         } else {
           console.log("Message:", event.data);
         }
