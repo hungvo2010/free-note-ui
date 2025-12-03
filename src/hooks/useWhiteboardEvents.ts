@@ -1,6 +1,4 @@
-import { ActionType, DraftAction } from "apis/DraftAction";
-import { MessagePayload } from "apis/resources/protocol";
-import { generateUUID } from "apis/resources/WebSocketConnection";
+import EventBus from "apis/resources/event/EventBus";
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketContext } from "contexts/WebSocketContext";
 import {
@@ -8,30 +6,29 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
 } from "react";
-import { useParams } from "react-router";
-import { ImageService } from "services/ImageService";
-import { TextShape } from "types/shape/Text";
-import { updateCursorType } from "utils/CommonUtils";
+import { useNavigate } from "react-router";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
-import { ShapeFactory } from "utils/ShapeFactory";
-import { useTheme } from "./useTheme";
+import { useDraft } from "./useDraft";
+import useInteractionRefs from "./useInteractionRefs";
 import { useWhiteboard } from "./useWhiteboard";
+import { createDispatcherApi } from "./whiteboard/dispatcher";
+import {
+  createDrawTool,
+  createEraserTool,
+  createImageTool,
+  createPanTool,
+  createSelectTool,
+  createTextTool,
+} from "./whiteboard/tools";
+import { ToolDeps } from "./whiteboard/types";
+import { getShapesToUpdate, parseDraftAction } from "core/shapeLogic";
 
 export function useWhiteboardEvents(isLocked: boolean, type: string) {
-  const drawingRef = useRef(false);
-  const positionRef = useRef({ x: 0, y: 0 });
-  const dragStartPosRef = useRef({ x: 0, y: 0 });
-  const moveBoardRef = useRef(false);
-  const eraserModeRef = useRef(false);
-  const eraserSizeRef = useRef(10);
-  const eraserCursorTimeoutRef = useRef<number | null>(null);
-  const prevLockedRef = useRef(isLocked);
-  const isDraggingShapeRef = useRef(false);
-  const isEditingTextRef = useRef(false);
-  const { theme } = useTheme();
+  const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
   const {
     reDrawController,
     roughCanvas,
@@ -39,14 +36,35 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     shapes,
     canvas,
     setSelectedShape,
+    whiteboardStyles,
   } = useWhiteboard();
-  const context = useContext(WebSocketContext);
-  if (!context) {
-    throw new Error("useWebSocket must be used within a WhiteboardProvider");
-  }
-  const webSocketConnection = context.webSocketConnection;
-  const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
-  const params = useParams();
+  const { webSocketConnection } = useContext(WebSocketContext);
+  const navigate = useNavigate();
+  const dispatcherApi = createDispatcherApi(dispatcherRef);
+  const refs = useInteractionRefs();
+  const { draftId, draftName } = useDraft();
+  const getSelectedShape = () => selectedShape;
+  const toolDeps: ToolDeps = {
+    canvas,
+    roughCanvas,
+    reDrawController,
+    shapes,
+    setSelectedShape,
+    getSelectedShape,
+    dispatcher: dispatcherApi,
+    refs,
+  };
+
+  const toolsMap = useMemo(() => {
+    return {
+      image: createImageTool(toolDeps),
+      text: createTextTool(toolDeps),
+      select: createSelectTool(toolDeps),
+      hand: createPanTool(toolDeps),
+      eraser: createEraserTool(toolDeps, whiteboardStyles),
+      draw: createDrawTool(type, toolDeps),
+    };
+  }, [type, toolDeps, whiteboardStyles]);
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -61,48 +79,51 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     return () => window.removeEventListener("resize", updateSize);
   }, [canvas, reDrawController, selectedShape]);
 
-  // Effect to update cursor when lock state changes
-  useEffect(() => {
-    if (isLocked !== prevLockedRef.current) {
-      prevLockedRef.current = isLocked;
-
-      if (isLocked) {
-        updateCursorType(canvas, "not-allowed");
-      } else {
-        updateCursorType(canvas, "default");
-      }
-    }
-  }, [isLocked, canvas]);
-
-  // Clean up the eraser cursor timeout when component unmounts
   useEffect(() => {
     return () => {
-      if (eraserCursorTimeoutRef.current !== null) {
-        window.clearTimeout(eraserCursorTimeoutRef.current);
+      if (refs.eraserCursorTimeoutRef.current !== null) {
+        window.clearTimeout(refs.eraserCursorTimeoutRef.current);
       }
     };
   }, []);
 
-  const handleMouseEnter = useCallback(
-    (x: number, y: number, cursorType: string, eventType: string) => {
-      const selectedShape = reDrawController.checkSelectedShape(x, y);
-      setSelectedShape(selectedShape);
-      updateCursorType(canvas, selectedShape ? cursorType : "default");
-      if (eventType === "mousedown") {
-        updateCursorType(canvas, "move");
-        return;
-      }
-    },
-    [canvas, reDrawController, setSelectedShape]
-  );
+  const setupDispatcherAndEventBus = useCallback(() => {
+    // TODO: temporarily only
+    if (webSocketConnection && !dispatcherRef.current) {
+      console.log("Creating dispatcher");
+      dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
+        draftId,
+        draftName,
+      });
+      EventBus.setHandler(async (message) => {
+        let jsonData: Record<string, any> = {};
+        if (message instanceof Blob) {
+          const text = await message.text();
+          jsonData = JSON.parse(text);
+        } else {
+          jsonData = JSON.parse(message);
+        }
+        if (jsonData.payload.draftId && jsonData.payload.draftId !== draftId) {
+          navigate(`/draft/${jsonData.payload.draftId}`); // creating new draft
+        }
 
-  const getDraftId = useCallback(() => {
-    return params.draftId;
-  }, [params]);
-
-  const getDraftName = useCallback(() => {
-    return params.draftName;
-  }, [params]);
+        const draftAction = parseDraftAction(jsonData);
+        const shapesToUpdate = getShapesToUpdate(draftAction);
+        for (const shape of shapesToUpdate) {
+          // attach current roughCanvas so it can draw
+          shape.setRoughCanvas(roughCanvas);
+          reDrawController.mergeShape(shape);
+        }
+        // trigger redraw after applying updates
+        reDrawController.reDraw(0, 0);
+      });
+    } else {
+      dispatcherApi.ensureDraft({
+        draftId,
+        draftName,
+      });
+    }
+  }, [webSocketConnection, draftId, draftName, navigate, dispatcherApi]);
 
   const handleMouseDown = useCallback(
     async (e: MouseEvent) => {
@@ -111,262 +132,59 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
       }
 
       const { x, y } = getCanvasCoordinates(e, canvas);
-      positionRef.current = { x, y };
-      dragStartPosRef.current = { x, y };
+      refs.positionRef.current = { x, y };
+      refs.dragStartPosRef.current = { x, y };
+      setupDispatcherAndEventBus();
 
-      if (isEditingTextRef.current && type !== "word") {
-        isEditingTextRef.current = false;
-        return;
-      }
-      await webSocketConnection?.connect();
-      if (!dispatcherRef.current && webSocketConnection) {
-        dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
-          draftId: getDraftId(),
-          draftName: getDraftName(),
-        });
-      } else {
-        dispatcherRef.current?.setDraft({
-          draftId: getDraftId(),
-          draftName: getDraftName(),
-        });
-      }
+      const commonType = ["eraser", "image", "hand", "select", "text"];
 
-      if (type === "eraser") {
-        // dont need to send action for eraser
-        // Just set eraser mode to true, don't erase yet
-        eraserModeRef.current = true;
-        updateCursorType(canvas, "eraser");
-        return;
-      } else if (type === "image") {
-        ImageService.openImageDialog(
-          (imageShape) => {
-            reDrawController.addShape(imageShape);
-            console.log(imageShape);
-            setSelectedShape(imageShape);
-          },
-          roughCanvas,
-          x,
-          y,
-          () => {
-            reDrawController.reDraw(0, 0);
-            console.log("redraw image shape if any: ", selectedShape);
-            selectedShape?.drawBoundingBox(canvas);
-          }
-        );
-        return;
-      } else if (type === "word") {
-        const textShape = new TextShape(roughCanvas, x, y, "");
-        reDrawController.addShape(textShape);
-        setSelectedShape(textShape);
-        isEditingTextRef.current = true;
-        return;
-      } else if (type === "mouse") {
-        const clickedShape = reDrawController.checkSelectedShape(x, y);
-        setSelectedShape(clickedShape);
-        isDraggingShapeRef.current = true;
-        updateCursorType(canvas!, "move");
-        return;
-      } else if (type === "hand") {
-        moveBoardRef.current = true;
-        updateCursorType(canvas!, "pointer");
+      if (commonType.includes(type)) {
+        toolsMap[type as keyof typeof toolsMap].onDown({ x, y });
         return;
       }
 
-      drawingRef.current = true;
-      const newShape = ShapeFactory.createShape(type, roughCanvas, x, y);
-      if (newShape) {
-        reDrawController.addShape(newShape);
-        dispatcherRef.current?.addShape(newShape);
-      }
+      toolsMap["draw"].onDown({ x, y });
     },
-    [
-      isLocked,
-      canvas,
-      type,
-      selectedShape,
-      roughCanvas,
-      reDrawController,
-      isEditingTextRef,
-    ]
+    [isLocked, canvas, type, setupDispatcherAndEventBus, toolsMap]
   );
 
   const handleMouseMove = useCallback(
     (e: MouseEvent) => {
       const { x, y } = getCanvasCoordinates(e, canvas);
+      const commonType = ["eraser", "hand", "select", "text"];
 
       // Handle eraser dragging - move this to the top
-      if (type === "eraser" && eraserModeRef.current) {
-        // Find and remove shapes under the eraser
-        const shapesToRemove = reDrawController.getShapesUnderPoint(x, y);
-        if (shapesToRemove.length > 0) {
-          // Compute indices being removed for dispatching
-          const ids = reDrawController
-            .getShapes()
-            .filter((s) => shapesToRemove.includes(s))
-            .map((s) => s.getId());
-          // Remove locally
-          reDrawController.removeShapes(shapesToRemove);
-          shapes.current = shapes.current.filter(
-            (shape) => !shapesToRemove.includes(shape)
-          );
-          // Dispatch deletion
-          dispatcherRef.current?.deleteShapes(ids);
-          reDrawController.reDraw(0, 0);
-        }
-
-        // Draw eraser cursor
-        const ctx = canvas?.getContext("2d");
-        if (ctx) {
-          // Draw after the main redraw to ensure it's on top
-          ctx.beginPath();
-          ctx.arc(x, y, eraserSizeRef.current, 0, Math.PI * 2);
-          ctx.strokeStyle = theme === "dark" ? "#ffffff" : "#000000";
-          ctx.stroke();
-
-          // Clear previous timeout if exists
-          if (eraserCursorTimeoutRef.current !== null) {
-            window.clearTimeout(eraserCursorTimeoutRef.current);
-          }
-
-          // Set timeout to clear the cursor after a short delay
-          eraserCursorTimeoutRef.current = window.setTimeout(() => {
-            reDrawController.reDraw(0, 0); // Redraw without the cursor
-            eraserCursorTimeoutRef.current = null;
-          }, 150); // Adjust timing as needed (150ms works well)
-        }
+      if (commonType.includes(type)) {
+        toolsMap[type as keyof typeof toolsMap].onMove({ x, y });
         return;
       }
 
-      // If locked, only allow cursor changes for better UX, but no edits
-      if (type === "mouse" && !isDraggingShapeRef.current) {
-        const hoverShape = reDrawController.checkSelectedShape(x, y);
-        updateCursorType(canvas, hoverShape ? "pointer" : "default");
-        handleMouseEnter(x, y, "pointer", "mousemove");
-        return;
-      }
-
-      const startPosition = positionRef.current;
-
-      if (type === "hand" && moveBoardRef.current) {
-        const offset = {
-          x: x - startPosition.x,
-          y: y - startPosition.y,
-        };
-        reDrawController.reDraw(offset.x, offset.y);
-        // Dispatch pan (board move) as an event
-        dispatcherRef.current?.pan(offset);
-        return;
-      }
-
-      if (type === "mouse" && isDraggingShapeRef.current) {
-        if (!selectedShape) {
-          return;
-        }
-        selectedShape.toVirtualCoordinates(
-          x - dragStartPosRef.current.x,
-          y - dragStartPosRef.current.y
-        );
-        dragStartPosRef.current = { x, y };
-        // Dispatch move of existing shape
-        dispatcherRef.current?.updateShape(selectedShape.getId(), selectedShape);
-        reDrawController.reDraw(0, 0);
-        return;
-      }
-
-      if (type === "word" && isEditingTextRef.current) {
-        updateCursorType(canvas, "text");
-        return;
-      }
-
-      updateCursorType(canvas, "default");
-      if (
-        (!drawingRef.current && !isDraggingShapeRef.current) ||
-        type === "image"
-      )
-        return;
-      // console.log("update last shape");
-      reDrawController.updateLastShape(startPosition.x, startPosition.y, x, y);
-      const last = reDrawController.getShapes()[reDrawController.getShapes().length - 1];
-      if (last) dispatcherRef.current?.updateShape(last.getId(), last);
-      reDrawController.reDraw(0, 0);
+      toolsMap["draw"].onMove({ x, y });
     },
-    [
-      type,
-      theme,
-      eraserModeRef,
-      reDrawController,
-      canvas,
-      handleMouseEnter,
-      selectedShape,
-      moveBoardRef,
-      isDraggingShapeRef,
-      isEditingTextRef,
-      shapes,
-    ]
+    [canvas, toolsMap, type]
   );
 
   const handleMouseUp = useCallback(
     (e: MouseEvent) => {
-      if (isLocked) {
-        return;
+      const specialTypes = ["hand", "eraser", "select", "text"];
+      if (!specialTypes.includes(type)) {
+        toolsMap["draw"].onUp({ x: 0, y: 0 });
       }
+      const { x, y } = getCanvasCoordinates(e, canvas);
 
-      drawingRef.current = false;
-      // finalize shape if we were drawing a new one (not moving/panning/eraser)
-      if (type !== "hand" && type !== "eraser" && type !== "mouse" && type !== "word") {
-        const last = reDrawController.getShapes()[reDrawController.getShapes().length - 1];
-        if (last) dispatcherRef.current?.finalizeShape(last.getId());
-      }
-      if (type === "hand") {
-        moveBoardRef.current = false;
-        const { x, y } = getCanvasCoordinates(e, canvas);
-        const offset = {
-          x: x - positionRef.current.x,
-          y: y - positionRef.current.y,
-        };
-        reDrawController.updateCoordinates(offset.x, offset.y);
-        updateCursorType(canvas, "default");
-        reDrawController.reDraw(0, 0);
+      if (type === "hand" || type === "eraser" || type === "select") {
+        toolsMap[type].onUp({ x, y });
         return;
-      }
-
-      if (type === "eraser") {
-        eraserModeRef.current = false;
-        return;
-      }
-
-      if (type === "mouse") {
-        isDraggingShapeRef.current = false;
       }
     },
-    [isLocked, type, canvas, reDrawController]
+    [type, toolsMap, canvas]
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      e.preventDefault();
-      if (isLocked || !isEditingTextRef.current) return;
-      const selectedTextShape = selectedShape as TextShape;
-      if (e.key.length === 1) {
-        selectedTextShape.append(e.key);
-      }
-      switch (e.key) {
-        case "Backspace":
-          selectedTextShape.delete({
-            line: selectedTextShape.getContent().length - 1,
-            col:
-              selectedTextShape.getContent()[
-                selectedTextShape.getContent().length - 1
-              ].length - 1,
-          });
-          break;
-        case "Enter":
-          selectedTextShape.append("\n");
-          break;
-      }
-      reDrawController.reDraw(0, 0);
+      toolsMap["text"].onKeyDown(e);
     },
-    [isLocked, selectedShape, isEditingTextRef, reDrawController]
+    [toolsMap]
   );
 
   return {
@@ -374,11 +192,5 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     handleMouseMove,
     handleMouseUp,
     handleKeyDown,
-    drawingRef,
-    positionRef,
-    dragStartPosRef,
-    moveBoardRef,
-    eraserModeRef,
-    eraserSizeRef,
   };
 }

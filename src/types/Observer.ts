@@ -5,5 +5,5 @@ export type UpdateState = {
   theme?: 'dark' | 'light';
 }
 export interface Observer {
-  update(state: UpdateState): void;
+  observerUpdate(state: UpdateState): void;
 }

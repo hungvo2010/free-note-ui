@@ -1,5 +1,5 @@
-import { DraftAction } from "../DraftAction";
-import { WebSocketConnection } from "./WebSocketConnection";
+import { DraftAction } from "hooks/whiteboard/types";
+import { WebSocketConnection } from "./connection/SocketConnection";
 
 export type MessagePayload = {
   messageId: string;
@@ -17,3 +17,9 @@ export type DraftRequest = {
   port: string;
   socket: WebSocketConnection;
 };
+
+export enum RequestType {
+  CONNECT = 1,
+  DATA = 2,
+  INVALID = -1,
+}

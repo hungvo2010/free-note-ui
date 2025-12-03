@@ -1,52 +1,40 @@
-import { ActionType, DraftAction } from "apis/DraftAction";
-import { Draft, MessagePayload } from "apis/resources/protocol";
-import { WebSocketConnection, generateUUID } from "apis/resources/WebSocketConnection";
+import {
+  WebSocketConnection,
+  generateUUID,
+} from "apis/resources/connection/SocketConnection";
+import { ShapeSerialization } from "core/ShapeSerializer";
 import { Shape } from "types/shape/Shape";
-import { ShapeSerializer } from "apis/resources/ShapeSerializer";
-
-type DraftIds = { draftId?: string; draftName?: string };
+import { RequestType } from "./protocol";
+import { ActionType, DraftAction, DraftEntity } from "hooks/whiteboard/types";
 
 export class ShapeEventDispatcher {
-  constructor(private socket: WebSocketConnection, private ids: DraftIds) {}
+  constructor(
+    private socket: WebSocketConnection,
+    private currentDraft: DraftEntity
+  ) {}
 
-  private send(actions: DraftAction[]) {
-    const draft: Draft = {
-      draftId: this.ids.draftId || "",
-      draftName: this.ids.draftName || "",
-      draftActions: actions,
-    };
-    const payload: MessagePayload = {
-      messageId: generateUUID(),
-      payload: JSON.stringify(draft),
-    };
-    this.socket.sendAction(JSON.stringify(payload));
-  }
-
-  public setDraft(ids: DraftIds) {
-    this.ids = ids;
+  public setDraft(draft: DraftEntity) {
+    this.currentDraft = draft;
+    this.creatingDraft();
   }
 
   // shapeData should be a serializable description of the shape
-  addShape(shapeData: Record<string, any> | Shape) {
-    const payload = (shapeData as Shape).draw
-      ? ShapeSerializer.serialize(shapeData as Shape)
-      : { type: (shapeData as any).type, data: shapeData };
+  addShape(shapeData: Shape) {
+    const payload = ShapeSerialization.serialize(shapeData);
     const action: DraftAction = {
-      type: ActionType.INIT,
+      type: ActionType.UPDATE,
       data: { op: "add", shape: payload },
     };
-    this.send([action]);
+    this.sendOne(action);
   }
 
-  updateShape(id: string, patch: Record<string, any> | Shape) {
-    const payload = (patch as Shape).draw
-      ? ShapeSerializer.serialize(patch as Shape)
-      : { type: (patch as any).type, data: patch };
+  updateShape(id: string, patch: Shape) {
+    const payload = ShapeSerialization.serialize(patch);
     const action: DraftAction = {
       type: ActionType.UPDATE,
       data: { op: "update", id, patch: payload },
     };
-    this.send([action]);
+    this.sendOne(action);
   }
 
   pan(offset: { x: number; y: number }) {
@@ -54,7 +42,7 @@ export class ShapeEventDispatcher {
       type: ActionType.UPDATE,
       data: { op: "pan", offset },
     };
-    this.send([action]);
+    this.sendOne(action);
   }
 
   deleteShapes(ids: string[]) {
@@ -62,7 +50,15 @@ export class ShapeEventDispatcher {
       type: ActionType.UPDATE,
       data: { op: "delete", ids },
     };
-    this.send([action]);
+    this.sendOne(action);
+  }
+
+  creatingDraft() {
+    const action: DraftAction = {
+      type: ActionType.UPDATE,
+      data: { op: "creating" },
+    };
+    this.sendOne(action, RequestType.CONNECT);
   }
 
   finalizeShape(id: string) {
@@ -70,6 +66,25 @@ export class ShapeEventDispatcher {
       type: ActionType.UPDATE,
       data: { op: "finalize", id },
     };
-    this.send([action]);
+    this.sendOne(action);
+  }
+
+  private sendOne(
+    action: DraftAction,
+    requestType: RequestType = RequestType.DATA
+  ) {
+    const wireMessage = {
+      messageId: generateUUID(),
+      payload: {
+        draftId: this.currentDraft.draftId,
+        draftName: this.currentDraft.draftName,
+        requestType,
+        content: {
+          type: action.type,
+          details: action.data,
+        },
+      },
+    } as const;
+    this.socket.sendAction(JSON.stringify(wireMessage));
   }
 }

@@ -4,6 +4,7 @@ import { distance, isInLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 import { UpdateState } from "types/Observer";
+import { SerializedShape } from "core/ShapeSerializer";
 
 export class Diamond extends Shape {
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
@@ -17,12 +18,12 @@ export class Diamond extends Shape {
     return false;
   }
 
-  public update(state: UpdateState): void {
-    super.update(state);
+  public observerUpdate(state: UpdateState): void {
+    super.observerUpdate(state);
     this.drawable = undefined;
   }
 
-  drawNew(offsetX: number, offsetY: number): void {
+  drawFreshShape(offsetX: number, offsetY: number): void {
     this.drawable = this.drawDiamond(
       this.x1 + offsetX,
       this.y1 + offsetY,
@@ -70,7 +71,7 @@ export class Diamond extends Shape {
     );
   }
 
-  toVirtualCoordinates(x: number, y: number): void {
+  drawInVirtualCoordinates(x: number, y: number): void {
     this.x1 += x;
     this.y1 += y;
     this.drawable = undefined;
@@ -132,5 +133,13 @@ export class Diamond extends Shape {
         seed: 1,
       }
     );
+  }
+
+
+  serialize(): SerializedShape {
+    return {
+        type: "diamond",
+        data: { id: this.getId(), x1: this.x1, y1: this.y1, x2: this.x2, y2: this.y2 },
+      };
   }
 }

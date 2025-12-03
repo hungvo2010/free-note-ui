@@ -1,11 +1,25 @@
+import { SerializedShape } from "core/ShapeSerializer";
+import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
+import { UpdateState } from "types/Observer";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { distanceToLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { RoughCanvas } from "roughjs/bin/canvas";
-import { UpdateState } from "types/Observer";
 export class Line extends Shape {
+  serialize(): SerializedShape {
+    return {
+      type: "line",
+      data: {
+        id: this.getId(),
+        x1: this.x1,
+        y1: this.y1,
+        x2: this.x2,
+        y2: this.y2,
+      },
+    };
+  }
+
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
     if (!this.x2 || !this.y2) {
       return true;
@@ -17,7 +31,7 @@ export class Line extends Shape {
     return false;
   }
 
-  drawNew(offsetX: number, offsetY: number): void {
+  drawFreshShape(offsetX: number, offsetY: number): void {
     this.drawable = this.roughCanvas?.line(
       toVirtualX(this.x1, offsetX, 1),
       toVirtualY(this.y1, offsetY, 1),
@@ -31,8 +45,8 @@ export class Line extends Shape {
     );
   }
 
-  public update(state: UpdateState): void {
-    super.update(state);
+  public observerUpdate(state: UpdateState): void {
+    super.observerUpdate(state);
     this.drawable = undefined;
   }
   private drawable: Drawable | undefined;
@@ -59,7 +73,7 @@ export class Line extends Shape {
     return distanceToLine(x, y, [this.x1, this.y1], [this.x2, this.y2]) <= 4;
   }
 
-  toVirtualCoordinates(offsetX: number, offsetY: number): void {
+  drawInVirtualCoordinates(offsetX: number, offsetY: number): void {
     this.x1 += offsetX;
     this.y1 += offsetY;
     this.x2 += offsetX;

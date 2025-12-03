@@ -1,10 +1,11 @@
+import { SerializedShape } from "core/ShapeSerializer";
+import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
+import { UpdateState } from "types/Observer";
 import { drawLine } from "utils/CommonUtils";
 import { distanceToLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { RoughCanvas } from "roughjs/bin/canvas";
-import { UpdateState } from "types/Observer";
 
 export default class Arrow extends Shape {
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
@@ -26,8 +27,8 @@ export default class Arrow extends Shape {
     return false;
   }
 
-  public update(state: UpdateState): void {
-    super.update(state);
+  public observerUpdate(state: UpdateState): void {
+    super.observerUpdate(state);
     this.mainDrawable = undefined;
     this.leftDrawable = undefined;
     this.rightDrawable = undefined;
@@ -68,7 +69,7 @@ export default class Arrow extends Shape {
     return dToLine <= 4;
   }
 
-  toVirtualCoordinates(offsetX: number, offsetY: number): void {
+  drawInVirtualCoordinates(offsetX: number, offsetY: number): void {
     this.x1 += offsetX;
     this.y1 += offsetY;
     this.x2 += offsetX;
@@ -90,13 +91,18 @@ export default class Arrow extends Shape {
   }
 
   clone(x: number, y: number): Shape {
-    const newArrow = new Arrow(this.roughCanvas, this.x1, this.y1, this.getId());
+    const newArrow = new Arrow(
+      this.roughCanvas,
+      this.x1,
+      this.y1,
+      this.getId()
+    );
     newArrow.x2 = x;
     newArrow.y2 = y;
     return newArrow;
   }
 
-  drawNew(offsetX: number, offsetY: number): void {
+  drawFreshShape(offsetX: number, offsetY: number): void {
     this.mainDrawable = drawLine(
       this.roughCanvas,
       this.x1 + offsetX,
@@ -122,5 +128,18 @@ export default class Arrow extends Shape {
       this.x2 + offsetX - headLength * Math.cos(angle + Math.PI / 6),
       this.y2 + offsetY - headLength * Math.sin(angle + Math.PI / 6)
     );
+  }
+
+  serialize(): SerializedShape {
+    return {
+      type: "arrow",
+      data: {
+        id: this.getId(),
+        x1: this.x1,
+        y1: this.y1,
+        x2: this.x2,
+        y2: this.y2,
+      },
+    };
   }
 }
