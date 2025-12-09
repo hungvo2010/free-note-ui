@@ -1,9 +1,12 @@
+import { WhiteboardStyles } from "contexts/WhiteboardContext";
 import { Shape } from "types/shape/Shape";
 import type { Tool, ToolDeps } from "../types";
-import { WhiteboardStyles } from "contexts/WhiteboardContext";
 
-export function createEraserTool(deps: ToolDeps, whiteboardStyles: WhiteboardStyles): Tool {
-  const { canvas, reDrawController, dispatcher, shapes, refs } = deps;
+export function createEraserTool(
+  deps: ToolDeps,
+  whiteboardStyles: WhiteboardStyles
+): Tool {
+  const { canvas, reDrawController, dispatcher, refs } = deps;
 
   const drawCursor = (x: number, y: number) => {
     const ctx = canvas?.getContext("2d");
@@ -29,12 +32,12 @@ export function createEraserTool(deps: ToolDeps, whiteboardStyles: WhiteboardSty
       if (!refs.eraserModeRef.current) return;
       const shapesToRemove = reDrawController.getShapesUnderPoint(pos.x, pos.y);
       if (shapesToRemove.length) {
+        console.log("Eraser found shapes to remove:", shapesToRemove);
         const ids = reDrawController
           .getShapes()
           .filter((s: Shape) => shapesToRemove.includes(s))
           .map((s: Shape) => s.getId());
         reDrawController.removeShapes(shapesToRemove);
-        shapes.current = shapes.current.filter((shape) => !shapesToRemove.includes(shape));
         dispatcher.deleteShapes(ids);
         reDrawController.reDraw(0, 0);
       }
@@ -45,4 +48,3 @@ export function createEraserTool(deps: ToolDeps, whiteboardStyles: WhiteboardSty
     },
   };
 }
-

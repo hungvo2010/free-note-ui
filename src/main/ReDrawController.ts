@@ -98,6 +98,7 @@ export class ReDrawController implements Subject {
     if (ctx) {
       ctx.clearRect(0, 0, this.canvas?.width || 0, this.canvas?.height || 0);
     }
+    console.log("Redrawing shapes total length: ", this.shapes.length);
     for (const shape of this.shapes || []) {
       shape.setRoughCanvas(this.roughCanvas);
       shape.draw(offsetX, offsetY);
