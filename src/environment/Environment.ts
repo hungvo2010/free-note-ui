@@ -7,6 +7,7 @@
 // - VITE_WS_SECURE: "true" to force wss, otherwise auto from location.protocol
 export const getRemoteUrl = (): string => {
   const env = (import.meta as any).env || {};
+  console.log(env)
 
   // Prefer VITE_* variables for compatibility
   const explicitUrl: string | undefined = env.VITE_WS_URL || env.VITE_WS_URL;
