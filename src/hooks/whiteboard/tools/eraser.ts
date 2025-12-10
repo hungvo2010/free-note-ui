@@ -33,12 +33,11 @@ export function createEraserTool(
       const shapesToRemove = reDrawController.getShapesUnderPoint(pos.x, pos.y);
       if (shapesToRemove.length) {
         console.log("Eraser found shapes to remove:", shapesToRemove);
-        const ids = reDrawController
-          .getShapes()
-          .filter((s: Shape) => shapesToRemove.includes(s))
-          .map((s: Shape) => s.getId());
-        reDrawController.removeShapes(shapesToRemove);
+        const ids = shapesToRemove.map((s: Shape) => s.getId());
+        // Send delete to server FIRST before removing locally
         dispatcher.deleteShapes(ids);
+        // Then remove locally
+        reDrawController.removeShapes(shapesToRemove);
         reDrawController.reDraw(0, 0);
       }
       drawCursor(pos.x, pos.y);

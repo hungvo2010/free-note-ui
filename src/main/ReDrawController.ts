@@ -124,8 +124,11 @@ export class ReDrawController implements Subject {
   }
 
   public removeShapes(shapesToRemove: Shape[]): void {
-    this.shapes = this.shapes.filter(
-      (shape) => !shapesToRemove.includes(shape)
-    );
+    // Mutate array in-place to maintain reference
+    for (let i = this.shapes.length - 1; i >= 0; i--) {
+      if (shapesToRemove.includes(this.shapes[i])) {
+        this.shapes.splice(i, 1);
+      }
+    }
   }
 }
