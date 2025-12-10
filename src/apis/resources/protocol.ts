@@ -1,4 +1,4 @@
-import { DraftAction } from "../DraftAction";
+import { DraftAction } from "hooks/whiteboard/types";
 import { WebSocketConnection } from "./connection/SocketConnection";
 
 export type MessagePayload = {

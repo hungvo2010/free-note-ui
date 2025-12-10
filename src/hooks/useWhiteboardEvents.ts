@@ -1,8 +1,6 @@
-import { ActionType, DraftAction } from "apis/DraftAction";
 import EventBus from "apis/resources/event/EventBus";
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketContext } from "contexts/WebSocketContext";
-import { ShapeSerialization } from "core/ShapeSerializer";
 import {
   useCallback,
   useContext,
@@ -12,32 +10,32 @@ import {
   useRef,
 } from "react";
 import { useNavigate } from "react-router";
-import { Shape } from "types/shape/Shape";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { useDraft } from "./useDraft";
 import useInteractionRefs from "./useInteractionRefs";
-import { useTheme } from "./useTheme";
 import { useWhiteboard } from "./useWhiteboard";
 import { createDispatcherApi } from "./whiteboard/dispatcher";
-import { createDrawTool } from "./whiteboard/tools/draw";
-import { createEraserTool } from "./whiteboard/tools/eraser";
-import { createImageTool } from "./whiteboard/tools/image";
-import { createPanTool } from "./whiteboard/tools/pan";
-import { createSelectTool } from "./whiteboard/tools/select";
-import { createTextTool } from "./whiteboard/tools/text";
+import {
+  createDrawTool,
+  createEraserTool,
+  createImageTool,
+  createPanTool,
+  createSelectTool,
+  createTextTool,
+} from "./whiteboard/tools";
 import { ToolDeps } from "./whiteboard/types";
+import { getShapesToUpdate, parseDraftAction } from "core/shapeLogic";
 
 export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
-  const { theme } = useTheme();
   const {
     reDrawController,
     roughCanvas,
     selectedShape,
-    shapes,
     canvas,
     setSelectedShape,
+    whiteboardStyles,
   } = useWhiteboard();
   const { webSocketConnection } = useContext(WebSocketContext);
   const navigate = useNavigate();
@@ -49,8 +47,6 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     canvas,
     roughCanvas,
     reDrawController,
-    shapes,
-    theme,
     setSelectedShape,
     getSelectedShape,
     dispatcher: dispatcherApi,
@@ -63,10 +59,10 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
       text: createTextTool(toolDeps),
       select: createSelectTool(toolDeps),
       hand: createPanTool(toolDeps),
-      eraser: createEraserTool(toolDeps),
+      eraser: createEraserTool(toolDeps, whiteboardStyles),
       draw: createDrawTool(type, toolDeps),
     };
-  }, [type, toolDeps]);
+  }, [type, toolDeps, whiteboardStyles]);
 
   useLayoutEffect(() => {
     function updateSize() {
@@ -106,7 +102,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
           jsonData = JSON.parse(message);
         }
         if (jsonData.payload.draftId && jsonData.payload.draftId !== draftId) {
-          navigate(`/draft/${jsonData.payload.draftId}`);
+          navigate(`/draft/${jsonData.payload.draftId}`); // creating new draft
         }
 
         const draftAction = parseDraftAction(jsonData);
@@ -118,24 +114,6 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         }
         // trigger redraw after applying updates
         reDrawController.reDraw(0, 0);
-
-        function getShapesToUpdate(
-          draftAction: DraftAction | undefined
-        ): Shape[] {
-          if (draftAction?.type !== ActionType.UPDATE) {
-            return [];
-          }
-          const draftData = draftAction.data;
-          return ShapeSerialization.deserialize(draftData);
-        }
-
-        function parseDraftAction(
-          jsonData: Record<string, any>
-        ): DraftAction | undefined {
-          const content = jsonData?.payload?.data;
-          if (!content) return undefined;
-          return { type: content.type, data: content.details } as DraftAction;
-        }
       });
     } else {
       dispatcherApi.ensureDraft({

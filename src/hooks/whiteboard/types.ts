@@ -36,8 +36,6 @@ export type ToolDeps = {
   canvas: HTMLCanvasElement | undefined;
   roughCanvas: RoughCanvas | undefined;
   reDrawController: ReDrawController;
-  shapes: React.MutableRefObject<Shape[]>;
-  theme: string | undefined;
   setSelectedShape: (shape: Shape | undefined) => void;
   getSelectedShape: () => Shape | undefined;
   dispatcher: DispatcherApi;
@@ -45,3 +43,15 @@ export type ToolDeps = {
 };
 
 export type DraftEntity = { draftId?: string; draftName?: string };
+
+export enum ActionType {
+  INIT = 0,
+  INVALID = -1,
+  UPDATE = 1,
+  NOOP = 2,
+}
+
+export type DraftAction = {
+  type: ActionType;
+  data: Record<string, any>;
+};

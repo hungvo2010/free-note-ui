@@ -1,4 +1,3 @@
-import { ActionType, DraftAction } from "apis/DraftAction";
 import {
   WebSocketConnection,
   generateUUID,
@@ -6,7 +5,7 @@ import {
 import { ShapeSerialization } from "core/ShapeSerializer";
 import { Shape } from "types/shape/Shape";
 import { RequestType } from "./protocol";
-import { DraftEntity } from "hooks/whiteboard/types";
+import { ActionType, DraftAction, DraftEntity } from "hooks/whiteboard/types";
 
 export class ShapeEventDispatcher {
   constructor(
