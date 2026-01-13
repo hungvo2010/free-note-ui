@@ -74,17 +74,15 @@ export class ShapeEventDispatcher {
     requestType: RequestType = RequestType.DATA
   ) {
     const wireMessage = {
-      messageId: generateUUID(),
-      payload: {
-        draftId: this.currentDraft.draftId,
-        draftName: this.currentDraft.draftName,
-        requestType,
-        content: {
-          type: action.type,
-          details: action.data,
-        },
+      draftId: this.currentDraft.draftId,
+      draftName: this.currentDraft.draftName,
+      requestType,
+      content: {
+        type: action.type,
+        details: action.data,
       },
     } as const;
+    console.log("Send message via WebSocket: " + JSON.stringify(wireMessage));
     this.socket.sendAction(JSON.stringify(wireMessage));
   }
 }
