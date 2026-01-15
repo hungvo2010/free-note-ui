@@ -36,7 +36,6 @@ export type ToolDeps = {
   canvas: HTMLCanvasElement | undefined;
   roughCanvas: RoughCanvas | undefined;
   reDrawController: ReDrawController;
-  shapes: React.MutableRefObject<Shape[]>;
   setSelectedShape: (shape: Shape | undefined) => void;
   getSelectedShape: () => Shape | undefined;
   dispatcher: DispatcherApi;

@@ -98,6 +98,7 @@ export class ReDrawController implements Subject {
     if (ctx) {
       ctx.clearRect(0, 0, this.canvas?.width || 0, this.canvas?.height || 0);
     }
+    console.log("Redrawing shapes total length: ", this.shapes.length);
     for (const shape of this.shapes || []) {
       shape.setRoughCanvas(this.roughCanvas);
       shape.draw(offsetX, offsetY);
@@ -123,8 +124,11 @@ export class ReDrawController implements Subject {
   }
 
   public removeShapes(shapesToRemove: Shape[]): void {
-    this.shapes = this.shapes.filter(
-      (shape) => !shapesToRemove.includes(shape)
-    );
+    // Mutate array in-place to maintain reference
+    for (let i = this.shapes.length - 1; i >= 0; i--) {
+      if (shapesToRemove.includes(this.shapes[i])) {
+        this.shapes.splice(i, 1);
+      }
+    }
   }
 }

@@ -1,6 +1,7 @@
 import EventBus from "apis/resources/event/EventBus";
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketContext } from "contexts/WebSocketContext";
+import { getShapesToUpdate, parseDraftAction } from "core/shapeLogic";
 import {
   useCallback,
   useContext,
@@ -25,7 +26,6 @@ import {
   createTextTool,
 } from "./whiteboard/tools";
 import { ToolDeps } from "./whiteboard/types";
-import { getShapesToUpdate, parseDraftAction } from "core/shapeLogic";
 
 export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
@@ -33,7 +33,6 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     reDrawController,
     roughCanvas,
     selectedShape,
-    shapes,
     canvas,
     setSelectedShape,
     whiteboardStyles,
@@ -48,7 +47,6 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     canvas,
     roughCanvas,
     reDrawController,
-    shapes,
     setSelectedShape,
     getSelectedShape,
     dispatcher: dispatcherApi,
@@ -97,14 +95,15 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
       });
       EventBus.setHandler(async (message) => {
         let jsonData: Record<string, any> = {};
+        console.log("type of message: ", message);
         if (message instanceof Blob) {
           const text = await message.text();
           jsonData = JSON.parse(text);
         } else {
           jsonData = JSON.parse(message);
         }
-        if (jsonData.payload.draftId && jsonData.payload.draftId !== draftId) {
-          navigate(`/draft/${jsonData.payload.draftId}`); // creating new draft
+        if (jsonData?.draftId && jsonData?.draftId !== draftId) {
+          navigate(`/draft/${jsonData?.draftId}`); // creating new draft
         }
 
         const draftAction = parseDraftAction(jsonData);

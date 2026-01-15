@@ -61,11 +61,18 @@ export const WhiteboardProvider: React.FC<{
 
   const { canvas, roughCanvas } = useCanvas(options);
 
-  reDrawController.current = new ReDrawController(
-    roughCanvas,
-    canvas,
-    shapes.current
-  );
+  // Only create ReDrawController once, then update its properties
+  if (!reDrawController.current) {
+    reDrawController.current = new ReDrawController(
+      roughCanvas,
+      canvas,
+      shapes.current
+    );
+  } else {
+    // Update the canvas and roughCanvas references without recreating
+    reDrawController.current.roughCanvas = roughCanvas;
+    reDrawController.current.canvas = canvas;
+  }
   reDrawController.current.setTheme(theme);
   reDrawController.current.notifyObservers();
 
