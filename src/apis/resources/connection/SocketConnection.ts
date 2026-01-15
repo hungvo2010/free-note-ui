@@ -50,6 +50,7 @@ export class WebSocketConnection {
           handler(this.socket, text);
         } else {
           console.log("Message:", event.data);
+          handler(this.socket, event.data);
         }
       };
     }

@@ -3,8 +3,6 @@ const EventBus = {
   onEvent(message: Blob | string) {
     this.handler(message);
     if (message instanceof Blob) return;
-
-    
   },
 
   setHandler(handler: (message: Blob | string) => void) {
