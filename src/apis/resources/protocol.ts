@@ -19,7 +19,11 @@ export type DraftRequest = {
 };
 
 export enum RequestType {
+  INIT = 0,
   CONNECT = 1,
-  DATA = 2,
+  ADD = 2,
+  UPDATE = 3,
+  REMOVE = 4,
+  NOOP = 5,
   INVALID = -1,
 }

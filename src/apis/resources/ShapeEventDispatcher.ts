@@ -21,57 +21,85 @@ export class ShapeEventDispatcher {
   // shapeData should be a serializable description of the shape
   addShape(shapeData: Shape) {
     const payload = ShapeSerialization.serialize(shapeData);
-    const action: DraftAction = {
-      type: ActionType.UPDATE,
-      data: { op: "add", shape: payload },
+    const wireMessage = {
+      draftId: this.currentDraft.draftId,
+      draftName: this.currentDraft.draftName,
+      requestType: RequestType.ADD,
+      content: {
+        shapes: [payload],
+      },
     };
-    this.sendOne(action);
+    console.log("Send message via WebSocket: " + JSON.stringify(wireMessage));
+    this.socket.sendAction(JSON.stringify(wireMessage));
   }
 
   updateShape(id: string, patch: Shape) {
     const payload = ShapeSerialization.serialize(patch);
-    const action: DraftAction = {
-      type: ActionType.UPDATE,
-      data: { op: "update", id, patch: payload },
+    const wireMessage = {
+      draftId: this.currentDraft.draftId,
+      draftName: this.currentDraft.draftName,
+      requestType: RequestType.UPDATE,
+      content: {
+        shapes: [payload],
+      },
     };
-    this.sendOne(action);
+    console.log("Send message via WebSocket: " + JSON.stringify(wireMessage));
+    this.socket.sendAction(JSON.stringify(wireMessage));
   }
 
   pan(offset: { x: number; y: number }) {
+    // Pan is not part of the new schema, keeping for backward compatibility
     const action: DraftAction = {
       type: ActionType.UPDATE,
       data: { op: "pan", offset },
     };
-    this.sendOne(action);
+    this.sendOne(action, RequestType.NOOP);
   }
 
   deleteShapes(ids: string[]) {
-    const action: DraftAction = {
-      type: ActionType.UPDATE,
-      data: { op: "delete", ids },
+    const shapes = ids.map(id => ({ shapeId: id }));
+    const wireMessage = {
+      draftId: this.currentDraft.draftId,
+      draftName: this.currentDraft.draftName,
+      requestType: RequestType.REMOVE,
+      content: {
+        shapes,
+      },
     };
-    this.sendOne(action);
+    console.log("Send message via WebSocket: " + JSON.stringify(wireMessage));
+    this.socket.sendAction(JSON.stringify(wireMessage));
   }
 
   creatingDraft() {
-    const action: DraftAction = {
-      type: ActionType.UPDATE,
-      data: { op: "creating" },
+    const wireMessage = {
+      draftId: this.currentDraft.draftId,
+      draftName: this.currentDraft.draftName,
+      requestType: RequestType.CONNECT,
+      content: {
+        shapes: [],
+      },
     };
-    this.sendOne(action, RequestType.CONNECT);
+    console.log("Send message via WebSocket: " + JSON.stringify(wireMessage));
+    this.socket.sendAction(JSON.stringify(wireMessage));
   }
 
   finalizeShape(id: string) {
-    const action: DraftAction = {
-      type: ActionType.UPDATE,
-      data: { op: "finalize", id },
+    // Finalize is not explicitly in the new schema, treating as UPDATE
+    const wireMessage = {
+      draftId: this.currentDraft.draftId,
+      draftName: this.currentDraft.draftName,
+      requestType: RequestType.UPDATE,
+      content: {
+        shapes: [{ shapeId: id }],
+      },
     };
-    this.sendOne(action);
+    console.log("Send message via WebSocket: " + JSON.stringify(wireMessage));
+    this.socket.sendAction(JSON.stringify(wireMessage));
   }
 
   private sendOne(
     action: DraftAction,
-    requestType: RequestType = RequestType.DATA
+    requestType: RequestType = RequestType.NOOP
   ) {
     const wireMessage = {
       draftId: this.currentDraft.draftId,
