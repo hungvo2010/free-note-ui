@@ -44,6 +44,32 @@ export type ToolDeps = {
 
 export type DraftEntity = { draftId?: string; draftName?: string };
 
+// Schema-aligned types from AsyncAPI registry
+export type ShapeData = {
+  shapeId: string;
+  type?: string;
+  content?: Record<string, any>;
+};
+
+export type DraftRequestData = {
+  draftId?: string;
+  draftName?: string;
+  requestType: number; // 0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP
+  content?: {
+    shapes?: ShapeData[];
+  };
+};
+
+export type DraftResponseData = {
+  draftId?: string;
+  draftName?: string;
+  requestType?: number; // 0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP
+  data?: {
+    shapes?: ShapeData[];
+  };
+};
+
+// Legacy types - deprecated, use DraftResponseData instead
 export enum ActionType {
   INIT = 0,
   INVALID = -1,
@@ -51,6 +77,7 @@ export enum ActionType {
   NOOP = 2,
 }
 
+/** @deprecated Use DraftResponseData instead */
 export type DraftAction = {
   type: ActionType;
   data: Record<string, any>;

@@ -1,7 +1,7 @@
 import EventBus from "apis/resources/event/EventBus";
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketContext } from "contexts/WebSocketContext";
-import { getShapesToUpdate, parseDraftAction } from "core/shapeLogic";
+import { getShapesToUpdate, parseDraftResponse } from "core/shapeLogic";
 import {
   useCallback,
   useContext,
@@ -106,8 +106,8 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
           navigate(`/draft/${jsonData?.draftId}`); // creating new draft
         }
 
-        const draftAction = parseDraftAction(jsonData);
-        const shapesToUpdate = getShapesToUpdate(draftAction);
+        const draftResponse = parseDraftResponse(jsonData);
+        const shapesToUpdate = getShapesToUpdate(draftResponse);
         for (const shape of shapesToUpdate) {
           // attach current roughCanvas so it can draw
           shape.setRoughCanvas(roughCanvas);

@@ -1,4 +1,4 @@
-import { DraftAction } from "hooks/whiteboard/types";
+import { DraftAction, DraftRequestData, DraftResponseData } from "hooks/whiteboard/types";
 import { WebSocketConnection } from "./connection/SocketConnection";
 
 export type MessagePayload = {
@@ -18,6 +18,7 @@ export type DraftRequest = {
   socket: WebSocketConnection;
 };
 
+// RequestType enum aligned with AsyncAPI schema
 export enum RequestType {
   INIT = 0,
   CONNECT = 1,
@@ -27,3 +28,6 @@ export enum RequestType {
   NOOP = 5,
   INVALID = -1,
 }
+
+// Re-export schema types for convenience
+export type { DraftRequestData, DraftResponseData };
