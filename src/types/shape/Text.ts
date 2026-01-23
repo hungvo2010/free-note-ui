@@ -2,7 +2,7 @@ import SimpleTextEditor from "components/editor/SimpleTextEditor";
 import TextEditor, { Position } from "components/editor/TextEditor";
 import { SerializedShape } from "core/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { UpdateState } from "types/Observer";
+import { UpdateState } from "core/Observer";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 

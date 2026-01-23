@@ -3,7 +3,7 @@ import { Drawable } from "roughjs/bin/core";
 import { distance, isInLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { UpdateState } from "types/Observer";
+import { UpdateState } from "core/Observer";
 import { SerializedShape } from "core/ShapeSerializer";
 
 export class Diamond extends Shape {

@@ -1,7 +1,7 @@
 import { SerializedShape } from "core/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
-import { UpdateState } from "types/Observer";
+import { UpdateState } from "core/Observer";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { distanceToLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
