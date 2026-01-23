@@ -22,19 +22,10 @@ export const WebSocketProvider: React.FC<{
 }> = ({ children, type = INSTANCE_TYPE.ECHO_ONLY }) => {
   const connectionManager = useWebSocketManager();
   const storage = useSessionStorage();
-  let sessionId: string | null = storage.getItem("sessionId");
-  if (!sessionId) {
-    sessionId = crypto.randomUUID();
-    storage.setItem("sessionId", sessionId);
-  }
+  const sessionId = getOrCreateSessionId(storage);
   const connection = connectionManager.getConnectionById(sessionId);
 
-  if (!connection.isHealthy()) {
-    connection.connect();
-  }
-  if (!connection.alreadySetUpHandler()) {
-    setupCorrectHandlers(connection);
-  }
+  initializeConnection(connection);
 
   return (
     <WebSocketContext.Provider
@@ -45,25 +36,65 @@ export const WebSocketProvider: React.FC<{
   );
 };
 
-// TODO: Move to other classes to maintain single responsibility
-function setupCorrectHandlers(connection: WebSocketConnection) {
-  connection.setOpenHandler((socket, event) => {
-    console.log("WebSocket opened");
-  });
+function getOrCreateSessionId(
+  storage: ReturnType<typeof useSessionStorage>,
+): string {
+  let sessionId = storage.getItem("sessionId");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    storage.setItem("sessionId", sessionId);
+  }
+  return sessionId;
+}
+
+function setupConnectionHandlers(connection: WebSocketConnection): void {
   connection.setCloseHandler((socket, closeEvent) => {
-    console.log("WebSocket closed");
+    console.log("WebSocket closed - resetting connection state for reconnect");
+    EventBus.notifyDisconnect();
+    EventBus.resetConnectionState();
   });
+
   connection.setErrorHandler((socket, errorEvent) => {
-    let retryCount = 0;
-    const intervalId = setInterval(() => {
-      connection.setOpenHandler((socket, event) => {
-        clearInterval(intervalId);
-      });
-      console.log(`WebSocket error, retrying connection: ${retryCount++} time`);
-      connection.connect();
-    }, 5000);
+    console.log("WebSocket error - resetting connection state for reconnect");
+    EventBus.notifyDisconnect();
+    handleConnectionError(connection);
   });
+
   connection.setHandler((socket, message) => {
     EventBus.onEvent(message);
   });
+}
+
+function handleConnectionError(connection: WebSocketConnection): void {
+  let retryCount = 0;
+  EventBus.resetConnectionState();
+  
+  const intervalId = setInterval(() => {
+    console.log(`WebSocket error, retrying connection: ${retryCount++} time`);
+    connection.connect((socket, event) => {
+      console.log("WebSocket reconnected successfully");
+      EventBus.notifyReconnect();
+      EventBus.publishReadyConnection();
+      clearInterval(intervalId);
+    });
+  }, 5000);
+}
+
+function handleConnectionReady(): void {
+  console.log("WebSocket handshake successful");
+  EventBus.publishReadyConnection();
+}
+
+function initializeConnection(connection: WebSocketConnection): void {
+  console.log("healthy status of connection: " + connection.isHealthy());
+
+  if (!connection.isHealthy()) {
+    // Setup handlers BEFORE connecting to avoid race conditions
+    setupConnectionHandlers(connection);
+    connection.connect(handleConnectionReady);
+  }
+
+  if (connection.isHealthy()) {
+    EventBus.publishReadyConnection();
+  }
 }
