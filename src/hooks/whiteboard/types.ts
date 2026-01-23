@@ -27,7 +27,6 @@ export type DispatcherApi = {
   ensureDraft: (draftEntity: DraftEntity) => void;
   addShape: (shape: Shape) => void;
   updateShape: (id: string, shape: Shape) => void;
-  finalizeShape: (id: string) => void;
   deleteShapes: (ids: string[]) => void;
   pan: (offset: Point) => void;
 };

@@ -65,7 +65,8 @@ export function useShapeDispatcher({
       draftId: draftId || "",
       roughCanvas,
       reDrawController,
-      onDraftChange: (newDraftId) => navigateRef.current(`/draft/${newDraftId}`),
+      onDraftChange: (newDraftId) =>
+        navigateRef.current(`/draft/${newDraftId}`),
     });
     eventHandlerRef.current.setupHandlers(dispatcherRef.current);
 
@@ -74,13 +75,7 @@ export function useShapeDispatcher({
         eventHandlerRef.current.cleanup();
       }
     };
-  }, [
-    webSocketConnection,
-    draftId,
-    draftName,
-    roughCanvas,
-    reDrawController,
-  ]);
+  }, [webSocketConnection, draftId, draftName, roughCanvas, reDrawController]);
 
   return dispatcherRef.current;
 }

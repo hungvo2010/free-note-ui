@@ -9,7 +9,6 @@ export function createDispatcherApi(
       ensureDraft: () => {},
       addShape: (shape) => {},
       updateShape: (id, shape) => {},
-      finalizeShape: (id) => {},
       deleteShapes: (ids) => {},
       pan: (offset: Point) => {},
     };
@@ -20,7 +19,6 @@ export function createDispatcherApi(
     },
     addShape: (shape) => dispatcherRef.addShape(shape),
     updateShape: (id, shape) => dispatcherRef.updateShape(id, shape),
-    finalizeShape: (id) => dispatcherRef.finalizeShape(id),
     deleteShapes: (ids) => dispatcherRef.deleteShapes(ids),
     pan: (offset: Point) => dispatcherRef.pan(offset),
   };

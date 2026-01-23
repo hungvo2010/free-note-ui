@@ -87,17 +87,5 @@ export class ShapeEventDispatcher {
     this.socket.sendAction(JSON.stringify(wireMessage));
   }
 
-  finalizeShape(id: string) {
-    // Finalize is treated as UPDATE in the schema
-    const wireMessage: DraftRequestData = {
-      draftId: this.currentDraft.draftId,
-      draftName: this.currentDraft.draftName,
-      requestType: RequestType.UPDATE,
-      content: {
-        shapes: [{ shapeId: id }],
-      },
-    };
-    console.log("Send message via WebSocket: " + JSON.stringify(wireMessage));
-    this.socket.sendAction(JSON.stringify(wireMessage));
-  }
+
 }
