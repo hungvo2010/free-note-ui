@@ -1,5 +1,5 @@
 import { ConnectionStateObserver } from "./ConnectionStateObserver";
-import { ConnectionReadyHandler } from "./ConnectionReadyHandler";
+import { ConnectionReadyHandler } from "../ready/ConnectionReadyHandler";
 
 export class ConnectionStateHandler implements ConnectionStateObserver {
   constructor(private connectionReadyHandler: ConnectionReadyHandler) {}

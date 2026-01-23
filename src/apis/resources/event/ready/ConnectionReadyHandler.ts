@@ -1,5 +1,5 @@
+import { ShapeEventDispatcher } from "../../ShapeEventDispatcher";
 import { ConnectionReadyObserver } from "./ConnectionReadySubject";
-import { ShapeEventDispatcher } from "../ShapeEventDispatcher";
 
 export class ConnectionReadyHandler implements ConnectionReadyObserver {
   private hasConnected = false;

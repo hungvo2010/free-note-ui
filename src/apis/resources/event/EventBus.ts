@@ -1,6 +1,6 @@
-import { ConnectionReadySubject } from "./ConnectionReadySubject";
-import { ConnectionStateSubject } from "./ConnectionStateObserver";
-import { MessageSubject } from "./MessageSubject";
+import { ConnectionReadySubject } from "./ready/ConnectionReadySubject";
+import { ConnectionStateSubject } from "./reconnect/ConnectionStateObserver";
+import { MessageSubject } from "./message/MessageSubject";
 
 class EventBus {
   private messageSubject = new MessageSubject();

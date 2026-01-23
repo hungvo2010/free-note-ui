@@ -1,7 +1,10 @@
-import { MessageObserver } from "./MessageSubject";
-import { getShapesToUpdate, parseDraftResponse } from "core/shapeLogic";
+import {
+  parseDraftResponseData,
+  shapesFromResponseData,
+} from "apis/mapper/draftResponseMapper";
 import { ReDrawController } from "main/ReDrawController";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { MessageObserver } from "./MessageSubject";
 
 interface MessageHandlerConfig {
   draftId: string;
@@ -22,14 +25,14 @@ export class MessageHandler implements MessageObserver {
     } else {
       jsonData = JSON.parse(message);
     }
-    
+
     if (jsonData?.draftId && jsonData?.draftId !== this.config.draftId) {
       this.config.onDraftChange(jsonData.draftId);
       return;
     }
 
-    const draftResponse = parseDraftResponse(jsonData);
-    const shapesToUpdate = getShapesToUpdate(draftResponse);
+    const draftResponse = parseDraftResponseData(jsonData);
+    const shapesToUpdate = shapesFromResponseData(draftResponse);
     for (const shape of shapesToUpdate) {
       shape.setRoughCanvas(this.config.roughCanvas);
       this.config.reDrawController.mergeShape(shape);

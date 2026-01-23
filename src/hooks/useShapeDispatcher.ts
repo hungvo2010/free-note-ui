@@ -1,6 +1,6 @@
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketConnection } from "apis/resources/connection/WebSocketConnection";
-import { ShapeEventHandler } from "apis/resources/event/ShapeEventHandler";
+import { EventHandlerCoordinator } from "apis/resources/event/EventHandlerCoordinator";
 import { ReDrawController } from "main/ReDrawController";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
@@ -22,7 +22,7 @@ export function useShapeDispatcher({
   reDrawController,
 }: UseShapeDispatcherProps) {
   const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
-  const eventHandlerRef = useRef<ShapeEventHandler | null>(null);
+  const eventHandlerRef = useRef<EventHandlerCoordinator | null>(null);
   const navigate = useNavigate();
   const navigateRef = useRef(navigate);
 
@@ -38,7 +38,7 @@ export function useShapeDispatcher({
 
     // Cleanup previous handlers if they exist
     if (eventHandlerRef.current) {
-      eventHandlerRef.current.cleanup();
+      eventHandlerRef.current.unregister();
       eventHandlerRef.current = null;
     }
 
@@ -61,18 +61,18 @@ export function useShapeDispatcher({
     }
 
     // Always create new event handler with current draftId
-    eventHandlerRef.current = new ShapeEventHandler({
+    eventHandlerRef.current = new EventHandlerCoordinator({
       draftId: draftId || "",
       roughCanvas,
       reDrawController,
       onDraftChange: (newDraftId) =>
         navigateRef.current(`/draft/${newDraftId}`),
     });
-    eventHandlerRef.current.setupHandlers(dispatcherRef.current);
+    eventHandlerRef.current.register(dispatcherRef.current);
 
     return () => {
       if (eventHandlerRef.current) {
-        eventHandlerRef.current.cleanup();
+        eventHandlerRef.current.unregister();
       }
     };
   }, [webSocketConnection, draftId, draftName, roughCanvas, reDrawController]);
