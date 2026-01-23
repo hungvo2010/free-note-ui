@@ -1,5 +1,5 @@
 import { ConnectionManager } from "apis/resources/connection/ConnectionManager";
-import { WebSocketConnection } from "apis/resources/connection/SocketConnection";
+import { WebSocketConnection } from "apis/resources/connection/WebSocketConnection";
 import EventBus from "apis/resources/event/EventBus";
 import { useSessionStorage } from "hooks/useSessionStorage";
 import { useWebSocketManager } from "hooks/useWebSocket";
@@ -47,6 +47,20 @@ function getOrCreateSessionId(
   return sessionId;
 }
 
+function initializeConnection(connection: WebSocketConnection): void {
+  console.log("healthy status of connection: " + connection.isHealthy());
+
+  if (!connection.isHealthy()) {
+    // Setup handlers BEFORE connecting to avoid race conditions
+    setupConnectionHandlers(connection);
+    connection.connect(handleConnectionReady);
+  }
+
+  if (connection.isHealthy()) {
+    EventBus.publishReadyConnection();
+  }
+}
+
 function setupConnectionHandlers(connection: WebSocketConnection): void {
   connection.setCloseHandler((socket, closeEvent) => {
     console.log("WebSocket closed - resetting connection state for reconnect");
@@ -61,14 +75,14 @@ function setupConnectionHandlers(connection: WebSocketConnection): void {
   });
 
   connection.setHandler((socket, message) => {
-    EventBus.onEvent(message);
+    EventBus.getMessageSubject.notifyObservers(message);
   });
 }
 
 function handleConnectionError(connection: WebSocketConnection): void {
   let retryCount = 0;
   EventBus.resetConnectionState();
-  
+
   const intervalId = setInterval(() => {
     console.log(`WebSocket error, retrying connection: ${retryCount++} time`);
     connection.connect((socket, event) => {
@@ -83,18 +97,4 @@ function handleConnectionError(connection: WebSocketConnection): void {
 function handleConnectionReady(): void {
   console.log("WebSocket handshake successful");
   EventBus.publishReadyConnection();
-}
-
-function initializeConnection(connection: WebSocketConnection): void {
-  console.log("healthy status of connection: " + connection.isHealthy());
-
-  if (!connection.isHealthy()) {
-    // Setup handlers BEFORE connecting to avoid race conditions
-    setupConnectionHandlers(connection);
-    connection.connect(handleConnectionReady);
-  }
-
-  if (connection.isHealthy()) {
-    EventBus.publishReadyConnection();
-  }
 }

@@ -1,4 +1,4 @@
-import { WebSocketConnection } from "./SocketConnection";
+import { WebSocketConnection } from "./WebSocketConnection";
 
 export class ConnectionManager {
   constructor() {}

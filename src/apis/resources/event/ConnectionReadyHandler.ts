@@ -1,0 +1,29 @@
+import { ConnectionReadyObserver } from "./ConnectionReadySubject";
+import { ShapeEventDispatcher } from "../ShapeEventDispatcher";
+
+export class ConnectionReadyHandler implements ConnectionReadyObserver {
+  private hasConnected = false;
+
+  constructor(
+    private dispatcher: ShapeEventDispatcher,
+    private draftId: string
+  ) {}
+
+  update(): void {
+    // Idempotent: only send CONNECT once per connection cycle
+    if (this.hasConnected) {
+      console.log("Already sent CONNECT request for draft:", this.draftId, "- skipping");
+      return;
+    }
+
+    console.log("Sending CONNECT request for draft:", this.draftId);
+    this.dispatcher.creatingDraft();
+    this.hasConnected = true;
+  }
+
+  reset(): void {
+    // Reset for reconnection scenarios
+    console.log("Resetting ConnectionReadyHandler for draft:", this.draftId);
+    this.hasConnected = false;
+  }
+}

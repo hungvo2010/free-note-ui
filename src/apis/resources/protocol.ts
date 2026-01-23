@@ -1,5 +1,9 @@
-import { DraftAction, DraftRequestData, DraftResponseData } from "hooks/whiteboard/types";
-import { WebSocketConnection } from "./connection/SocketConnection";
+import {
+  DraftRequestData,
+  DraftResponseData,
+  ShapeData,
+} from "hooks/whiteboard/types";
+import { WebSocketConnection } from "./connection/WebSocketConnection";
 
 export type MessagePayload = {
   messageId: string;
@@ -9,7 +13,7 @@ export type MessagePayload = {
 export type Draft = {
   draftId: string;
   draftName: string;
-  draftActions: DraftAction[];
+  shapes?: ShapeData[];
 };
 
 export type DraftRequest = {

@@ -1,6 +1,6 @@
-import { MessageSubject } from "./MessageSubject";
 import { ConnectionReadySubject } from "./ConnectionReadySubject";
 import { ConnectionStateSubject } from "./ConnectionStateObserver";
+import { MessageSubject } from "./MessageSubject";
 
 class EventBus {
   private messageSubject = new MessageSubject();
@@ -8,23 +8,18 @@ class EventBus {
   private connectionStateSubject = new ConnectionStateSubject();
 
   // Delegate to MessageSubject
-  get messageObservers() {
+  get getMessageSubject() {
     return this.messageSubject;
   }
 
   // Delegate to ConnectionReadySubject
-  get connectionReadyObservers() {
+  get getConnectionReadySubject() {
     return this.connectionReadySubject;
   }
 
   // Delegate to ConnectionStateSubject
   get connectionStateObservers() {
     return this.connectionStateSubject;
-  }
-
-  // Convenience methods for backward compatibility
-  onEvent(message: Blob | string): void {
-    this.messageSubject.notifyObservers(message);
   }
 
   publishReadyConnection(): void {

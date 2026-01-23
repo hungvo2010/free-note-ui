@@ -1,9 +1,9 @@
 import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
-import { WebSocketConnection } from "apis/resources/connection/SocketConnection";
+import { WebSocketConnection } from "apis/resources/connection/WebSocketConnection";
 import { ShapeEventHandler } from "apis/resources/event/ShapeEventHandler";
+import { ReDrawController } from "main/ReDrawController";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
-import { ReDrawController } from "main/ReDrawController";
 import { RoughCanvas } from "roughjs/bin/canvas";
 
 interface UseShapeDispatcherProps {
@@ -24,40 +24,63 @@ export function useShapeDispatcher({
   const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
   const eventHandlerRef = useRef<ShapeEventHandler | null>(null);
   const navigate = useNavigate();
+  const navigateRef = useRef(navigate);
+
+  // Keep navigate ref up to date
+  useEffect(() => {
+    navigateRef.current = navigate;
+  }, [navigate]);
 
   useEffect(() => {
-    if (!webSocketConnection || dispatcherRef.current || !draftId || !draftName) {
+    if (!webSocketConnection) {
       return;
     }
 
-    console.log("Creating dispatcher");
-    dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
-      draftId,
-      draftName,
-    });
+    // Cleanup previous handlers if they exist
+    if (eventHandlerRef.current) {
+      eventHandlerRef.current.cleanup();
+      eventHandlerRef.current = null;
+    }
 
+    // Create or update dispatcher
+    if (!dispatcherRef.current) {
+      console.log(
+        "Creating dispatcher => connection status: " +
+          webSocketConnection.isHealthy(),
+      );
+      dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
+        draftId,
+        draftName,
+      });
+    } else {
+      // Update existing dispatcher with new draft info
+      dispatcherRef.current.setDraft({
+        draftId,
+        draftName,
+      });
+    }
+
+    // Always create new event handler with current draftId
     eventHandlerRef.current = new ShapeEventHandler({
-      draftId,
+      draftId: draftId || "",
       roughCanvas,
       reDrawController,
-      onDraftChange: (newDraftId) => navigate(`/draft/${newDraftId}`),
+      onDraftChange: (newDraftId) => navigateRef.current(`/draft/${newDraftId}`),
     });
-
-    // Register observers BEFORE checking connection health
-    // This ensures observers are ready when connection opens
     eventHandlerRef.current.setupHandlers(dispatcherRef.current);
-
-    // No manual fallback needed - ConnectionReadySubject will replay if already connected
-    // The observer pattern handles both cases:
-    // 1. Connection opens later -> observer gets notified via onopen event
-    // 2. Connection already open -> observer gets notified immediately via replay
 
     return () => {
       if (eventHandlerRef.current) {
         eventHandlerRef.current.cleanup();
       }
     };
-  }, [webSocketConnection, draftId, draftName, navigate, roughCanvas, reDrawController]);
+  }, [
+    webSocketConnection,
+    draftId,
+    draftName,
+    roughCanvas,
+    reDrawController,
+  ]);
 
-  return dispatcherRef;
+  return dispatcherRef.current;
 }

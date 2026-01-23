@@ -10,6 +10,7 @@ import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { useDraft } from "./useDraft";
 import useInteractionRefs from "./useInteractionRefs";
+import { useShapeDispatcher } from "./useShapeDispatcher";
 import { useWhiteboard } from "./useWhiteboard";
 import { createDispatcherApi } from "./whiteboard/dispatcher";
 import {
@@ -21,7 +22,6 @@ import {
   createTextTool,
 } from "./whiteboard/tools";
 import { ToolDeps } from "./whiteboard/types";
-import { useShapeDispatcher } from "./useShapeDispatcher";
 
 export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const {
@@ -36,7 +36,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const refs = useInteractionRefs();
   const { draftId, draftName } = useDraft();
 
-  const dispatcherRef = useShapeDispatcher({
+  const dispatcher = useShapeDispatcher({
     webSocketConnection,
     draftId,
     draftName,
@@ -44,7 +44,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     reDrawController,
   });
 
-  const dispatcherApi = createDispatcherApi(dispatcherRef);
+  const dispatcherApi = createDispatcherApi(dispatcher);
   const getSelectedShape = () => selectedShape;
   const toolDeps: ToolDeps = {
     canvas,
@@ -107,7 +107,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
 
       toolsMap["draw"].onDown({ x, y });
     },
-    [isLocked, canvas, type, toolsMap, refs]
+    [isLocked, canvas, type, toolsMap, refs],
   );
 
   const handleMouseMove = useCallback(
@@ -123,7 +123,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
 
       toolsMap["draw"].onMove({ x, y });
     },
-    [canvas, toolsMap, type]
+    [canvas, toolsMap, type],
   );
 
   const handleMouseUp = useCallback(
@@ -139,14 +139,14 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         return;
       }
     },
-    [type, toolsMap, canvas]
+    [type, toolsMap, canvas],
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       toolsMap["text"].onKeyDown(e);
     },
-    [toolsMap]
+    [toolsMap],
   );
 
   return {

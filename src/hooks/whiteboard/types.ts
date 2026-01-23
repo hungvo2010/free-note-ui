@@ -68,17 +68,3 @@ export type DraftResponseData = {
     shapes?: ShapeData[];
   };
 };
-
-// Legacy types - deprecated, use DraftResponseData instead
-export enum ActionType {
-  INIT = 0,
-  INVALID = -1,
-  UPDATE = 1,
-  NOOP = 2,
-}
-
-/** @deprecated Use DraftResponseData instead */
-export type DraftAction = {
-  type: ActionType;
-  data: Record<string, any>;
-};

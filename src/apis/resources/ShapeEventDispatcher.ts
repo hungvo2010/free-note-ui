@@ -1,16 +1,15 @@
 import {
-  WebSocketConnection,
-  generateUUID,
-} from "apis/resources/connection/SocketConnection";
+  WebSocketConnection
+} from "apis/resources/connection/WebSocketConnection";
 import { ShapeSerialization } from "core/ShapeSerializer";
-import { Shape } from "types/shape/Shape";
-import { RequestType, DraftRequestData } from "./protocol";
 import { DraftEntity, ShapeData } from "hooks/whiteboard/types";
+import { Shape } from "types/shape/Shape";
+import { DraftRequestData, RequestType } from "./protocol";
 
 export class ShapeEventDispatcher {
   constructor(
     private socket: WebSocketConnection,
-    private currentDraft: DraftEntity
+    private currentDraft: DraftEntity,
   ) {}
 
   public setDraft(draft: DraftEntity) {
@@ -62,7 +61,7 @@ export class ShapeEventDispatcher {
   }
 
   deleteShapes(ids: string[]) {
-    const shapes: ShapeData[] = ids.map(id => ({ shapeId: id }));
+    const shapes: ShapeData[] = ids.map((id) => ({ shapeId: id }));
     const wireMessage: DraftRequestData = {
       draftId: this.currentDraft.draftId,
       draftName: this.currentDraft.draftName,

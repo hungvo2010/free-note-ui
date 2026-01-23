@@ -5,7 +5,7 @@ import { calculatePadding, distance } from "./GeometryUtils";
 export function clearLastRectangle(
   canvas: HTMLCanvasElement,
   lastVisitedPoints: number[][],
-  startPoint: { x: number; y: number }
+  startPoint: { x: number; y: number },
 ) {
   const lastX = lastVisitedPoints[lastVisitedPoints.length - 1][0];
   const lastY = lastVisitedPoints[lastVisitedPoints.length - 1][1];
@@ -16,7 +16,7 @@ export function clearLastRectangle(
     startPoint.x - padding[0],
     startPoint.y - padding[1],
     lastX - startPoint.x + padding[0] * 2,
-    lastY - startPoint.y + padding[1] * 2
+    lastY - startPoint.y + padding[1] * 2,
   );
 }
 
@@ -25,7 +25,7 @@ export const clearRect = (
   x: number,
   y: number,
   width: number,
-  height: number
+  height: number,
 ) => {
   const ctx = canvas?.getContext("2d");
   ctx?.clearRect(x, y, width, height);
@@ -35,7 +35,7 @@ const clearCircle = (
   canvas: HTMLCanvasElement | undefined,
   x: number,
   y: number,
-  radius: number
+  radius: number,
 ) => {
   const context = canvas?.getContext("2d");
   if (context) {
@@ -51,7 +51,7 @@ const clearCircle = (
 const drawWord = (
   canvas: HTMLCanvasElement | undefined,
   x: number,
-  y: number
+  y: number,
 ) => {
   const ctx = canvas?.getContext("2d");
   if (ctx && canvas) {
@@ -69,7 +69,7 @@ const drawArrow = (
   x1: number,
   y1: number,
   x2: number,
-  y2: number
+  y2: number,
 ) => {
   drawLine(roughCanvas, x1, y1, x2, y2);
   if (distance(x1, y1, x2, y2) < 20) return;
@@ -81,14 +81,14 @@ const drawArrow = (
     x2,
     y2,
     x2 - headLength * Math.cos(angle - Math.PI / 6),
-    y2 - headLength * Math.sin(angle - Math.PI / 6)
+    y2 - headLength * Math.sin(angle - Math.PI / 6),
   );
   drawLine(
     roughCanvas,
     x2,
     y2,
     x2 - headLength * Math.cos(angle + Math.PI / 6),
-    y2 - headLength * Math.sin(angle + Math.PI / 6)
+    y2 - headLength * Math.sin(angle + Math.PI / 6),
   );
 };
 
@@ -97,7 +97,7 @@ export const drawLine = (
   x1: number,
   y1: number,
   x2: number,
-  y2: number
+  y2: number,
 ) => {
   return roughCanvas?.line(x1, y1, x2, y2, {
     roughness: 1,
@@ -110,10 +110,10 @@ const drawCircle = (
   x: number,
   y: number,
   x1: number,
-  y1: number
+  y1: number,
 ) => {
   if (!roughCanvas) return;
-  
+
   const angle = Math.atan2(y1 - y, x1 - x);
   roughCanvas.circle(
     (x + x1) / 2,
@@ -122,23 +122,31 @@ const drawCircle = (
     {
       roughness: 1,
       curveFitting: 0.95,
-    }
+    },
   );
 };
 
-const drawRect = (roughCanvas: RoughCanvas, x: number, y: number, x1: number, y1: number) => {
-    roughCanvas?.rectangle(x, y, x1 - x, y1 - y, {
-        roughness: 1,
-    });
+const drawRect = (
+  roughCanvas: RoughCanvas,
+  x: number,
+  y: number,
+  x1: number,
+  y1: number,
+) => {
+  roughCanvas?.rectangle(x, y, x1 - x, y1 - y, {
+    roughness: 1,
+  });
 };
 
-
-export function updateCursorType(canvas: HTMLCanvasElement | undefined, type: string) {
+export function updateCursorType(
+  canvas: HTMLCanvasElement | undefined,
+  type: string,
+) {
   if (!canvas) return;
-  
+
   // Remove any previous custom cursor classes
   canvas.classList.remove("eraser-cursor");
-  
+
   switch (type) {
     case "default":
       canvas.style.cursor = "default";
@@ -168,10 +176,10 @@ const drawPen = (
   roughCanvas: RoughCanvas | undefined,
   curvePoints: [number, number][],
   x2: number,
-  y2: number
+  y2: number,
 ) => {
   if (!roughCanvas) return;
-  
+
   roughCanvas.curve([...curvePoints, [x2, y2]], {
     roughness: 0.1,
     strokeWidth: 2,
@@ -285,7 +293,7 @@ const drawPen = (
 export function toVirtualX(
   xReal: number,
   offsetX: number,
-  scale: number
+  scale: number,
 ): number {
   return (xReal + offsetX) * scale;
 }
@@ -293,7 +301,7 @@ export function toVirtualX(
 export function toVirtualY(
   yReal: number,
   offsetY: number,
-  scale: number
+  scale: number,
 ): number {
   return (yReal + offsetY) * scale;
 }
@@ -301,7 +309,7 @@ export function toVirtualY(
 export function toRealX(
   xVirtual: number,
   offsetX: number,
-  scale: number
+  scale: number,
 ): number {
   return xVirtual / scale - offsetX;
 }
@@ -309,7 +317,11 @@ export function toRealX(
 export function toRealY(
   yVirtual: number,
   offsetY: number,
-  scale: number
+  scale: number,
 ): number {
   return yVirtual / scale - offsetY;
+}
+
+export function generateUUID(): string {
+  return crypto.randomUUID();
 }
