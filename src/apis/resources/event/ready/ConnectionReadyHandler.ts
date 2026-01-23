@@ -1,11 +1,11 @@
-import { ShapeEventDispatcher } from "../../ShapeEventDispatcher";
+import { DraftSyncClient } from "../../DraftSyncClient";
 import { ConnectionReadyObserver } from "./ConnectionReadySubject";
 
 export class ConnectionReadyHandler implements ConnectionReadyObserver {
   private hasConnected = false;
 
   constructor(
-    private dispatcher: ShapeEventDispatcher,
+    private dispatcher: DraftSyncClient,
     private draftId: string
   ) {}
 

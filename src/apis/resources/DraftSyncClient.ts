@@ -6,7 +6,7 @@ import { DraftEntity, ShapeData } from "hooks/whiteboard/types";
 import { Shape } from "types/shape/Shape";
 import { DraftRequestData, RequestType } from "./protocol";
 
-export class ShapeEventDispatcher {
+export class DraftSyncClient {
   constructor(
     private socket: WebSocketConnection,
     private currentDraft: DraftEntity,

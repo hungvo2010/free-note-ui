@@ -1,4 +1,4 @@
-import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
+import { DraftSyncClient } from "apis/resources/DraftSyncClient";
 import { WebSocketConnection } from "apis/resources/connection/WebSocketConnection";
 import { EventHandlerCoordinator } from "apis/resources/event/EventHandlerCoordinator";
 import { ReDrawController } from "main/ReDrawController";
@@ -21,7 +21,7 @@ export function useShapeDispatcher({
   roughCanvas,
   reDrawController,
 }: UseShapeDispatcherProps) {
-  const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
+  const dispatcherRef = useRef<DraftSyncClient | null>(null);
   const eventHandlerRef = useRef<EventHandlerCoordinator | null>(null);
   const navigate = useNavigate();
   const navigateRef = useRef(navigate);
@@ -48,7 +48,7 @@ export function useShapeDispatcher({
         "Creating dispatcher => connection status: " +
           webSocketConnection.isHealthy(),
       );
-      dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
+      dispatcherRef.current = new DraftSyncClient(webSocketConnection, {
         draftId,
         draftName,
       });

@@ -4,7 +4,7 @@ import { ConnectionReadyHandler } from "./ready/ConnectionReadyHandler";
 import { ConnectionStateHandler } from "./reconnect/ConnectionStateHandler";
 import { ReDrawController } from "main/ReDrawController";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { ShapeEventDispatcher } from "../ShapeEventDispatcher";
+import { DraftSyncClient } from "../DraftSyncClient";
 
 interface EventHandlerCoordinatorConfig {
   draftId: string;
@@ -32,7 +32,7 @@ export class EventHandlerCoordinator {
   /**
    * Register all handlers with EventBus and set up their dependencies
    */
-  register(dispatcher: ShapeEventDispatcher): void {
+  register(dispatcher: DraftSyncClient): void {
     this.connectionReadyHandler = new ConnectionReadyHandler(
       dispatcher,
       this.config.draftId

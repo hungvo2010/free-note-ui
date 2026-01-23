@@ -1,8 +1,8 @@
-import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
+import { DraftSyncClient } from "apis/resources/DraftSyncClient";
 import { DispatcherApi, DraftEntity, Point } from "./types";
 
 export function createDispatcherApi(
-  dispatcherRef: ShapeEventDispatcher | null,
+  dispatcherRef: DraftSyncClient | null,
 ): DispatcherApi {
   if (dispatcherRef == null) {
     return {
