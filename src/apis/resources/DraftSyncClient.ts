@@ -7,7 +7,7 @@ import { Shape } from "types/shape/Shape";
 import { AccumulatorThrottle, KeyedThrottle, Throttle } from "utils/Throttle";
 import { DraftRequestData, RequestType } from "./protocol";
 
-const THROTTLE_MS = 5000; // Centralized throttle control for all updates
+const THROTTLE_MS = 200; // Centralized throttle control for all updates
 
 export class DraftSyncClient {
   private updateThrottle: KeyedThrottle<string, Shape>;

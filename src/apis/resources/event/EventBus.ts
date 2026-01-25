@@ -7,19 +7,31 @@ class EventBus {
   private connectionReadySubject = new ConnectionReadySubject();
   private connectionStateSubject = new ConnectionStateSubject();
 
-  // Delegate to MessageSubject
-  get getMessageSubject() {
-    return this.messageSubject;
+  // Message event handlers
+  addMessageHandler(handler: any): void {
+    this.messageSubject.registerObserver(handler);
   }
 
-  // Delegate to ConnectionReadySubject
-  get getConnectionReadySubject() {
-    return this.connectionReadySubject;
+  removeMessageHandler(handler: any): void {
+    this.messageSubject.removeObserver(handler);
   }
 
-  // Delegate to ConnectionStateSubject
-  get connectionStateObservers() {
-    return this.connectionStateSubject;
+  // Connection ready event handlers
+  addConnectionReadyHandler(handler: any): void {
+    this.connectionReadySubject.registerObserver(handler);
+  }
+
+  removeConnectionReadyHandler(handler: any): void {
+    this.connectionReadySubject.removeObserver(handler);
+  }
+
+  // Connection state event handlers
+  addConnectionStateChange(handler: any): void {
+    this.connectionStateSubject.registerObserver(handler);
+  }
+
+  removeConnectionStateChange(handler: any): void {
+    this.connectionStateSubject.removeObserver(handler);
   }
 
   publishReadyConnection(): void {

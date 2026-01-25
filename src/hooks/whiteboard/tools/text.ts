@@ -33,8 +33,23 @@ export function createTextTool(deps: ToolDeps): TextTool {
       // no-op for now
     },
     onKeyDown: (e) => {
-      e.preventDefault();
       if (!refs.isEditingTextRef.current) return;
+      
+      // Allow browser shortcuts like Ctrl+R (reload), Cmd+R, F5, etc.
+      if (e.ctrlKey || e.metaKey) {
+        // Only handle specific text editing shortcuts, let others pass through
+        if (!['a', 'c', 'v', 'x', 'z', 'y'].includes(e.key.toLowerCase())) {
+          return; // Don't prevent default for non-text shortcuts
+        }
+      }
+      
+      // Allow F5 and other function keys
+      if (e.key.startsWith('F')) {
+        return;
+      }
+      
+      e.preventDefault();
+      
       const selectedShape = getSelectedShape();
       if (!selectedShape || !(selectedShape instanceof TextShape)) return;
       const selectedTextShape = selectedShape as TextShape;

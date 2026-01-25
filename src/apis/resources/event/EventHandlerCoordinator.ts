@@ -41,29 +41,21 @@ export class EventHandlerCoordinator {
       this.connectionReadyHandler
     );
 
-    EventBus.getMessageSubject.registerObserver(this.messageHandler);
-    EventBus.getConnectionReadySubject.registerObserver(
-      this.connectionReadyHandler
-    );
-    EventBus.connectionStateObservers.registerObserver(
-      this.connectionStateHandler
-    );
+    EventBus.addMessageHandler(this.messageHandler);
+    EventBus.addConnectionReadyHandler(this.connectionReadyHandler);
+    EventBus.addConnectionStateChange(this.connectionStateHandler);
   }
 
   /**
    * Unregister all handlers from EventBus
    */
   unregister(): void {
-    EventBus.getMessageSubject.removeObserver(this.messageHandler);
+    EventBus.removeMessageHandler(this.messageHandler);
     if (this.connectionReadyHandler) {
-      EventBus.getConnectionReadySubject.removeObserver(
-        this.connectionReadyHandler
-      );
+      EventBus.removeConnectionReadyHandler(this.connectionReadyHandler);
     }
     if (this.connectionStateHandler) {
-      EventBus.connectionStateObservers.removeObserver(
-        this.connectionStateHandler
-      );
+      EventBus.removeConnectionStateChange(this.connectionStateHandler);
     }
   }
 }

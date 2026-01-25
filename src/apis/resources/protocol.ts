@@ -24,7 +24,6 @@ export type DraftRequest = {
 
 // RequestType enum aligned with AsyncAPI schema
 export enum RequestType {
-  INIT = 0,
   CONNECT = 1,
   ADD = 2,
   UPDATE = 3,
