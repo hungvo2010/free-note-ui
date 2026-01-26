@@ -1,9 +1,10 @@
 import { ConnectionManager } from "apis/resources/connection/ConnectionManager";
+import { Heartbeat } from "apis/resources/connection/Heartbeat";
 import { WebSocketConnection } from "apis/resources/connection/WebSocketConnection";
 import EventBus from "apis/resources/event/EventBus";
 import { useSessionStorage } from "hooks/useSessionStorage";
 import { useWebSocketManager } from "hooks/useWebSocket";
-import { createContext } from "react";
+import { createContext, useEffect, useRef } from "react";
 import { INSTANCE_TYPE } from "../hooks/useWebSocket";
 
 interface WebSocketContextType {
@@ -24,8 +25,18 @@ export const WebSocketProvider: React.FC<{
   const storage = useSessionStorage();
   const sessionId = getOrCreateSessionId(storage);
   const connection = connectionManager.getConnectionById(sessionId);
+  const heartbeatRef = useRef<Heartbeat | null>(null);
 
-  initializeConnection(connection);
+  useEffect(() => {
+    initializeConnection(connection, heartbeatRef);
+
+    return () => {
+      // Cleanup heartbeat on unmount
+      if (heartbeatRef.current) {
+        heartbeatRef.current.stop();
+      }
+    };
+  }, [connection]);
 
   return (
     <WebSocketContext.Provider
@@ -47,54 +58,97 @@ function getOrCreateSessionId(
   return sessionId;
 }
 
-function initializeConnection(connection: WebSocketConnection): void {
+function initializeConnection(
+  connection: WebSocketConnection,
+  heartbeatRef: React.MutableRefObject<Heartbeat | null>,
+): void {
   console.log("healthy status of connection: " + connection.isHealthy());
 
-  if (!connection.isHealthy()) {
-    // Setup handlers BEFORE connecting to avoid race conditions
-    setupConnectionHandlers(connection);
-    connection.connect(handleConnectionReady);
-  }
+  // Setup handlers once - they'll be reused for all connections/reconnections
+  setupConnectionHandlers(connection, heartbeatRef);
 
-  if (connection.isHealthy()) {
+  if (!connection.isHealthy()) {
+    connection.connect();
+  } else {
     EventBus.publishReadyConnection();
+    startHeartbeat(connection, heartbeatRef);
   }
 }
 
-function setupConnectionHandlers(connection: WebSocketConnection): void {
-  connection.setCloseHandler((socket, closeEvent) => {
-    console.log("WebSocket closed - resetting connection state for reconnect");
+function setupConnectionHandlers(
+  connection: WebSocketConnection,
+  heartbeatRef: React.MutableRefObject<Heartbeat | null>,
+): void {
+  // Handler for successful connection/reconnection
+  connection.setOpenHandler(() => {
+    console.log("WebSocket connection opened successfully");
+    EventBus.notifyReconnect();
+    EventBus.publishReadyConnection();
+    startHeartbeat(connection, heartbeatRef);
+  });
+
+  connection.setCloseHandler(() => {
+    console.log("WebSocket closed - will attempt reconnect");
+    stopHeartbeat(heartbeatRef);
     EventBus.notifyDisconnect();
     EventBus.resetConnectionState();
+    attemptReconnect(connection);
   });
 
-  connection.setErrorHandler((socket, errorEvent) => {
-    console.log("WebSocket error - resetting connection state for reconnect");
+  connection.setErrorHandler(() => {
+    console.log("WebSocket error - will attempt reconnect");
+    stopHeartbeat(heartbeatRef);
     EventBus.notifyDisconnect();
-    handleConnectionError(connection);
+    EventBus.resetConnectionState();
+    attemptReconnect(connection);
   });
 
-  connection.setHandler((socket, message) => {
+  connection.setHandler((_socket, message) => {
     EventBus.publishMessage(message);
   });
 }
 
-function handleConnectionError(connection: WebSocketConnection): void {
+function attemptReconnect(connection: WebSocketConnection): void {
   let retryCount = 0;
-  EventBus.resetConnectionState();
-
+  const maxRetries = 10;
+  
   const intervalId = setInterval(() => {
-    console.log(`WebSocket error, retrying connection: ${retryCount++} time`);
-    connection.connect((socket, event) => {
-      console.log("WebSocket reconnected successfully");
-      EventBus.notifyReconnect();
-      EventBus.publishReadyConnection();
+    if (retryCount >= maxRetries) {
+      console.error("Max reconnection attempts reached");
       clearInterval(intervalId);
-    });
+      return;
+    }
+    
+    console.log(`Attempting reconnection: ${++retryCount}/${maxRetries}`);
+    connection.connect();
+    
+    // Check if connection succeeded
+    setTimeout(() => {
+      if (connection.isHealthy()) {
+        console.log("Reconnection successful");
+        clearInterval(intervalId);
+      }
+    }, 1000);
   }, 5000);
 }
 
-function handleConnectionReady(): void {
-  console.log("WebSocket handshake successful");
-  EventBus.publishReadyConnection();
+function startHeartbeat(
+  connection: WebSocketConnection,
+  heartbeatRef: React.MutableRefObject<Heartbeat | null>,
+): void {
+  if (!heartbeatRef.current) {
+    heartbeatRef.current = new Heartbeat(connection, 30000); // 30 seconds
+  }
+  
+  if (!heartbeatRef.current.isRunning()) {
+    heartbeatRef.current.start();
+  }
+}
+
+function stopHeartbeat(
+  heartbeatRef: React.MutableRefObject<Heartbeat | null>,
+): void {
+  if (heartbeatRef.current) {
+    heartbeatRef.current.stop();
+  }
 }

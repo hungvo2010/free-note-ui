@@ -1,7 +1,7 @@
 import { getRemoteUrl } from "environment/Environment";
 const remoteUrl = getRemoteUrl();
 
-interface WebSocketHandlers {
+interface WebSocketHandler {
   onOpen?: (socket: WebSocket | null, event: Event) => void;
   onMessage?: (socket: WebSocket | null, message: string) => void;
   onError?: (socket: WebSocket | null, errorEvent: Event) => void;
@@ -11,11 +11,12 @@ interface WebSocketHandlers {
 export class WebSocketConnection {
   public static numberOfConnections: number = 0;
   private socket: WebSocket | null = null;
-  private handlers: WebSocketHandlers = {};
+  private allHandler: WebSocketHandler = {};
   private messageQueue: string[] = [];
   private isConnected = false;
 
-  constructor() {}
+  constructor() {
+  }
 
   public async connect(
     onOpenHandler?: (socket: WebSocket | null, event: Event) => void,
@@ -33,8 +34,8 @@ export class WebSocketConnection {
     onOpenHandler?: (socket: WebSocket | null, event: Event) => void,
   ): void {
     if (onOpenHandler) {
-      this.handlers.onOpen = combineOpenHandlers(
-        this.handlers.onOpen,
+      this.allHandler.onOpen = combineOpenHandlers(
+        this.allHandler.onOpen,
         onOpenHandler,
       );
     }
@@ -43,36 +44,36 @@ export class WebSocketConnection {
   private attachAllHandlers(): void {
     if (!this.socket) return;
 
-    if (this.handlers.onOpen) {
+    if (this.allHandler.onOpen) {
       this.socket.onopen = (event: Event) => {
         this.isConnected = true;
         this.flushMessageQueue();
-        this.handlers.onOpen?.(this.socket, event);
+        this.allHandler.onOpen?.(this.socket, event);
       };
     }
 
-    if (this.handlers.onMessage) {
+    if (this.allHandler.onMessage) {
       this.socket.onmessage = async (event) => {
         if (event.data instanceof Blob) {
           const text = await event.data.text();
-          this.handlers.onMessage?.(this.socket, text);
+          this.allHandler.onMessage?.(this.socket, text);
         } else {
           console.log("Message inside websocket connection:", event.data);
-          this.handlers.onMessage?.(this.socket, event.data);
+          this.allHandler.onMessage?.(this.socket, event.data);
         }
       };
     }
 
-    if (this.handlers.onError) {
+    if (this.allHandler.onError) {
       this.socket.onerror = (errorEvent: Event) => {
-        this.handlers.onError?.(this.socket, errorEvent);
+        this.allHandler.onError?.(this.socket, errorEvent);
       };
     }
 
-    if (this.handlers.onClose) {
+    if (this.allHandler.onClose) {
       this.socket.onclose = (closeEvent: CloseEvent) => {
         this.isConnected = false;
-        this.handlers.onClose?.(this.socket, closeEvent);
+        this.allHandler.onClose?.(this.socket, closeEvent);
       };
     }
   }
@@ -130,28 +131,28 @@ export class WebSocketConnection {
   public setHandler(
     handler: (socket: WebSocket | null, message: string) => void,
   ): void {
-    this.handlers.onMessage = handler;
+    this.allHandler.onMessage = handler;
     this.attachAllHandlers();
   }
 
   public setErrorHandler(
     handler: (socket: WebSocket | null, errorEvent: Event) => void,
   ): void {
-    this.handlers.onError = handler;
+    this.allHandler.onError = handler;
     this.attachAllHandlers();
   }
 
   public setCloseHandler(
     handler: (socket: WebSocket | null, closeEvent: CloseEvent) => void,
   ): void {
-    this.handlers.onClose = handler;
+    this.allHandler.onClose = handler;
     this.attachAllHandlers();
   }
 
   public setOpenHandler(
     handler: (socket: WebSocket | null, event: Event) => void,
   ): void {
-    this.handlers.onOpen = handler;
+    this.allHandler.onOpen = handler;
     this.attachAllHandlers();
   }
 
@@ -194,4 +195,4 @@ function combineOpenHandlers(
   };
 }
 
-export type { WebSocketHandlers };
+export type { WebSocketHandler as WebSocketHandlers };
