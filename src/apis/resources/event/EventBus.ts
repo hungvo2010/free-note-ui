@@ -16,6 +16,10 @@ class EventBus {
     this.messageSubject.removeObserver(handler);
   }
 
+  publishMessage(message: any): void {
+    this.messageSubject.notifyObservers(message);
+  }
+
   // Connection ready event handlers
   addConnectionReadyHandler(handler: any): void {
     this.connectionReadySubject.registerObserver(handler);

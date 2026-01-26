@@ -75,7 +75,7 @@ function setupConnectionHandlers(connection: WebSocketConnection): void {
   });
 
   connection.setHandler((socket, message) => {
-    EventBus.getMessageSubject.notifyObservers(message);
+    EventBus.publishMessage(message);
   });
 }
 
