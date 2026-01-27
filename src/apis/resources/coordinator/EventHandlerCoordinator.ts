@@ -1,7 +1,7 @@
 import EventBus from "./EventBus";
-import { MessageHandler } from "./message/MessageHandler";
-import { ConnectionReadyHandler } from "./ready/ConnectionReadyHandler";
-import { ConnectionStateHandler } from "./reconnect/ConnectionStateHandler";
+import { MessageHandler } from "../events/message/MessageHandler";
+import { ConnectionReadyHandler } from "../events/ready/ConnectionReadyHandler";
+import { ConnectionStateHandler } from "../events/reconnect/ConnectionStateHandler";
 import { ReDrawController } from "main/ReDrawController";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { DraftSyncClient } from "../DraftSyncClient";
