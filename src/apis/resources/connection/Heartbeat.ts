@@ -1,7 +1,12 @@
+import { MsgType } from "../protocol";
 import { WebSocketConnection } from "./WebSocketConnection";
 
 export interface HeartbeatMessage {
-  msgType: "ping";
+  msgType: MsgType;
+  message?: string;
+  pingAt: number;
+  receivedPingAt?: number;
+  pongAt?: number;
 }
 
 export class Heartbeat {
@@ -23,9 +28,12 @@ export class Heartbeat {
     console.log(`Starting heartbeat with interval: ${this.intervalMs}ms`);
     this.intervalId = setInterval(() => {
       if (this.connection.isHealthy()) {
-        const message: HeartbeatMessage = { msgType: "ping" };
+        const message: HeartbeatMessage = {
+          msgType: MsgType.PING,
+          pingAt: Date.now(),
+        };
         this.connection.sendAction(JSON.stringify(message));
-        console.log("Heartbeat ping sent");
+        console.log("Heartbeat ping sent at:", message.pingAt);
       } else {
         console.warn("Heartbeat skipped - connection not healthy");
       }

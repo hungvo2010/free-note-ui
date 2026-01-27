@@ -32,5 +32,11 @@ export enum RequestType {
   INVALID = -1,
 }
 
+// MsgType enum for heartbeat messages
+export enum MsgType {
+  PING = "PING",
+  PONG = "PONG",
+}
+
 // Re-export schema types for convenience
 export type { DraftRequestData, DraftResponseData };
