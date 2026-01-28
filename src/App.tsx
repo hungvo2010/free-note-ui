@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router";
 import WhiteboardPage from "WhiteBoardPage";
 import PlaygroundPage from "pages/PlaygroundPage";
-import "./App.css";
+import "./styles/App.css";
 import "./styles/global.scss";
 
 function App() {
