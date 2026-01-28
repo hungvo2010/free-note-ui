@@ -1,10 +1,10 @@
 import {
   WebSocketConnection
-} from "apis/resources/connection/WebSocketConnection";
-import { ShapeSerialization } from "core/ShapeSerializer";
-import { DraftEntity, ShapeData } from "hooks/whiteboard/types";
-import { Shape } from "types/shape/Shape";
-import { AccumulatorThrottle, KeyedThrottle, Throttle } from "utils/Throttle";
+} from "@shared/api/websocket/connection/WebSocketConnection";
+import { ShapeSerialization } from "@shared/lib/serialization/ShapeSerializer";
+import { DraftEntity, ShapeData } from "@features/whiteboard/hooks/machine/types";
+import { Shape } from "@shared/types/shapes/Shape";
+import { AccumulatorThrottle, KeyedThrottle, Throttle } from "@shared/utils/performance/Throttle";
 import { DraftRequestData, RequestType } from "./protocol";
 
 const THROTTLE_MS = 200; // Centralized throttle control for all updates

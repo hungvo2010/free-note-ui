@@ -1,4 +1,4 @@
-import { getRemoteUrl } from "environment/Environment";
+import { getRemoteUrl } from "@config/environment/Environment";
 const remoteUrl = getRemoteUrl();
 
 interface WebSocketHandler {

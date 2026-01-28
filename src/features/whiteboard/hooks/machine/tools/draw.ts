@@ -1,5 +1,5 @@
-import { updateCursorType } from "utils/CommonUtils";
-import { ShapeFactory } from "utils/ShapeFactory";
+import { updateCursorType } from "@shared/utils/CommonUtils";
+import { ShapeFactory } from "@shared/utils/ShapeFactory";
 import type { Tool, ToolDeps } from "../types";
 
 export function createDrawTool(type: string, deps: ToolDeps): Tool {

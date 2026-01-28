@@ -1,8 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router";
-import WhiteboardPage from "WhiteBoardPage";
-import PlaygroundPage from "pages/PlaygroundPage";
-import "./styles/App.css";
-import "./styles/global.scss";
+import WhiteboardPage from "@pages/WhiteBoardPage";
+import PlaygroundPage from "@features/playground/pages/PlaygroundPage";
+import "@styles/App.css";
+import "@styles/global.scss";
 
 function App() {
   return (

@@ -1,5 +1,5 @@
 import React from 'react';
-import WebSocketPlayground from 'components/playground/WebSocketPlayground';
+import WebSocketPlayground from '@features/playground/components/WebSocketPlayground';
 
 const PlaygroundPage: React.FC = () => {
   return (

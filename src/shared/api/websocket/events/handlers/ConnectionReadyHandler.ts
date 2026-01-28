@@ -1,5 +1,5 @@
-import { DraftSyncClient } from "../../DraftSyncClient";
-import { ConnectionReadyObserver } from "./ConnectionReadySubject";
+import { DraftSyncClient } from "@features/draft/api/DraftSyncClient";
+import { ConnectionReadyObserver } from "../subjects/ConnectionReadySubject";
 
 export class ConnectionReadyHandler implements ConnectionReadyObserver {
   private hasConnected = false;

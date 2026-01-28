@@ -1,4 +1,4 @@
-import { DraftSyncClient } from "apis/resources/DraftSyncClient";
+import { DraftSyncClient } from "@features/draft/api/DraftSyncClient";
 import { DispatcherApi, DraftEntity, Point } from "./types";
 
 export function createDispatcherApi(

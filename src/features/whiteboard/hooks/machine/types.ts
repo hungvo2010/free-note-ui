@@ -1,7 +1,7 @@
-import { ReDrawController } from "main/ReDrawController";
+import { ReDrawController } from "@features/whiteboard/controllers/ReDrawController";
 import type React from "react";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { Shape } from "types/shape/Shape";
+import { Shape } from "@shared/types/shapes/Shape";
 
 export type Point = { x: number; y: number };
 

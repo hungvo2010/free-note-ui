@@ -1,6 +1,6 @@
-import SimpleTextEditor from "components/editor/SimpleTextEditor";
-import TextEditor, { Position } from "components/editor/TextEditor";
-import { SerializedShape } from "core/ShapeSerializer";
+import SimpleTextEditor from "@features/text-editor/models/SimpleTextEditor";
+import TextEditor, { Position } from "@features/text-editor/models/TextEditor";
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";

@@ -1,4 +1,4 @@
-import { Shape } from "types/shape/Shape";
+import { Shape } from "@shared/types/shapes/Shape";
 
 /**
  * New schema format for WebSocket messages

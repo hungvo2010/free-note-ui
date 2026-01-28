@@ -1,7 +1,7 @@
 // Draft-specific API client with typed requests and responses
 
-import { DraftRequestData, DraftResponseData } from "apis/resources/protocol";
-import { getRemoteUrl } from "environment/Environment";
+import { DraftRequestData, DraftResponseData } from "@features/draft/api/protocol";
+import { getRemoteUrl } from "@config/environment/Environment";
 import { WebSocketApiClient } from "./WebSocketApiClient";
 import { ApiClientConfig } from "./types";
 

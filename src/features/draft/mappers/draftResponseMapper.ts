@@ -1,6 +1,6 @@
-import { DraftResponseData } from "apis/resources/protocol";
-import { ShapeSerialization } from "core/ShapeSerializer";
-import { Shape } from "types/shape/Shape";
+import { DraftResponseData } from "@features/draft/api/protocol";
+import { ShapeSerialization } from "@shared/lib/serialization/ShapeSerializer";
+import { Shape } from "@shared/types/shapes/Shape";
 
 export function shapesFromResponseData(
   draftResponse: DraftResponseData | undefined,

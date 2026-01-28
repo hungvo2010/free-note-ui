@@ -1,8 +1,8 @@
-import { SerializedShape } from "core/ShapeSerializer";
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
-import { drawLine } from "utils/CommonUtils";
-import { distanceToLine } from "utils/GeometryUtils";
+import { drawLine } from "@shared/utils/CommonUtils";
+import { distanceToLine } from "@shared/utils/geometry/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 

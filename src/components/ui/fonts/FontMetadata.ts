@@ -4,8 +4,8 @@ import {
   FontFamilyNormalIcon,
   FontFamilyHeadingIcon,
   FontFamilyCodeIcon,
-} from "../../components/icons";
-import { FONT_FAMILY, FONT_FAMILY_FALLBACKS } from "../../constants";
+} from "../icons";
+import { FONT_FAMILY, FONT_FAMILY_FALLBACKS } from "@config/constants";
 
 /**
  * Encapsulates font metrics with additional font metadata.

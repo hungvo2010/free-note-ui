@@ -1,7 +1,7 @@
-import { DraftSyncClient } from "apis/resources/DraftSyncClient";
-import { WebSocketConnection } from "apis/resources/connection/WebSocketConnection";
-import { EventHandlerCoordinator } from "apis/resources/coordinator/EventHandlerCoordinator";
-import { ReDrawController } from "main/ReDrawController";
+import { DraftSyncClient } from "@features/draft/api/DraftSyncClient";
+import { WebSocketConnection } from "@shared/api/websocket/connection/WebSocketConnection";
+import { EventHandlerCoordinator } from "@shared/api/websocket/events/coordinator/EventHandlerCoordinator";
+import { ReDrawController } from "@features/whiteboard/controllers/ReDrawController";
 import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { RoughCanvas } from "roughjs/bin/canvas";

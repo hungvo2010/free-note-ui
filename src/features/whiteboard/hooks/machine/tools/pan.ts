@@ -1,4 +1,4 @@
-import { updateCursorType } from "utils/CommonUtils";
+import { updateCursorType } from "@shared/utils/CommonUtils";
 import type { Tool, ToolDeps } from "../types";
 
 export function createPanTool(deps: ToolDeps): Tool {

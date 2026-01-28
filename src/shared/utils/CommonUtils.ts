@@ -1,6 +1,6 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { PADDING } from "./Constant";
-import { calculatePadding, distance } from "./GeometryUtils";
+import { calculatePadding, distance } from "./geometry/GeometryUtils";
 
 export function clearLastRectangle(
   canvas: HTMLCanvasElement,

@@ -1,4 +1,4 @@
-import { ImageService } from "services/ImageService";
+import { ImageService } from "@shared/services/ImageService";
 import type { Tool, ToolDeps } from "../types";
 
 export function createImageTool(deps: ToolDeps): Tool {

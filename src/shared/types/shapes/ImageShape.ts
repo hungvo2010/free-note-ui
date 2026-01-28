@@ -1,7 +1,7 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
-import { SerializedShape } from "core/ShapeSerializer";
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 
 export class ImageShape extends Shape {
   serialize(): SerializedShape {

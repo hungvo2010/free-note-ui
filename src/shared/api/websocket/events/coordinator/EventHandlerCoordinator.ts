@@ -1,10 +1,10 @@
 import EventBus from "./EventBus";
-import { MessageHandler } from "../events/message/MessageHandler";
-import { ConnectionReadyHandler } from "../events/ready/ConnectionReadyHandler";
-import { ConnectionStateHandler } from "../events/reconnect/ConnectionStateHandler";
-import { ReDrawController } from "main/ReDrawController";
+import { MessageHandler } from "../handlers/MessageHandler";
+import { ConnectionReadyHandler } from "../handlers/ConnectionReadyHandler";
+import { ConnectionStateHandler } from "../handlers/ConnectionStateHandler";
+import { ReDrawController } from "@features/whiteboard/controllers/ReDrawController";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { DraftSyncClient } from "../DraftSyncClient";
+import { DraftSyncClient } from "@features/draft/api/DraftSyncClient";
 
 interface EventHandlerCoordinatorConfig {
   draftId: string;

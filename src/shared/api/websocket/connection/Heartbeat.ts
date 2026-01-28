@@ -1,4 +1,4 @@
-import { MsgType } from "../protocol";
+import { MsgType } from "@features/draft/api/protocol";
 import { WebSocketConnection } from "./WebSocketConnection";
 
 export interface HeartbeatMessage {

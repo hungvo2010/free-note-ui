@@ -1,14 +1,14 @@
-import { Shape } from "types/shape/Shape";
-import { Rectangle } from "types/shape/Rectangle";
-import { RectangleAdapter } from "types/shape/RectangleAdapter";
-import { Circle } from "types/shape/Circle";
-import { CircleAdapter } from "types/shape/CircleAdapter";
-import Arrow from "types/shape/Arrow";
-import { Line } from "types/shape/Line";
-import { FreeStyleShape } from "types/shape/FreeStyleShape";
-import { Diamond } from "types/shape/Diamond";
-import { TextShape } from "types/shape/Text";
-import { ImageShape } from "types/shape/ImageShape";
+import { Shape } from "@shared/types/shapes/Shape";
+import { Rectangle } from "@shared/types/shapes/Rectangle";
+import { RectangleAdapter } from "@shared/types/shapes/RectangleAdapter";
+import { Circle } from "@shared/types/shapes/Circle";
+import { CircleAdapter } from "@shared/types/shapes/CircleAdapter";
+import Arrow from "@shared/types/shapes/Arrow";
+import { Line } from "@shared/types/shapes/Line";
+import { FreeStyleShape } from "@shared/types/shapes/FreeStyleShape";
+import { Diamond } from "@shared/types/shapes/Diamond";
+import { TextShape } from "@shared/types/shapes/Text";
+import { ImageShape } from "@shared/types/shapes/ImageShape";
 
 /**
  * Converts JSON to a Shape object

@@ -1,6 +1,6 @@
-import { SerializedShape } from "core/ShapeSerializer";
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { toVirtualX, toVirtualY } from "utils/CommonUtils";
+import { toVirtualX, toVirtualY } from "@shared/utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 

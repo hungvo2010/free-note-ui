@@ -1,9 +1,9 @@
-import { useCanvas } from "hooks/useCanvas";
-import { useTheme } from "hooks/useTheme";
-import { ReDrawController } from "main/ReDrawController";
+import { useCanvas } from "@features/whiteboard/hooks/useCanvas";
+import { useTheme } from "@shared/hooks/useTheme";
+import { ReDrawController } from "@features/whiteboard/controllers/ReDrawController";
 import React, { createContext, useEffect, useMemo, useRef, useState } from "react";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { Shape } from "types/shape/Shape";
+import { Shape } from "@shared/types/shapes/Shape";
 
 export type WhiteboardStyles = {
   strokeColor: string;

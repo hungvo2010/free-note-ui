@@ -1,9 +1,9 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
-import { distance, isInLine } from "utils/GeometryUtils";
+import { distance, isInLine } from "@shared/utils/geometry/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { SerializedShape } from "core/ShapeSerializer";
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 
 export class Diamond extends Shape {
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {

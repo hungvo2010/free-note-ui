@@ -1,9 +1,9 @@
-import { ConnectionManager } from "apis/resources/connection/ConnectionManager";
-import { Heartbeat } from "apis/resources/connection/Heartbeat";
-import { WebSocketConnection } from "apis/resources/connection/WebSocketConnection";
-import EventBus from "apis/resources/coordinator/EventBus";
-import { useSessionStorage } from "hooks/useSessionStorage";
-import { useWebSocketManager } from "hooks/useWebSocket";
+import { ConnectionManager } from "@shared/api/websocket/connection/ConnectionManager";
+import { Heartbeat } from "@shared/api/websocket/connection/Heartbeat";
+import { WebSocketConnection } from "@shared/api/websocket/connection/WebSocketConnection";
+import EventBus from "@shared/api/websocket/events/coordinator/EventBus";
+import { useSessionStorage } from "@shared/hooks/useSessionStorage";
+import { useWebSocketManager } from "@shared/hooks/useWebSocket";
 import { createContext, useEffect, useRef } from "react";
 import { INSTANCE_TYPE } from "../hooks/useWebSocket";
 

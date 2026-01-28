@@ -20,7 +20,8 @@
         "find_symbol",
         "search_for_pattern",
         "initial_instructions",
-        "insert_after_symbol"
+        "insert_after_symbol",
+        "list_dir"
       ]
     }
   }

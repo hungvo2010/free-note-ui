@@ -1,8 +1,8 @@
-import { LockIndicator } from "components/LockIndicator";
-import { WebSocketProvider } from "contexts/WebSocketContext";
-import { WhiteboardProvider } from "contexts/WhiteboardContext";
-import { useWhiteboard } from "hooks/useWhiteboard";
-import { useWhiteboardEvents } from "hooks/useWhiteboardEvents";
+import { LockIndicator } from "@features/whiteboard/components/LockIndicator";
+import { WebSocketProvider } from "@shared/contexts/WebSocketContext";
+import { WhiteboardProvider } from "@features/whiteboard/contexts/WhiteboardContext";
+import { useWhiteboard } from "@features/whiteboard/hooks/useWhiteboard";
+import { useWhiteboardEvents } from "@features/whiteboard/hooks/useWhiteboardEvents";
 import React, { useEffect } from "react";
 import "./WhiteBoard.scss";
 

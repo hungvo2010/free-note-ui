@@ -1,10 +1,10 @@
 import {
   parseDraftResponseData,
   shapesFromResponseData,
-} from "apis/mapper/draftResponseMapper";
-import { ReDrawController } from "main/ReDrawController";
+} from "@features/draft/mappers/draftResponseMapper";
+import { ReDrawController } from "@features/whiteboard/controllers/ReDrawController";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { MessageObserver } from "./MessageSubject";
+import { MessageObserver } from "../subjects/MessageSubject";
 
 interface MessageHandlerConfig {
   draftId: string;

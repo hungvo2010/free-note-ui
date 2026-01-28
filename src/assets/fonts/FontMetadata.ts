@@ -4,7 +4,7 @@ import {
   FontFamilyNormalIcon,
   FontFamilyHeadingIcon,
   FontFamilyCodeIcon,
-} from "../icons";
+} from "@shared/components/icons";
 import { FONT_FAMILY, FONT_FAMILY_FALLBACKS } from "@config/constants";
 
 /**

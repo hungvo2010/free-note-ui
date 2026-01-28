@@ -1,10 +1,10 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
-import { toVirtualX, toVirtualY } from "utils/CommonUtils";
+import { toVirtualX, toVirtualY } from "@shared/utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { distance } from "utils/GeometryUtils";
-import { SerializedShape } from "core/ShapeSerializer";
+import { distance } from "@shared/utils/geometry/GeometryUtils";
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 
 export class FreeStyleShape extends Shape {
   serialize(): SerializedShape {

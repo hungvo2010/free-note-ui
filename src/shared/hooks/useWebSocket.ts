@@ -1,5 +1,5 @@
-import { ConnectionManager } from "apis/resources/connection/ConnectionManager";
-import { WebSocketConnection } from "apis/resources/connection/WebSocketConnection";
+import { ConnectionManager } from "@shared/api/websocket/connection/ConnectionManager";
+import { WebSocketConnection } from "@shared/api/websocket/connection/WebSocketConnection";
 import { useContext, useMemo } from "react";
 import { WebSocketContext } from "../contexts/WebSocketContext";
 

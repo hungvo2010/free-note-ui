@@ -1,5 +1,5 @@
-import { TextShape } from "types/shape/Text";
-import { updateCursorType } from "utils/CommonUtils";
+import { TextShape } from "@shared/types/shapes/Text";
+import { updateCursorType } from "@shared/utils/CommonUtils";
 import type { Tool, ToolDeps } from "../types";
 
 export type TextTool = Tool & {

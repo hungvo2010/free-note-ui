@@ -2,8 +2,8 @@ import {
   DraftRequestData,
   DraftResponseData,
   ShapeData,
-} from "hooks/whiteboard/types";
-import { WebSocketConnection } from "./connection/WebSocketConnection";
+} from "@features/whiteboard/hooks/machine/types";
+import { WebSocketConnection } from "@shared/api/websocket/connection/WebSocketConnection";
 
 export type MessagePayload = {
   messageId: string;

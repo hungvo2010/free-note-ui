@@ -1,4 +1,4 @@
-import { WebSocketContext } from "contexts/WebSocketContext";
+import { WebSocketContext } from "@shared/contexts/WebSocketContext";
 import {
   useCallback,
   useContext,
@@ -6,13 +6,13 @@ import {
   useLayoutEffect,
   useMemo,
 } from "react";
-import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
-import { getCanvasCoordinates } from "utils/GeometryUtils";
-import { useDraft } from "./useDraft";
-import useInteractionRefs from "./useInteractionRefs";
+import { resizeCanvasToDisplaySize } from "@shared/utils/display/DisplayUtils";
+import { getCanvasCoordinates } from "@shared/utils/geometry/GeometryUtils";
+import { useDraft } from "@features/draft/hooks/useDraft";
+import useInteractionRefs from "@shared/hooks/useInteractionRefs";
 import { useShapeDispatcher } from "./useShapeDispatcher";
 import { useWhiteboard } from "./useWhiteboard";
-import { createDispatcherApi } from "./whiteboard/dispatcher";
+import { createDispatcherApi } from "./machine/dispatcher";
 import {
   createDrawTool,
   createEraserTool,
@@ -20,8 +20,8 @@ import {
   createPanTool,
   createSelectTool,
   createTextTool,
-} from "./whiteboard/tools";
-import { ToolDeps } from "./whiteboard/types";
+} from "./machine/tools";
+import { ToolDeps } from "./machine/types";
 
 export function useWhiteboardEvents(isLocked: boolean, type: string) {
   const {

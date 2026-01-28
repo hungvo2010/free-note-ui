@@ -1,5 +1,5 @@
-import { WhiteboardStyles } from "contexts/WhiteboardContext";
-import { Shape } from "types/shape/Shape";
+import { WhiteboardStyles } from "@features/whiteboard/contexts/WhiteboardContext";
+import { Shape } from "@shared/types/shapes/Shape";
 import type { Tool, ToolDeps } from "../types";
 
 export function createEraserTool(

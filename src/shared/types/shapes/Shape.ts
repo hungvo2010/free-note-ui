@@ -1,6 +1,6 @@
-import { SerializedShape } from "core/ShapeSerializer";
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { calculatePadding } from "utils/GeometryUtils";
+import { calculatePadding } from "@shared/utils/geometry/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 
 /**

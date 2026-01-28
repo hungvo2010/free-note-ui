@@ -1,6 +1,6 @@
-import WhiteBoard from "components/rough/WhiteBoard";
-import Toolbar from "components/toolbar/Toolbar";
-import { ThemeProvider } from "contexts/ThemeContext";
+import WhiteBoard from "@features/whiteboard/components/WhiteBoard";
+import Toolbar from "@features/whiteboard/components/Toolbar";
+import { ThemeProvider } from "@shared/contexts/ThemeContext";
 import { StrictMode, useState } from "react";
 
 const options = [

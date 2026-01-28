@@ -1,6 +1,6 @@
-import { Shape } from "types/shape/Shape";
-import { shapeToJson, ShapeJson, LegacyShapeJson } from "./serialization/ShapeToJson";
-import { jsonToShape, jsonToShapes } from "./serialization/JsonToShape";
+import { Shape } from "@shared/types/shapes/Shape";
+import { shapeToJson, ShapeJson, LegacyShapeJson } from "./ShapeToJson";
+import { jsonToShape, jsonToShapes } from "./JsonToShape";
 
 // Re-export types for backward compatibility
 export type SerializedShape = ShapeJson | LegacyShapeJson;

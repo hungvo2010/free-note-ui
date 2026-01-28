@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import styles from "./Toolbar.module.scss";
-import { useTheme } from "hooks/useTheme";
+import { useTheme } from "@shared/hooks/useTheme";
 type ToolbarProps = {
   selected: number;
   handleSelected: (val: number) => void;

@@ -1,9 +1,9 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { distance } from "utils/GeometryUtils";
+import { distance } from "@shared/utils/geometry/GeometryUtils";
 import { Circle } from "./Circle";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { SerializedShape } from "core/ShapeSerializer";
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 
 export class CircleAdapter extends Shape {
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {

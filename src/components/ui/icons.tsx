@@ -11,7 +11,7 @@ import React from "react";
 import oc from "open-color";
 import clsx from "clsx";
 export type Theme = typeof THEME[keyof typeof THEME];
-import { THEME } from "../constants";
+import { THEME } from "@config/constants";
 
 export const iconFillColor = (theme: Theme) => "var(--icon-fill-color)";
 

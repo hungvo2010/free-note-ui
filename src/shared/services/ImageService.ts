@@ -1,5 +1,5 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { ImageShape } from "types/shape/ImageShape";
+import { ImageShape } from "@shared/types/shapes/ImageShape";
 
 export class ImageService {
   static openImageDialog(

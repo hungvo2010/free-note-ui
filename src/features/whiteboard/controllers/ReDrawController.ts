@@ -1,7 +1,7 @@
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { CircleAdapter } from "types/shape/CircleAdapter";
-import { Shape } from "types/shape/Shape";
-import { distance, isPointInShape } from "utils/GeometryUtils";
+import { CircleAdapter } from "@shared/types/shapes/CircleAdapter";
+import { Shape } from "@shared/types/shapes/Shape";
+import { distance, isPointInShape } from "@shared/utils/geometry/GeometryUtils";
 
 /**
  * Controller for managing whiteboard shapes and canvas rendering.
