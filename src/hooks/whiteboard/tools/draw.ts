@@ -34,9 +34,6 @@ export function createDrawTool(type: string, deps: ToolDeps): Tool {
 
     onUp: () => {
       refs.drawingRef.current = false;
-      const last =
-        reDrawController.getShapes()[reDrawController.getShapes().length - 1];
-      if (last) dispatcher.finalizeShape(last.getId());
     },
   };
 }

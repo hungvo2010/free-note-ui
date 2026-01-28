@@ -17,7 +17,6 @@ const WebSocketPlayground: React.FC = () => {
         title: "Rectangle - Mouse Down",
         description: "Initial creation of rectangle shape",
         payload: {
-          draftId: "draft-123",
           draftName: "My Draft",
           requestType: 2,
           content: {

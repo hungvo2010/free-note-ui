@@ -4,7 +4,7 @@ import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 import { distance } from "utils/GeometryUtils";
-import { UpdateState } from "types/Observer";
+import { UpdateState } from "core/Observer";
 import { SerializedShape } from "core/ShapeSerializer";
 
 export class FreeStyleShape extends Shape {

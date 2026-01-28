@@ -1,6 +1,6 @@
 import { SerializedShape } from "core/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { Observer, UpdateState } from "types/Observer";
+import { Observer, UpdateState } from "core/Observer";
 import { calculatePadding } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 

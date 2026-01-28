@@ -1,8 +1,8 @@
+import { Observer } from "core/Observer";
+import { Subject } from "core/Subject";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { Observer } from "types/Observer";
 import { CircleAdapter } from "types/shape/CircleAdapter";
 import { Shape } from "types/shape/Shape";
-import { Subject } from "types/Subject";
 import { distance, isPointInShape } from "utils/GeometryUtils";
 
 export class ReDrawController implements Subject {

@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena-mcp-server",
+        "--context",
+        "ide-assistant",
+        "--project",
+        "/Users/hungvo2010/side-projects/free-note-ui"
+      ],
+      "env": {},
+      "disabled": false,
+      "autoApprove": [
+        "think_about_collected_information",
+        "check_onboarding_performed",
+        "get_symbols_overview",
+        "find_symbol",
+        "search_for_pattern",
+        "initial_instructions",
+        "insert_after_symbol"
+      ]
+    }
+  }
+}

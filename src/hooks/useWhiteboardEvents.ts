@@ -1,20 +1,16 @@
-import EventBus from "apis/resources/event/EventBus";
-import { ShapeEventDispatcher } from "apis/resources/ShapeEventDispatcher";
 import { WebSocketContext } from "contexts/WebSocketContext";
-import { getShapesToUpdate, parseDraftAction } from "core/shapeLogic";
 import {
   useCallback,
   useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
-  useRef,
 } from "react";
-import { useNavigate } from "react-router";
 import { resizeCanvasToDisplaySize } from "utils/DisplayUtils";
 import { getCanvasCoordinates } from "utils/GeometryUtils";
 import { useDraft } from "./useDraft";
 import useInteractionRefs from "./useInteractionRefs";
+import { useShapeDispatcher } from "./useShapeDispatcher";
 import { useWhiteboard } from "./useWhiteboard";
 import { createDispatcherApi } from "./whiteboard/dispatcher";
 import {
@@ -28,7 +24,6 @@ import {
 import { ToolDeps } from "./whiteboard/types";
 
 export function useWhiteboardEvents(isLocked: boolean, type: string) {
-  const dispatcherRef = useRef<ShapeEventDispatcher | null>(null);
   const {
     reDrawController,
     roughCanvas,
@@ -38,10 +33,18 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     whiteboardStyles,
   } = useWhiteboard();
   const { webSocketConnection } = useContext(WebSocketContext);
-  const navigate = useNavigate();
-  const dispatcherApi = createDispatcherApi(dispatcherRef);
   const refs = useInteractionRefs();
   const { draftId, draftName } = useDraft();
+
+  const dispatcher = useShapeDispatcher({
+    webSocketConnection,
+    draftId,
+    draftName,
+    roughCanvas,
+    reDrawController,
+  });
+
+  const dispatcherApi = createDispatcherApi(dispatcher);
   const getSelectedShape = () => selectedShape;
   const toolDeps: ToolDeps = {
     canvas,
@@ -85,45 +88,6 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
     };
   }, []);
 
-  const setupDispatcherAndEventBus = useCallback(() => {
-    // TODO: temporarily only
-    if (webSocketConnection && !dispatcherRef.current) {
-      console.log("Creating dispatcher");
-      dispatcherRef.current = new ShapeEventDispatcher(webSocketConnection, {
-        draftId,
-        draftName,
-      });
-      EventBus.setHandler(async (message) => {
-        let jsonData: Record<string, any> = {};
-        console.log("type of message: ", message);
-        if (message instanceof Blob) {
-          const text = await message.text();
-          jsonData = JSON.parse(text);
-        } else {
-          jsonData = JSON.parse(message);
-        }
-        if (jsonData?.draftId && jsonData?.draftId !== draftId) {
-          navigate(`/draft/${jsonData?.draftId}`); // creating new draft
-        }
-
-        const draftAction = parseDraftAction(jsonData);
-        const shapesToUpdate = getShapesToUpdate(draftAction);
-        for (const shape of shapesToUpdate) {
-          // attach current roughCanvas so it can draw
-          shape.setRoughCanvas(roughCanvas);
-          reDrawController.mergeShape(shape);
-        }
-        // trigger redraw after applying updates
-        reDrawController.reDraw(0, 0);
-      });
-    } else {
-      dispatcherApi.ensureDraft({
-        draftId,
-        draftName,
-      });
-    }
-  }, [webSocketConnection, draftId, draftName, navigate, dispatcherApi]);
-
   const handleMouseDown = useCallback(
     async (e: MouseEvent) => {
       if (isLocked) {
@@ -133,7 +97,6 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
       const { x, y } = getCanvasCoordinates(e, canvas);
       refs.positionRef.current = { x, y };
       refs.dragStartPosRef.current = { x, y };
-      setupDispatcherAndEventBus();
 
       const commonType = ["eraser", "image", "hand", "select", "text"];
 
@@ -144,7 +107,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
 
       toolsMap["draw"].onDown({ x, y });
     },
-    [isLocked, canvas, type, setupDispatcherAndEventBus, toolsMap]
+    [isLocked, canvas, type, toolsMap, refs],
   );
 
   const handleMouseMove = useCallback(
@@ -160,7 +123,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
 
       toolsMap["draw"].onMove({ x, y });
     },
-    [canvas, toolsMap, type]
+    [canvas, toolsMap, type],
   );
 
   const handleMouseUp = useCallback(
@@ -176,14 +139,14 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
         return;
       }
     },
-    [type, toolsMap, canvas]
+    [type, toolsMap, canvas],
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       toolsMap["text"].onKeyDown(e);
     },
-    [toolsMap]
+    [toolsMap],
   );
 
   return {

@@ -27,7 +27,6 @@ export type DispatcherApi = {
   ensureDraft: (draftEntity: DraftEntity) => void;
   addShape: (shape: Shape) => void;
   updateShape: (id: string, shape: Shape) => void;
-  finalizeShape: (id: string) => void;
   deleteShapes: (ids: string[]) => void;
   pan: (offset: Point) => void;
 };
@@ -44,14 +43,27 @@ export type ToolDeps = {
 
 export type DraftEntity = { draftId?: string; draftName?: string };
 
-export enum ActionType {
-  INIT = 0,
-  INVALID = -1,
-  UPDATE = 1,
-  NOOP = 2,
-}
+// Schema-aligned types from AsyncAPI registry
+export type ShapeData = {
+  shapeId: string;
+  type?: string;
+  content?: Record<string, any>;
+};
 
-export type DraftAction = {
-  type: ActionType;
-  data: Record<string, any>;
+export type DraftRequestData = {
+  draftId?: string;
+  draftName?: string;
+  requestType: number; // 0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP
+  content?: {
+    shapes?: ShapeData[];
+  };
+};
+
+export type DraftResponseData = {
+  draftId?: string;
+  draftName?: string;
+  requestType?: number; // 0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP
+  data?: {
+    shapes?: ShapeData[];
+  };
 };
