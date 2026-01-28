@@ -2,9 +2,9 @@ import { DraftSyncClient } from "apis/resources/DraftSyncClient";
 import { DispatcherApi, DraftEntity, Point } from "./types";
 
 export function createDispatcherApi(
-  dispatcher: DraftSyncClient | null,
+  socketClientDispatch: DraftSyncClient | null,
 ): DispatcherApi {
-  if (dispatcher == null) {
+  if (socketClientDispatch == null) {
     return {
       ensureDraft: () => {},
       addShape: (shape) => {},
@@ -15,11 +15,11 @@ export function createDispatcherApi(
   }
   return {
     ensureDraft: (draftEntity: DraftEntity) => {
-      dispatcher.setDraft(draftEntity);
+      socketClientDispatch.setDraft(draftEntity);
     },
-    addShape: (shape) => dispatcher.addShape(shape),
-    updateShape: (id, shape) => dispatcher.updateShape(id, shape),
-    deleteShapes: (ids) => dispatcher.deleteShapes(ids),
-    pan: (offset: Point) => dispatcher.pan(offset),
+    addShape: (shape) => socketClientDispatch.addShape(shape),
+    updateShape: (id, shape) => socketClientDispatch.updateShape(id, shape),
+    deleteShapes: (ids) => socketClientDispatch.deleteShapes(ids),
+    pan: (offset: Point) => socketClientDispatch.pan(offset),
   };
 }

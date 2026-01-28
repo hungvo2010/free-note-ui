@@ -30,7 +30,7 @@ export class DraftSyncClient {
     );
 
     this.panThrottle = new AccumulatorThrottle(
-      THROTTLE_MS,
+      2000,
       (offset) => this.flushPan(offset),
       (current, next) => ({
         x: (current?.x || 0) + next.x,
