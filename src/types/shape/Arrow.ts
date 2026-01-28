@@ -5,7 +5,6 @@ import { drawLine } from "utils/CommonUtils";
 import { distanceToLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { UpdateState } from "core/Observer";
 
 export default class Arrow extends Shape {
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
@@ -27,8 +26,15 @@ export default class Arrow extends Shape {
     return false;
   }
 
-  public observerUpdate(state: UpdateState): void {
-    super.observerUpdate(state);
+  /**
+   * Override to clear cached drawables when canvas changes.
+   */
+  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
+    super.setRoughCanvas(roughCanvas);
+    this.clearDrawableCache();
+  }
+
+  private clearDrawableCache(): void {
     this.mainDrawable = undefined;
     this.leftDrawable = undefined;
     this.rightDrawable = undefined;
@@ -74,9 +80,7 @@ export default class Arrow extends Shape {
     this.y1 += offsetY;
     this.x2 += offsetX;
     this.y2 += offsetY;
-    this.mainDrawable = undefined;
-    this.leftDrawable = undefined;
-    this.rightDrawable = undefined;
+    this.clearDrawableCache();
   }
 
   applyNewCoordinates(offsetX: number, offsetY: number): Shape {

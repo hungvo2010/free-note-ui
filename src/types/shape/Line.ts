@@ -1,11 +1,11 @@
 import { SerializedShape } from "core/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
-import { UpdateState } from "core/Observer";
 import { toVirtualX, toVirtualY } from "utils/CommonUtils";
 import { distanceToLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
+
 export class Line extends Shape {
   serialize(): SerializedShape {
     return {
@@ -45,10 +45,14 @@ export class Line extends Shape {
     );
   }
 
-  public observerUpdate(state: UpdateState): void {
-    super.observerUpdate(state);
+  /**
+   * Override to clear cached drawable when canvas changes.
+   */
+  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
+    super.setRoughCanvas(roughCanvas);
     this.drawable = undefined;
   }
+
   private drawable: Drawable | undefined;
   public x2: number = 0;
   public y2: number = 0;

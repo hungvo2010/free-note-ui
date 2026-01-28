@@ -1,7 +1,7 @@
 import { useCanvas } from "hooks/useCanvas";
 import { useTheme } from "hooks/useTheme";
 import { ReDrawController } from "main/ReDrawController";
-import React, { createContext, useMemo, useRef, useState } from "react";
+import React, { createContext, useEffect, useMemo, useRef, useState } from "react";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Shape } from "types/shape/Shape";
 
@@ -73,8 +73,18 @@ export const WhiteboardProvider: React.FC<{
     reDrawController.current.roughCanvas = roughCanvas;
     reDrawController.current.canvas = canvas;
   }
+  // React handles reactivity: when theme/canvas changes, update controller
   reDrawController.current.setTheme(theme);
-  reDrawController.current.notifyObservers();
+
+  // Cleanup on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (reDrawController.current) {
+        console.log("Cleaning up ReDrawController on unmount");
+        reDrawController.current.dispose();
+      }
+    };
+  }, []);
 
   const value = {
     shapes,

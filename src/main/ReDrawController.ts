@@ -1,12 +1,62 @@
-import { Observer } from "core/Observer";
-import { Subject } from "core/Subject";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { CircleAdapter } from "types/shape/CircleAdapter";
 import { Shape } from "types/shape/Shape";
 import { distance, isPointInShape } from "utils/GeometryUtils";
 
-export class ReDrawController implements Subject {
-  mergeShape(shape: Shape) {
+/**
+ * Controller for managing whiteboard shapes and canvas rendering.
+ * Handles shape lifecycle, rendering, and coordinate transformations.
+ * 
+ * Note: This class does NOT implement the Observer pattern.
+ * React Context and hooks handle reactivity for theme/canvas updates.
+ */
+export class ReDrawController {
+  private theme: "light" | "dark" = "light";
+  private static readonly MAX_SHAPES = 10000; // Prevent unbounded growth
+
+  constructor(
+    public roughCanvas: RoughCanvas | undefined,
+    public canvas: HTMLCanvasElement | undefined,
+    public shapes: Shape[] = []
+  ) {}
+
+  /**
+   * Gets the current number of shapes.
+   */
+  public getShapeCount(): number {
+    return this.shapes.length;
+  }
+
+  /**
+   * Checks if the shape limit has been reached.
+   */
+  public isShapeLimitReached(): boolean {
+    return this.shapes.length >= ReDrawController.MAX_SHAPES;
+  }
+
+  /**
+   * Clears all shapes and frees memory.
+   * Should be called when resetting the whiteboard or on unmount.
+   */
+  public clearAllShapes(): void {
+    this.shapes = [];
+  }
+
+  /**
+   * Cleans up resources when the controller is no longer needed.
+   * Call this on component unmount to prevent memory leaks.
+   */
+  public dispose(): void {
+    this.clearAllShapes();
+    this.canvas = undefined;
+    this.roughCanvas = undefined;
+  }
+
+  /**
+   * Merges a shape into the shapes array.
+   * Updates existing shape if ID matches, otherwise adds new shape.
+   */
+  mergeShape(shape: Shape): void {
     const existingIndex = this.shapes.findIndex(
       (s) => s.getId() === shape.getId()
     );
@@ -17,42 +67,67 @@ export class ReDrawController implements Subject {
     this.shapes.push(shape);
   }
 
-  private theme: "light" | "dark" = "light";
-
-  constructor(
-    public roughCanvas: RoughCanvas | undefined,
-    public canvas: HTMLCanvasElement | undefined,
-    public shapes: Shape[] = []
-  ) {}
-
-  registerObserver(observer: Observer): void {
-    throw new Error("Method not implemented.");
+  /**
+   * Updates theme and synchronizes all shapes with current canvas/theme state.
+   * Called by React when theme changes via WhiteboardContext.
+   */
+  public setTheme(theme: "light" | "dark"): void {
+    this.theme = theme;
+    this.syncShapesWithTheme();
   }
-  removeObserver(observer: Observer): void {
-    throw new Error("Method not implemented.");
-  }
-  notifyObservers(): void {
+
+  /**
+   * Synchronizes all shapes with current roughCanvas.
+   * Called when canvas reference changes.
+   */
+  public syncShapesWithCanvasState(): void {
     for (const shape of this.shapes) {
-      shape.observerUpdate({
-        roughCanvas: this.roughCanvas,
-        theme: this.theme,
-      });
+      shape.setRoughCanvas(this.roughCanvas);
     }
   }
 
-  public setTheme(theme: "light" | "dark") {
-    this.theme = theme;
+  /**
+   * Updates theme-dependent shapes (like TextShape) with current theme.
+   * Called when theme changes.
+   */
+  private syncShapesWithTheme(): void {
+    for (const shape of this.shapes) {
+      // TextShape has a setTheme method for color updates
+      if ('setTheme' in shape && typeof shape.setTheme === 'function') {
+        shape.setTheme(this.theme);
+      }
+    }
   }
 
-  private getStrokeOptions() {
+  /**
+   * Gets current theme value.
+   */
+  public getTheme(): "light" | "dark" {
+    return this.theme;
+  }
+
+  /**
+   * Gets stroke options based on current theme.
+   */
+  public getStrokeOptions() {
     return {
       stroke: this.theme === "dark" ? "#ffffff" : "#000000",
       strokeWidth: 1,
     };
   }
 
-  public addShape(shape: Shape) {
+  /**
+   * Adds a new shape to the canvas.
+   * Returns false if shape limit is reached.
+   */
+  public addShape(shape: Shape): boolean {
+    if (this.isShapeLimitReached()) {
+      console.warn(`Shape limit reached (${ReDrawController.MAX_SHAPES}). Cannot add more shapes.`);
+      return false;
+    }
+    shape.setRoughCanvas(this.roughCanvas);
     this.shapes.push(shape);
+    return true;
   }
 
   public checkSelectedShape(x: number, y: number): Shape | undefined {

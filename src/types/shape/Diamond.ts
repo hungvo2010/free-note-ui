@@ -3,7 +3,6 @@ import { Drawable } from "roughjs/bin/core";
 import { distance, isInLine } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { UpdateState } from "core/Observer";
 import { SerializedShape } from "core/ShapeSerializer";
 
 export class Diamond extends Shape {
@@ -18,8 +17,11 @@ export class Diamond extends Shape {
     return false;
   }
 
-  public observerUpdate(state: UpdateState): void {
-    super.observerUpdate(state);
+  /**
+   * Override to clear cached drawable when canvas changes.
+   */
+  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
+    super.setRoughCanvas(roughCanvas);
     this.drawable = undefined;
   }
 

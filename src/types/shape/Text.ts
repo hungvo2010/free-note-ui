@@ -2,7 +2,6 @@ import SimpleTextEditor from "components/editor/SimpleTextEditor";
 import TextEditor, { Position } from "components/editor/TextEditor";
 import { SerializedShape } from "core/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { UpdateState } from "core/Observer";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
@@ -18,6 +17,7 @@ export class TextShape extends Shape implements TextEditor {
   checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
     return false;
   }
+
   private textEditor: TextEditor;
   private fontSize: number;
   private font: string;
@@ -36,6 +36,24 @@ export class TextShape extends Shape implements TextEditor {
     this.textEditor = new SimpleTextEditor([initialText]);
     this.fontSize = 20;
     this.font = "Excalifont";
+  }
+
+  /**
+   * Override to update text color based on theme.
+   * Text shapes need to respond to theme changes for proper visibility.
+   */
+  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
+    super.setRoughCanvas(roughCanvas);
+    // Note: Theme is handled separately via ReDrawController.getTheme()
+    // This could be improved by passing theme directly
+  }
+
+  /**
+   * Updates text fill color based on theme.
+   * Called by rendering logic when theme changes.
+   */
+  public setTheme(theme: "light" | "dark"): void {
+    this.fillStyle = theme === "dark" ? "white" : "black";
   }
   insert(content: string, at: Position): void {
     this.textEditor.insert(content, at);
@@ -69,10 +87,6 @@ export class TextShape extends Shape implements TextEditor {
     const content = this.getContent();
 
     this.wrapText(ctx, content, this.x + offsetX, this.y + offsetY);
-  }
-
-  public observerUpdate(state: UpdateState): void {
-    this.fillStyle = state.theme === "dark" ? "white" : "black";
   }
 
   wrapText(

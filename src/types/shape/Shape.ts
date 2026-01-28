@@ -1,35 +1,45 @@
 import { SerializedShape } from "core/ShapeSerializer";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { Observer, UpdateState } from "core/Observer";
 import { calculatePadding } from "utils/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 
-export abstract class Shape implements Observer {
+/**
+ * Base class for all drawable shapes on the whiteboard.
+ * Handles rendering, coordinate transformations, and serialization.
+ */
+export abstract class Shape {
   private readonly _id: string;
+  
   abstract getBoundingRect(): Rectangle;
   abstract isPointInShape(x: number, y: number): boolean;
   abstract applyNewCoordinates(x: number, y: number): Shape;
   abstract drawInVirtualCoordinates(x: number, y: number): void;
+  
   public draw(offsetX: number, offsetY: number): void {
     if (this.checkReUsedDrawable(offsetX, offsetY)) return;
     this.drawFreshShape(offsetX, offsetY);
   }
+  
   abstract checkReUsedDrawable(offsetX: number, offsetY: number): boolean;
   abstract drawFreshShape(offsetX: number, offsetY: number): void;
   abstract clone(x: number, y: number): Shape;
-  public setRoughCanvas(roughCanvas: RoughCanvas | undefined) {
-    this.roughCanvas = roughCanvas;
-  }
   abstract serialize(): SerializedShape;
 
   constructor(protected roughCanvas: RoughCanvas | undefined, id?: string) {
     this._id = id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   }
+  
   public getId(): string {
     return this._id;
   }
-  public observerUpdate(state: UpdateState): void {
-    this.roughCanvas = state.roughCanvas;
+
+  /**
+   * Updates the RoughCanvas reference for this shape.
+   * Called when canvas context changes (e.g., theme switch, canvas resize).
+   * Subclasses should override to clear cached drawables.
+   */
+  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
+    this.roughCanvas = roughCanvas;
   }
 
   public drawBoundingBox(canvas: HTMLCanvasElement | undefined) {
