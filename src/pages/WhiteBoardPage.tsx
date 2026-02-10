@@ -2,6 +2,7 @@ import WhiteBoard from "@features/whiteboard/components/WhiteBoard";
 import Toolbar from "@features/whiteboard/components/Toolbar";
 import { ThemeProvider } from "@shared/contexts/ThemeContext";
 import { StrictMode, useState } from "react";
+import "./WhiteBoardPage.scss";
 
 const options = [
   "lock",
@@ -26,17 +27,21 @@ export default function WhiteboardPage() {
 
   return (
     <ThemeProvider>
-      <Toolbar
-        options={options}
-        selected={selected}
-        handleSelected={handleSelected}
-      />
-      <StrictMode>
-        <WhiteBoard
-          type={options[selected]}
-          isLocked={options[selected] === "lock"}
+      <div className="whiteboard-page">
+        <Toolbar
+          options={options}
+          selected={selected}
+          handleSelected={handleSelected}
         />
+        <StrictMode>
+          <div className="whiteboard-canvas-wrapper">
+            <WhiteBoard
+              type={options[selected]}
+              isLocked={options[selected] === "lock"}
+            />
+          </div>
         </StrictMode>
-      </ThemeProvider>
+      </div>
+    </ThemeProvider>
   );
 }
