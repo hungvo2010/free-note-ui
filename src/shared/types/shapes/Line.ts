@@ -20,7 +20,7 @@ export class Line extends Shape {
     };
   }
 
-  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+  tryReUse(offsetX: number, offsetY: number): boolean {
     if (!this.x2 || !this.y2) {
       return true;
     }
@@ -31,7 +31,7 @@ export class Line extends Shape {
     return false;
   }
 
-  drawFreshShape(offsetX: number, offsetY: number): void {
+  fullDrawShape(offsetX: number, offsetY: number): void {
     this.drawable = this.roughCanvas?.line(
       toVirtualX(this.x1, offsetX, 1),
       toVirtualY(this.y1, offsetY, 1),
@@ -77,7 +77,7 @@ export class Line extends Shape {
     return distanceToLine(x, y, [this.x1, this.y1], [this.x2, this.y2]) <= 4;
   }
 
-  drawInVirtualCoordinates(offsetX: number, offsetY: number): void {
+  applyVirtualCoordinates(offsetX: number, offsetY: number): void {
     this.x1 += offsetX;
     this.y1 += offsetY;
     this.x2 += offsetX;

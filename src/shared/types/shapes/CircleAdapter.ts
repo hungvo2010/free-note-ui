@@ -1,24 +1,24 @@
-import { RoughCanvas } from "roughjs/bin/canvas";
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 import { distance } from "@shared/utils/geometry/GeometryUtils";
+import { RoughCanvas } from "roughjs/bin/canvas";
 import { Circle } from "./Circle";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 
 export class CircleAdapter extends Shape {
-  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
-    const result = Object.is(this.roughCanvas, this.circle.getRoughCanvas());
+  tryReUse(offsetX: number, offsetY: number): boolean {
+    const result = Object.is(this.roughCanvas, this.circle.getRoughCanvas()) && offsetX === 0 && offsetY === 0;
     if (result) {
       this.circle.drawCircle();
     }
     return result;
   }
-  drawFreshShape(offsetX: number, offsetY: number): void {
+  fullDrawShape(offsetX: number, offsetY: number): void {
     const newCircle = new Circle(
       this.roughCanvas,
       this.circle.getX + offsetX,
       this.circle.getY + offsetY,
-      this.circle.getRadius
+      this.circle.getRadius,
     );
     newCircle.drawCircle();
   }
@@ -29,7 +29,7 @@ export class CircleAdapter extends Shape {
   constructor(
     roughCanvas: RoughCanvas | undefined,
     circle: Circle,
-    private readonly id: number
+    private readonly id: number,
   ) {
     super(roughCanvas, String(id));
     this.circle = circle;
@@ -41,7 +41,7 @@ export class CircleAdapter extends Shape {
       this.circle.getX - this.circle.getRadius,
       this.circle.getY - this.circle.getRadius,
       this.circle.getRadius * 2,
-      this.circle.getRadius * 2
+      this.circle.getRadius * 2,
     );
   }
 
@@ -51,12 +51,12 @@ export class CircleAdapter extends Shape {
     return Math.abs(distanceFromCenter - this.circle.getRadius) <= 4;
   }
 
-  drawInVirtualCoordinates(offsetX: number, offsetY: number): void {
+  applyVirtualCoordinates(offsetX: number, offsetY: number): void {
     this.circle = new Circle(
       this.roughCanvas,
       this.circle.getX + offsetX,
       this.circle.getY + offsetY,
-      this.circle.getRadius
+      this.circle.getRadius,
     );
   }
 
@@ -65,7 +65,7 @@ export class CircleAdapter extends Shape {
       this.roughCanvas,
       this.circle.getX + changeX,
       this.circle.getY + changeY,
-      this.circle.getRadius
+      this.circle.getRadius,
     );
     return new CircleAdapter(this.roughCanvas, newCircle, this.id);
   }
@@ -77,9 +77,9 @@ export class CircleAdapter extends Shape {
         this.roughCanvas,
         x,
         y,
-        distance(x, y, this.circle.getX, this.circle.getY) / 2
+        distance(x, y, this.circle.getX, this.circle.getY) / 2,
       ),
-      this.id
+      this.id,
     );
   }
 

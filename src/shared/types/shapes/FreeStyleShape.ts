@@ -14,7 +14,7 @@ export class FreeStyleShape extends Shape {
     };
   }
 
-  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+  tryReUse(offsetX: number, offsetY: number): boolean {
     if (this.drawable && offsetX === 0 && offsetY === 0) {
       this.roughCanvas?.draw(this.drawable);
       return true;
@@ -29,7 +29,7 @@ export class FreeStyleShape extends Shape {
     super.setRoughCanvas(roughCanvas);
     this.drawable = undefined;
   }
-  drawFreshShape(offsetX: number, offsetY: number): void {
+  fullDrawShape(offsetX: number, offsetY: number): void {
     const newPoints = this.points.map(
       (point) =>
         [
@@ -72,7 +72,7 @@ export class FreeStyleShape extends Shape {
     return false;
   }
 
-  drawInVirtualCoordinates(x: number, y: number): void {
+  applyVirtualCoordinates(x: number, y: number): void {
     this.points = this.points.map(
       (point) => [point[0] + x, point[1] + y] as [number, number]
     );

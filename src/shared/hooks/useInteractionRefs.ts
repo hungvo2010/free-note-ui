@@ -1,3 +1,4 @@
+import { Point } from "@features/whiteboard/hooks/machine/types";
 import { useRef } from "react";
 
 const useInteractionRefs = () => {
@@ -10,6 +11,10 @@ const useInteractionRefs = () => {
   const eraserCursorTimeoutRef = useRef<number | null>(null);
   const isDraggingShapeRef = useRef(false);
   const isEditingTextRef = useRef(false);
+
+  const setDraftStartPosition = (p: Point) => {
+    dragStartPosRef.current = p;
+  };
   return {
     drawingRef,
     positionRef,
@@ -20,6 +25,7 @@ const useInteractionRefs = () => {
     eraserCursorTimeoutRef,
     isDraggingShapeRef,
     isEditingTextRef,
+    setDraftStartPosition,
   };
 };
 

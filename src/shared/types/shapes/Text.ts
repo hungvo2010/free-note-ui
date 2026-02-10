@@ -14,7 +14,7 @@ export class TextShape extends Shape implements TextEditor {
     };
   }
 
-  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+  tryReUse(offsetX: number, offsetY: number): boolean {
     return false;
   }
 
@@ -74,7 +74,7 @@ export class TextShape extends Shape implements TextEditor {
     this.textEditor.appendText(text);
   }
 
-  drawFreshShape(offsetX: number = 0, offsetY: number = 0): void {
+  fullDrawShape(offsetX: number = 0, offsetY: number = 0): void {
     if (!this.roughCanvas) return;
     // Get canvas from the DOM directly since we know its ID
     const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
@@ -246,7 +246,7 @@ export class TextShape extends Shape implements TextEditor {
     return this;
   }
 
-  drawInVirtualCoordinates(x: number, y: number): void {
+  applyVirtualCoordinates(x: number, y: number): void {
     this.x += x;
     this.y += y;
   }

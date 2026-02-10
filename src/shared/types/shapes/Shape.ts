@@ -1,6 +1,6 @@
 import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
-import { RoughCanvas } from "roughjs/bin/canvas";
 import { calculatePadding } from "@shared/utils/geometry/GeometryUtils";
+import { RoughCanvas } from "roughjs/bin/canvas";
 import { Rectangle } from "./Rectangle";
 
 /**
@@ -9,26 +9,29 @@ import { Rectangle } from "./Rectangle";
  */
 export abstract class Shape {
   private readonly _id: string;
-  
+
   abstract getBoundingRect(): Rectangle;
   abstract isPointInShape(x: number, y: number): boolean;
   abstract applyNewCoordinates(x: number, y: number): Shape;
-  abstract drawInVirtualCoordinates(x: number, y: number): void;
-  
+  abstract applyVirtualCoordinates(x: number, y: number): void;
+
   public draw(offsetX: number, offsetY: number): void {
-    if (this.checkReUsedDrawable(offsetX, offsetY)) return;
-    this.drawFreshShape(offsetX, offsetY);
+    if (this.tryReUse(offsetX, offsetY)) return;
+    this.fullDrawShape(offsetX, offsetY);
   }
-  
-  abstract checkReUsedDrawable(offsetX: number, offsetY: number): boolean;
-  abstract drawFreshShape(offsetX: number, offsetY: number): void;
+
+  abstract tryReUse(offsetX: number, offsetY: number): boolean;
+  abstract fullDrawShape(offsetX: number, offsetY: number): void;
   abstract clone(x: number, y: number): Shape;
   abstract serialize(): SerializedShape;
 
-  constructor(protected roughCanvas: RoughCanvas | undefined, id?: string) {
+  constructor(
+    protected roughCanvas: RoughCanvas | undefined,
+    id?: string,
+  ) {
     this._id = id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   }
-  
+
   public getId(): string {
     return this._id;
   }
@@ -57,7 +60,7 @@ export abstract class Shape {
         startPoint.x - padding[0],
         startPoint.y - padding[1],
         boundingRect.getWidth + padding[0] * 2,
-        boundingRect.getHeight + padding[1] * 2
+        boundingRect.getHeight + padding[1] * 2,
       );
     }
   }

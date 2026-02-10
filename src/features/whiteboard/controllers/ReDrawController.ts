@@ -186,7 +186,7 @@ export class ReDrawController {
 
   public redrawUsingVirtualCoordinates(newOffsetX: number, newOffsetY: number) {
     for (let i = 0; i < this.shapes.length; i++) {
-      this.shapes[i].drawInVirtualCoordinates(newOffsetX, newOffsetY);
+      this.shapes[i].applyVirtualCoordinates(newOffsetX, newOffsetY);
     }
   }
 

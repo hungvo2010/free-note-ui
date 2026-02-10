@@ -1,7 +1,7 @@
 import { ReDrawController } from "@features/whiteboard/controllers/ReDrawController";
+import { Shape } from "@shared/types/shapes/Shape";
 import type React from "react";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { Shape } from "@shared/types/shapes/Shape";
 
 export type Point = { x: number; y: number };
 
@@ -21,6 +21,8 @@ export type InteractionRefs = {
   eraserCursorTimeoutRef: React.MutableRefObject<number | null>;
   isDraggingShapeRef: React.MutableRefObject<boolean>;
   isEditingTextRef: React.MutableRefObject<boolean>;
+
+  setDraftStartPosition: (p: Point) => void;
 };
 
 export type DispatcherApi = {

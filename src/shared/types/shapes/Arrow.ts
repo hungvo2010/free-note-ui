@@ -7,7 +7,7 @@ import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
 export default class Arrow extends Shape {
-  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+  tryReUse(offsetX: number, offsetY: number): boolean {
     if (
       this.mainDrawable &&
       this.leftDrawable &&
@@ -75,7 +75,7 @@ export default class Arrow extends Shape {
     return dToLine <= 4;
   }
 
-  drawInVirtualCoordinates(offsetX: number, offsetY: number): void {
+  applyVirtualCoordinates(offsetX: number, offsetY: number): void {
     this.x1 += offsetX;
     this.y1 += offsetY;
     this.x2 += offsetX;
@@ -106,7 +106,7 @@ export default class Arrow extends Shape {
     return newArrow;
   }
 
-  drawFreshShape(offsetX: number, offsetY: number): void {
+  fullDrawShape(offsetX: number, offsetY: number): void {
     this.mainDrawable = drawLine(
       this.roughCanvas,
       this.x1 + offsetX,

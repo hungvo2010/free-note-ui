@@ -1,6 +1,6 @@
 import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
-import { RoughCanvas } from "roughjs/bin/canvas";
 import { toVirtualX, toVirtualY } from "@shared/utils/CommonUtils";
+import { RoughCanvas } from "roughjs/bin/canvas";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
 
@@ -20,21 +20,24 @@ export class RectangleAdapter extends Shape {
     };
   }
 
-  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
-    const result = Object.is(this.roughCanvas, this.rectangle.getRoughCanvas());
+  tryReUse(offsetX: number, offsetY: number): boolean {
+    const result =
+      Object.is(this.roughCanvas, this.rectangle.getRoughCanvas()) &&
+      offsetX === 0 &&
+      offsetY === 0;
     if (result) {
       this.rectangle.drawRectangle();
     }
     return result;
   }
 
-  drawFreshShape(offsetX: number, offsetY: number): void {
+  fullDrawShape(offsetX: number, offsetY: number): void {
     const newRectangle = new Rectangle(
       this.roughCanvas,
       toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
       toVirtualY(this.rectangle.getStartPoint().y, offsetY, 1),
       this.rectangle.getWidth,
-      this.rectangle.getHeight
+      this.rectangle.getHeight,
     );
     newRectangle.drawRectangle();
   }
@@ -43,7 +46,7 @@ export class RectangleAdapter extends Shape {
   constructor(
     roughCanvas: RoughCanvas | undefined,
     rectangle: Rectangle,
-    private readonly id: number
+    private readonly id: number,
   ) {
     super(roughCanvas, String(id));
     this.rectangle = rectangle;
@@ -54,7 +57,7 @@ export class RectangleAdapter extends Shape {
       this.rectangle.getStartPoint().x,
       this.rectangle.getStartPoint().y,
       this.rectangle.getWidth,
-      this.rectangle.getHeight
+      this.rectangle.getHeight,
     );
   }
 
@@ -102,9 +105,9 @@ export class RectangleAdapter extends Shape {
         this.rectangle.getStartPoint().x + changeX,
         this.rectangle.getStartPoint().y + changeY,
         this.rectangle.getWidth,
-        this.rectangle.getHeight
+        this.rectangle.getHeight,
       ),
-      this.id
+      this.id,
     );
   }
 
@@ -116,19 +119,19 @@ export class RectangleAdapter extends Shape {
         this.rectangle.getStartPoint().x,
         this.rectangle.getStartPoint().y,
         x - this.rectangle.getStartPoint().x,
-        y - this.rectangle.getStartPoint().y
+        y - this.rectangle.getStartPoint().y,
       ),
-      this.id
+      this.id,
     );
   }
 
-  drawInVirtualCoordinates(offsetX: number, offsetY: number): void {
+  applyVirtualCoordinates(offsetX: number, offsetY: number): void {
     this.rectangle = new Rectangle(
       this.roughCanvas,
       this.rectangle.getStartPoint().x + offsetX,
       this.rectangle.getStartPoint().y + offsetY,
       this.rectangle.getWidth,
-      this.rectangle.getHeight
+      this.rectangle.getHeight,
     );
   }
 

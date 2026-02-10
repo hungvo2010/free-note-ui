@@ -72,7 +72,7 @@ export function useWhiteboardEvents(isLocked: boolean, type: string) {
       if (canvas) {
         resizeCanvasToDisplaySize(canvas);
         reDrawController.reDraw(0, 0);
-        selectedShape?.drawBoundingBox(canvas);
+        // selectedShape?.drawBoundingBox(canvas);
       }
     }
     window.addEventListener("resize", updateSize);

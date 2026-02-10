@@ -6,7 +6,7 @@ import { Shape } from "./Shape";
 import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 
 export class Diamond extends Shape {
-  checkReUsedDrawable(offsetX: number, offsetY: number): boolean {
+  tryReUse(offsetX: number, offsetY: number): boolean {
     if (!this.x2 || !this.y2) {
       return true;
     }
@@ -25,7 +25,7 @@ export class Diamond extends Shape {
     this.drawable = undefined;
   }
 
-  drawFreshShape(offsetX: number, offsetY: number): void {
+  fullDrawShape(offsetX: number, offsetY: number): void {
     this.drawable = this.drawDiamond(
       this.x1 + offsetX,
       this.y1 + offsetY,
@@ -73,7 +73,7 @@ export class Diamond extends Shape {
     );
   }
 
-  drawInVirtualCoordinates(x: number, y: number): void {
+  applyVirtualCoordinates(x: number, y: number): void {
     this.x1 += x;
     this.y1 += y;
     this.drawable = undefined;
