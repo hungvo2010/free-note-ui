@@ -1,12 +1,14 @@
-import { RoughCanvas } from "roughjs/bin/canvas";
+import { BoundingBox } from "@shared/types/BoundingBox";
 import { CircleAdapter } from "@shared/types/shapes/CircleAdapter";
+import { Rectangle } from "@shared/types/shapes/Rectangle";
 import { Shape } from "@shared/types/shapes/Shape";
 import { distance, isPointInShape } from "@shared/utils/geometry/GeometryUtils";
+import { RoughCanvas } from "roughjs/bin/canvas";
 
 /**
  * Controller for managing whiteboard shapes and canvas rendering.
  * Handles shape lifecycle, rendering, and coordinate transformations.
- * 
+ *
  * Note: This class does NOT implement the Observer pattern.
  * React Context and hooks handle reactivity for theme/canvas updates.
  */
@@ -17,7 +19,7 @@ export class ReDrawController {
   constructor(
     public roughCanvas: RoughCanvas | undefined,
     public canvas: HTMLCanvasElement | undefined,
-    public shapes: Shape[] = []
+    public shapes: Shape[] = [],
   ) {}
 
   /**
@@ -58,7 +60,7 @@ export class ReDrawController {
    */
   mergeShape(shape: Shape): void {
     const existingIndex = this.shapes.findIndex(
-      (s) => s.getId() === shape.getId()
+      (s) => s.getId() === shape.getId(),
     );
     if (existingIndex >= 0) {
       this.shapes[existingIndex] = shape;
@@ -93,7 +95,7 @@ export class ReDrawController {
   private syncShapesWithTheme(): void {
     for (const shape of this.shapes) {
       // TextShape has a setTheme method for color updates
-      if ('setTheme' in shape && typeof shape.setTheme === 'function') {
+      if ("setTheme" in shape && typeof shape.setTheme === "function") {
         shape.setTheme(this.theme);
       }
     }
@@ -122,7 +124,9 @@ export class ReDrawController {
    */
   public addShape(shape: Shape): boolean {
     if (this.isShapeLimitReached()) {
-      console.warn(`Shape limit reached (${ReDrawController.MAX_SHAPES}). Cannot add more shapes.`);
+      console.warn(
+        `Shape limit reached (${ReDrawController.MAX_SHAPES}). Cannot add more shapes.`,
+      );
       return false;
     }
     shape.setRoughCanvas(this.roughCanvas);
@@ -139,7 +143,7 @@ export class ReDrawController {
     x: number,
     y: number,
     currentX: number,
-    currentY: number
+    currentY: number,
   ) {
     const lastShape = this.shapes[this.shapes.length - 1];
     let nextX = currentX,
@@ -204,6 +208,53 @@ export class ReDrawController {
       if (shapesToRemove.includes(this.shapes[i])) {
         this.shapes.splice(i, 1);
       }
+    }
+  }
+
+  public findShapesNeedReDraw(boundingBox: BoundingBox): Shape[] {
+    const results = [];
+    for (const shape of this.shapes) {
+      const boundRect = shape.getBoundingRect();
+      if (this.isCollide(boundRect, boundingBox)) {
+        results.push(shape);
+      }
+    }
+    return results;
+  }
+  isCollide(boundRect: Rectangle, boundingBox: BoundingBox): boolean {
+    const sX = boundRect.getStartPoint().x;
+    const sY = boundRect.getStartPoint().y;
+    const sW = boundRect.getWidth;
+    const sH = boundRect.getHeight;
+
+    const sMinX = Math.min(sX, sX + sW);
+    const sMaxX = Math.max(sX, sX + sW);
+    const sMinY = Math.min(sY, sY + sH);
+    const sMaxY = Math.max(sY, sY + sH);
+
+    const bMinX = boundingBox.topLeft.x;
+    const bMaxX = boundingBox.topLeft.x + boundingBox.width;
+    const bMinY = boundingBox.topLeft.y;
+    const bMaxY = boundingBox.topLeft.y + boundingBox.height;
+
+    return !(
+      sMaxX <= bMinX ||
+      sMinX >= bMaxX ||
+      sMaxY <= bMinY ||
+      sMinY >= bMaxY
+    );
+  }
+
+  public clearBoundingBox(shape: Shape): void {
+    const ctx = this.canvas?.getContext("2d");
+    const boundingRect = shape.getBoundingRect();
+    if (ctx) {
+      ctx.clearRect(
+        boundingRect.getStartPoint().x,
+        boundingRect.getStartPoint().y,
+        boundingRect.getWidth,
+        boundingRect.getHeight,
+      );
     }
   }
 }

@@ -1,5 +1,5 @@
-import WhiteBoard from "@features/whiteboard/components/WhiteBoard";
 import Toolbar from "@features/whiteboard/components/Toolbar";
+import WhiteBoard from "@features/whiteboard/components/WhiteBoard";
 import { ThemeProvider } from "@shared/contexts/ThemeContext";
 import { StrictMode, useState } from "react";
 import "./WhiteBoardPage.scss";
@@ -20,9 +20,12 @@ const options = [
   "ai",
 ];
 export default function WhiteboardPage() {
-  const [selected, setSelected] = useState(3);
+  const [selected, setSelected] = useState(
+    parseInt(localStorage.getItem("selectedTool")?.toString() || "3"),
+  );
   const handleSelected = (val: number) => {
     setSelected(val);
+    localStorage.setItem("selectedTool", val.toString());
   };
 
   return (

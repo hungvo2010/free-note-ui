@@ -1,5 +1,5 @@
 import EventBus from "./EventBus";
-import { MessageHandler } from "../handlers/MessageHandler";
+import { MessageReceivalHandler } from "../handlers/MessageReceivalHandler";
 import { ConnectionReadyHandler } from "../handlers/ConnectionReadyHandler";
 import { ConnectionStateHandler } from "../handlers/ConnectionStateHandler";
 import { ReDrawController } from "@features/whiteboard/controllers/ReDrawController";
@@ -21,12 +21,12 @@ interface EventHandlerCoordinatorConfig {
  * - Cleaning up handlers when no longer needed
  */
 export class EventHandlerCoordinator {
-  private messageHandler: MessageHandler;
+  private messageHandler: MessageReceivalHandler;
   private connectionReadyHandler?: ConnectionReadyHandler;
   private connectionStateHandler?: ConnectionStateHandler;
 
   constructor(private config: EventHandlerCoordinatorConfig) {
-    this.messageHandler = new MessageHandler(config);
+    this.messageHandler = new MessageReceivalHandler(config);
   }
 
   /**

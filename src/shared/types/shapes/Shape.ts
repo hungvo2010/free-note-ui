@@ -1,6 +1,6 @@
 import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
-import { calculatePadding } from "@shared/utils/geometry/GeometryUtils";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { BoundingBox } from "../BoundingBox";
 import { Rectangle } from "./Rectangle";
 
 /**
@@ -45,23 +45,52 @@ export abstract class Shape {
     this.roughCanvas = roughCanvas;
   }
 
-  public drawBoundingBox(canvas: HTMLCanvasElement | undefined) {
+  public drawBoundingBox(
+    canvas: HTMLCanvasElement | undefined,
+  ): BoundingBox | null {
     const boundingRect = this.getBoundingRect();
+    console.log("Shape type:", this.constructor.name);
+    console.log("Bounding Rect:", boundingRect);
     const ctx = canvas?.getContext("2d");
     if (ctx) {
+      const lineWidth = 2;
       ctx.strokeStyle = "red"; // Highlight color
-      ctx.lineWidth = 2;
-      const startPoint = boundingRect.getStartPoint();
-      const angle =
-        (Math.atan2(boundingRect.getHeight, boundingRect.getWidth) * 180) /
-        Math.PI;
-      const padding = calculatePadding(angle, 4);
+      ctx.lineWidth = lineWidth;
+      const boundingBox = this.getBoundingBox();
+      console.log("Bounding Box:", boundingBox);
       ctx.strokeRect(
-        startPoint.x - padding[0],
-        startPoint.y - padding[1],
-        boundingRect.getWidth + padding[0] * 2,
-        boundingRect.getHeight + padding[1] * 2,
+        boundingBox.topLeft.x,
+        boundingBox.topLeft.y,
+        boundingBox.width,
+        boundingBox.height,
       );
+      return boundingBox;
     }
+    return null;
+  }
+
+  public getBoundingBox(): BoundingBox {
+    const lineWidth = 2;
+    const padding = 4;
+    const boundingRect = this.getBoundingRect();
+    const startPoint = boundingRect.getStartPoint();
+    
+    const width = boundingRect.getWidth;
+    const height = boundingRect.getHeight;
+    
+    const absWidth = Math.abs(width);
+    const absHeight = Math.abs(height);
+    const minX = startPoint.x + (width < 0 ? width : 0);
+    const minY = startPoint.y + (height < 0 ? height : 0);
+
+    return {
+      topLeft: {
+        x: minX - padding,
+        y: minY - padding,
+      },
+      width: absWidth + padding * 2,
+      height: absHeight + padding * 2,
+      lineWidth,
+    };
   }
 }

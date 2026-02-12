@@ -13,12 +13,12 @@ interface MessageHandlerConfig {
   onDraftChange: (newDraftId: string) => void;
 }
 
-export class MessageHandler implements MessageObserver {
+export class MessageReceivalHandler implements MessageObserver {
   constructor(private config: MessageHandlerConfig) {}
 
   async update(message: Blob | string): Promise<void> {
     let jsonData: Record<string, any> = {};
-    console.log("type of message: ", message);
+    console.log("[MessageHandler] type of message: ", message);
     if (message instanceof Blob) {
       const text = await message.text();
       jsonData = JSON.parse(text);

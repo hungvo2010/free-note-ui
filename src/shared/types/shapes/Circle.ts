@@ -10,7 +10,7 @@ export class Circle {
     private roughCanvas: RoughCanvas | undefined,
     private x: number,
     private y: number,
-    private radius: number
+    private radius: number,
   ) {}
 
   drawCircle() {
@@ -19,7 +19,7 @@ export class Circle {
       return;
     }
     if (this.drawable) {
-      console.log("drawable");
+      console.log("Circle: reuse drawable");
       this.roughCanvas?.draw(this.drawable);
       return;
     }
