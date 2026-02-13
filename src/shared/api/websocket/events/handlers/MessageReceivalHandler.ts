@@ -21,7 +21,7 @@ export class MessageReceivalHandler implements MessageObserver {
 
   async update(message: Blob | string): Promise<void> {
     let jsonData: Record<string, any> = {};
-    console.log("[MessageHandler] type of message: ", message);
+    // console.log("[MessageHandler] type of message: ", message);
     if (message instanceof Blob) {
       const text = await message.text();
       jsonData = JSON.parse(text);
@@ -47,11 +47,11 @@ export class MessageReceivalHandler implements MessageObserver {
         draftResponse?.requestType,
       )
     ) {
-      console.log(
-        "[] current senderId: ",
-        this.config.webSocketConnection.getSessionId(),
-      );
-      console.log("[] messages senderId: ", draftResponse?.senderId);
+      // console.log(
+      //   "[] current senderId: ",
+      //   this.config.webSocketConnection.getSessionId(),
+      // );
+      // console.log("[] messages senderId: ", draftResponse?.senderId);
       console.log(
         "[MessageReceivalHandler] RE-DRAW all due to messages from other sender OR CONNECT request",
       );
@@ -67,7 +67,6 @@ function sentFromOtherSender(
   senderId: string | undefined,
   requestType: number | undefined,
 ) {
-  console.log("request type: ", requestType);
   return (
     webSocketConnection.getSessionId() !== senderId ||
     requestType === RequestType.CONNECT

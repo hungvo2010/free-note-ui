@@ -2,7 +2,11 @@ import { BoundingBox } from "@shared/types/BoundingBox";
 import { CircleAdapter } from "@shared/types/shapes/CircleAdapter";
 import { Rectangle } from "@shared/types/shapes/Rectangle";
 import { Shape } from "@shared/types/shapes/Shape";
-import { distance, isPointInShape } from "@shared/utils/geometry/GeometryUtils";
+import {
+  distance,
+  isPointInShape,
+  normalizeRect,
+} from "@shared/utils/geometry/GeometryUtils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 
 /**
@@ -177,7 +181,7 @@ export class ReDrawController {
     if (ctx) {
       ctx.clearRect(0, 0, this.canvas?.width || 0, this.canvas?.height || 0);
     }
-    console.log("Redrawing shapes total length: ", this.shapes.length);
+    // console.log("Redrawing shapes total length: ", this.shapes.length);
     console.log(`[REDRAW-CONTROLLER] RE-DRAW ${this.shapes.length} SHAPES`);
     for (const shape of this.shapes || []) {
       shape.setRoughCanvas(this.roughCanvas);
@@ -212,38 +216,39 @@ export class ReDrawController {
     }
   }
 
-  public findShapesNeedReDraw(boundingBox: BoundingBox): Shape[] {
+  public findShapesNeedReDraw(
+    boundingBox: BoundingBox,
+    excludedShapes: Shape[] = [],
+  ): Shape[] {
     const results = [];
     for (const shape of this.shapes) {
-      const boundRect = shape.getBoundingRect();
-      if (this.isCollide(boundRect, boundingBox)) {
+      if (excludedShapes.includes(shape)) {
+        continue;
+      }
+      const shapeBox = shape.getBoundingBox();
+      if (this.isCollide(shapeBox, boundingBox)) {
         results.push(shape);
       }
     }
     return results;
   }
 
-  isCollide(boundRect: Rectangle, boundingBox: BoundingBox): boolean {
-    const sX = boundRect.getStartPoint().x;
-    const sY = boundRect.getStartPoint().y;
-    const sW = boundRect.getWidth;
-    const sH = boundRect.getHeight;
-
-    const sMinX = Math.min(sX, sX + sW);
-    const sMaxX = Math.max(sX, sX + sW);
-    const sMinY = Math.min(sY, sY + sH);
-    const sMaxY = Math.max(sY, sY + sH);
-
-    const bMinX = boundingBox.startPoint.x;
-    const bMaxX = boundingBox.startPoint.x + boundingBox.width;
-    const bMinY = boundingBox.startPoint.y;
-    const bMaxY = boundingBox.startPoint.y + boundingBox.height;
-
-    return !(
-      sMaxX <= bMinX ||
-      sMinX >= bMaxX ||
-      sMaxY <= bMinY ||
-      sMinY >= bMaxY
+  isCollide(box1: BoundingBox, box2: BoundingBox): boolean {
+    const normalized1 = normalizeRect({
+      ...box1.startPoint,
+      w: box1.width,
+      h: box1.height,
+    });
+    const normalized2 = normalizeRect({
+      ...box2.startPoint,
+      w: box2.width,
+      h: box2.height,
+    });
+    return (
+      normalized1.x < normalized2.x + normalized2.width &&
+      normalized1.x + normalized1.width > normalized2.x &&
+      normalized1.y < normalized2.y + normalized2.height &&
+      normalized1.y + normalized1.height > normalized2.y
     );
   }
 

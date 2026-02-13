@@ -1,4 +1,5 @@
 import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
+import { PADDING } from "@shared/utils/Constant";
 import { calculatePadding } from "@shared/utils/geometry/GeometryUtils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { BoundingBox } from "../BoundingBox";
@@ -50,15 +51,12 @@ export abstract class Shape {
     canvas: HTMLCanvasElement | undefined,
   ): BoundingBox | null {
     const boundingRect = this.getBoundingRect();
-    console.log("Shape type:", this.constructor.name);
-    console.log("Bounding Rect:", boundingRect);
     const ctx = canvas?.getContext("2d");
     if (ctx) {
       const lineWidth = 2;
       ctx.strokeStyle = "red"; // Highlight color
       ctx.lineWidth = lineWidth;
       const boundingBox = this.getBoundingBox();
-      console.log("Bounding Box:", boundingBox);
       ctx.strokeRect(
         boundingBox.startPoint.x,
         boundingBox.startPoint.y,
@@ -74,20 +72,20 @@ export abstract class Shape {
     const lineWidth = 2;
     const boundingRect = this.getBoundingRect();
     const startPoint = boundingRect.getStartPoint();
-    const width = Math.abs(boundingRect.getWidth);
-    const height = Math.abs(boundingRect.getHeight);
-
-    const padding = calculatePadding(width, height, 4);
-    const minX = startPoint.x;
-    const minY = startPoint.y;
+    const padding = calculatePadding(
+      boundingRect.getWidth,
+      boundingRect.getHeight,
+      PADDING,
+    );
+    // console.log("[Padding of getBoundingBox]: ", padding);
 
     return {
       startPoint: {
-        x: minX - padding[0],
-        y: minY - padding[1],
+        x: startPoint.x - padding[0],
+        y: startPoint.y - padding[1],
       },
-      width: minX + padding[0] * 2,
-      height: minX + padding[1] * 2,
+      width: boundingRect.getWidth + padding[0] * 2,
+      height: boundingRect.getHeight + padding[1] * 2,
       lineWidth,
     };
   }

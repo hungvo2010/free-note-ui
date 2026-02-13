@@ -40,6 +40,7 @@ export class FreeStyleShape extends Shape {
     this.drawable = this.roughCanvas?.curve(newPoints, {
       roughness: 0.1,
       strokeWidth: 2,
+      seed: 1,
     });
   }
   private drawable: Drawable | undefined;

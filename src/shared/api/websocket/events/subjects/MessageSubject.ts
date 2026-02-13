@@ -19,10 +19,10 @@ export class MessageSubject {
   }
 
   notifyObservers(message: Blob | string): void {
-    console.log(
-      "[notifyObservers] number of observers for MessageSubject: " +
-        this.observers.length,
-    );
+    // console.log(
+    //   "[notifyObservers] number of observers for MessageSubject: " +
+    //     this.observers.length,
+    // );
     for (const observer of this.observers) {
       observer.update(message);
     }

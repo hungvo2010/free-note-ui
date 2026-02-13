@@ -1,5 +1,8 @@
 import { BoundingBox } from "@shared/types/BoundingBox";
+import { Rectangle } from "@shared/types/shapes/Rectangle";
+import { Shape } from "@shared/types/shapes/Shape";
 import { clearRect, updateCursorType } from "@shared/utils/CommonUtils";
+import { PADDING } from "@shared/utils/Constant";
 import { calculatePadding } from "@shared/utils/geometry/GeometryUtils";
 import type { Tool, ToolDeps } from "../types";
 
@@ -21,14 +24,17 @@ export function createSelectTool(deps: ToolDeps): Tool {
       const padding = calculatePadding(
         boundingBox.width,
         boundingBox.height,
-        2,
+        PADDING,
       );
       clearRect(
         canvas,
-        boundingBox.startPoint.x - padding[0],
-        boundingBox.startPoint.y - padding[1],
-        boundingBox.width + padding[0] * 2,
-        boundingBox.height + padding[1] * 2,
+        new Rectangle(
+          undefined,
+          boundingBox.startPoint.x - padding[0],
+          boundingBox.startPoint.y - padding[1],
+          boundingBox.width + padding[0] * 2,
+          boundingBox.height + padding[1] * 2,
+        ),
       );
       const shapesNeedReDraw =
         reDrawController.findShapesNeedReDraw(boundingBox);
@@ -69,63 +75,33 @@ export function createSelectTool(deps: ToolDeps): Tool {
     );
     refs.setDraftStartPosition(pos);
 
-    const oldPadding = calculatePadding(
-      oldBoundingBox.width,
-      oldBoundingBox.height,
-      2,
-    );
-
     const newBoundingBox = selectedShape.getBoundingBox();
-    const newPadding = calculatePadding(
-      newBoundingBox.width,
-      newBoundingBox.height,
-      2,
-    );
+
+    // Helper to get normalized bounds regardless of drawing direction
+    const getEnds = (box: BoundingBox) => ({
+      minX: Math.min(box.startPoint.x, box.startPoint.x + box.width),
+      maxX: Math.max(box.startPoint.x, box.startPoint.x + box.width),
+      minY: Math.min(box.startPoint.y, box.startPoint.y + box.height),
+      maxY: Math.max(box.startPoint.y, box.startPoint.y + box.height),
+    });
+
+    const oldEnds = getEnds(oldBoundingBox);
+    const newEnds = getEnds(newBoundingBox);
 
     const combinedBox: BoundingBox = {
       startPoint: {
-        x: Math.min(
-          oldBoundingBox.startPoint.x - oldPadding[0],
-          newBoundingBox.startPoint.x - newPadding[0],
-        ),
-        y: Math.min(
-          oldBoundingBox.startPoint.y - oldPadding[1],
-          newBoundingBox.startPoint.y - newPadding[1],
-        ),
+        x: Math.min(oldEnds.minX, newEnds.minX),
+        y: Math.min(oldEnds.minY, newEnds.minY),
       },
       width:
-        Math.max(
-          oldBoundingBox.startPoint.x + oldBoundingBox.width + oldPadding[0],
-          newBoundingBox.startPoint.x + newBoundingBox.width + newPadding[0],
-        ) -
-        Math.min(
-          oldBoundingBox.startPoint.x - oldPadding[0],
-          newBoundingBox.startPoint.x - newPadding[0],
-        ),
+        Math.max(oldEnds.maxX, newEnds.maxX) - Math.min(oldEnds.minX, newEnds.minX),
       height:
-        Math.max(
-          oldBoundingBox.startPoint.y + oldBoundingBox.height + oldPadding[1],
-          newBoundingBox.startPoint.y + newBoundingBox.height + newPadding[1],
-        ) -
-        Math.min(
-          oldBoundingBox.startPoint.y - oldPadding[1],
-          newBoundingBox.startPoint.y - newPadding[1],
-        ),
+        Math.max(oldEnds.maxY, newEnds.maxY) - Math.min(oldEnds.minY, newEnds.minY),
       lineWidth: 2,
     };
 
-    clearRect(
-      canvas,
-      combinedBox.startPoint.x,
-      combinedBox.startPoint.y,
-      combinedBox.width,
-      combinedBox.height,
-    );
-
-    const shapesNeedReDraw = reDrawController.findShapesNeedReDraw(combinedBox);
-    shapesNeedReDraw.forEach((shape) => {
-      shape.draw(0, 0);
-    });
+    reDrawDirtyRectangles(combinedBox);
+    selectedShape.drawBoundingBox(canvas);
 
     dispatcher.updateShape(selectedShape.getId(), selectedShape);
   };
@@ -171,4 +147,38 @@ export function createSelectTool(deps: ToolDeps): Tool {
       handleHover(pos);
     },
   };
+
+  function reDrawDirtyRectangles(boundingBox: BoundingBox) {
+    clearBoundingBox(boundingBox);
+    reDrawChangeShapes(boundingBox);
+  }
+
+  function reDrawChangeShapes(
+    boundingBox: BoundingBox,
+    excludedShapes: Shape[] = [],
+  ) {
+    const shapesNeedReDraw = reDrawController.findShapesNeedReDraw(boundingBox);
+    shapesNeedReDraw.forEach((shape) => {
+      shape.draw(0, 0);
+    });
+  }
+
+  function clearBoundingBox(boundingBox: BoundingBox) {
+    const margin = 2; // Extra margin to ensure selection box and rough edges are cleared
+    const x1 = Math.min(
+      boundingBox.startPoint.x,
+      boundingBox.startPoint.x + boundingBox.width,
+    );
+    const y1 = Math.min(
+      boundingBox.startPoint.y,
+      boundingBox.startPoint.y + boundingBox.height,
+    );
+    const w = Math.abs(boundingBox.width);
+    const h = Math.abs(boundingBox.height);
+
+    clearRect(
+      canvas,
+      new Rectangle(undefined, x1 - margin, y1 - margin, w + margin * 2, h + margin * 2),
+    );
+  }
 }

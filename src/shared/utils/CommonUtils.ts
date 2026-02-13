@@ -1,3 +1,4 @@
+import { Rectangle } from "@shared/types/shapes/Rectangle";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { PADDING } from "./Constant";
 import { calculatePadding, distance } from "./geometry/GeometryUtils";
@@ -9,25 +10,34 @@ export function clearLastRectangle(
 ) {
   const lastX = lastVisitedPoints[lastVisitedPoints.length - 1][0];
   const lastY = lastVisitedPoints[lastVisitedPoints.length - 1][1];
-  const padding = calculatePadding(lastX - startPoint.x, lastY - startPoint.y, PADDING);
+  const padding = calculatePadding(
+    lastX - startPoint.x,
+    lastY - startPoint.y,
+    PADDING,
+  );
   clearRect(
     canvas,
-    startPoint.x - padding[0],
-    startPoint.y - padding[1],
-    lastX - startPoint.x + padding[0] * 2,
-    lastY - startPoint.y + padding[1] * 2,
+    new Rectangle(
+      undefined,
+      startPoint.x - padding[0],
+      startPoint.y - padding[1],
+      lastX - startPoint.x + padding[0] * 2,
+      lastY - startPoint.y + padding[1] * 2,
+    ),
   );
 }
 
 export const clearRect = (
   canvas: HTMLCanvasElement | undefined,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
+  rect: Rectangle,
 ) => {
   const ctx = canvas?.getContext("2d");
-  ctx?.clearRect(x, y, width, height);
+  ctx?.clearRect(
+    rect.getStartPoint().x,
+    rect.getStartPoint().y,
+    rect.getWidth,
+    rect.getHeight,
+  );
 };
 
 const clearCircle = (

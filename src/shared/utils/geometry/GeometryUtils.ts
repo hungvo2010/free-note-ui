@@ -38,7 +38,12 @@ export function calculatePadding(
   _height: number,
   lineWidth: number,
 ): [number, number] {
-  return [Math.abs(lineWidth), Math.abs(lineWidth)];
+  // If width is positive, pad right. If negative, pad left.
+  // If height is positive, pad down. If negative, pad up.
+  const xPadding = _width >= 0 ? lineWidth : -lineWidth;
+  const yPadding = _height >= 0 ? lineWidth : -lineWidth;
+
+  return [xPadding, yPadding];
 }
 
 export function getCanvasCoordinates(
@@ -69,4 +74,31 @@ export function getShapesUnderPoint(
   y: number,
 ): Shape[] {
   return shapes.filter((shape) => shape.isPointInShape(x, y));
+}
+
+export function normalizeRect({
+  x,
+  y,
+  w,
+  h,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}) {
+  const x2 = x + w;
+  const y2 = y + h;
+
+  const left = Math.min(x, x2);
+  const right = Math.max(x, x2);
+  const top = Math.min(y, y2);
+  const bottom = Math.max(y, y2);
+
+  return {
+    x: left, // always top-left.x
+    y: top, // always top-left.y
+    width: right - left,
+    height: bottom - top,
+  };
 }

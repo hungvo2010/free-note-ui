@@ -113,10 +113,6 @@ export class WebSocketConnection {
       console.log(`Total queued messages: ${this.messageQueue.length}`);
       return;
     }
-    console.log(
-      "Sending message immediately:",
-      action.substring(0, 100) + "...",
-    );
     this.trySendMessage(action);
   }
 
@@ -124,7 +120,7 @@ export class WebSocketConnection {
     try {
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
         this.socket.send(message);
-        console.log("✓ Message sent successfully");
+        // console.log("✓ Message sent successfully");
       } else {
         console.warn(
           "✗ Socket not in OPEN state, message dropped:",
