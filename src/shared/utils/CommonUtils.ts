@@ -9,8 +9,7 @@ export function clearLastRectangle(
 ) {
   const lastX = lastVisitedPoints[lastVisitedPoints.length - 1][0];
   const lastY = lastVisitedPoints[lastVisitedPoints.length - 1][1];
-  const angle = Math.atan2(lastY - startPoint.y, lastX - startPoint.x);
-  const padding = calculatePadding((angle * 180) / Math.PI, PADDING);
+  const padding = calculatePadding(lastX - startPoint.x, lastY - startPoint.y, PADDING);
   clearRect(
     canvas,
     startPoint.x - padding[0],

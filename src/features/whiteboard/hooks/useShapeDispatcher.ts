@@ -65,6 +65,7 @@ export function useShapeDispatcher({
       draftId: draftId || "",
       roughCanvas,
       reDrawController,
+      webSocketConnection,
       onDraftChange: (newDraftId) =>
         navigateRef.current(`/draft/${newDraftId}`),
     });

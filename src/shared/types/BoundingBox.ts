@@ -1,5 +1,5 @@
 export type BoundingBox = {
-  topLeft: {
+  startPoint: {
     x: number;
     y: number;
   };

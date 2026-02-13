@@ -1,6 +1,6 @@
 import { BoundingBox } from "@shared/types/BoundingBox";
 import { clearRect, updateCursorType } from "@shared/utils/CommonUtils";
-import { throttle } from "@shared/utils/performance/Throttle";
+import { calculatePadding } from "@shared/utils/geometry/GeometryUtils";
 import type { Tool, ToolDeps } from "../types";
 
 export function createSelectTool(deps: ToolDeps): Tool {
@@ -18,12 +18,17 @@ export function createSelectTool(deps: ToolDeps): Tool {
 
   const clearHoverHighlight = () => {
     if (boundingBox) {
+      const padding = calculatePadding(
+        boundingBox.width,
+        boundingBox.height,
+        2,
+      );
       clearRect(
         canvas,
-        boundingBox.topLeft.x - 2,
-        boundingBox.topLeft.y - 2,
-        boundingBox.width + 4,
-        boundingBox.height + 4,
+        boundingBox.startPoint.x - padding[0],
+        boundingBox.startPoint.y - padding[1],
+        boundingBox.width + padding[0] * 2,
+        boundingBox.height + padding[1] * 2,
       );
       const shapesNeedReDraw =
         reDrawController.findShapesNeedReDraw(boundingBox);
@@ -64,36 +69,60 @@ export function createSelectTool(deps: ToolDeps): Tool {
     );
     refs.setDraftStartPosition(pos);
 
+    const oldPadding = calculatePadding(
+      oldBoundingBox.width,
+      oldBoundingBox.height,
+      2,
+    );
+
     const newBoundingBox = selectedShape.getBoundingBox();
+    const newPadding = calculatePadding(
+      newBoundingBox.width,
+      newBoundingBox.height,
+      2,
+    );
 
     const combinedBox: BoundingBox = {
-      topLeft: {
-        x: Math.min(oldBoundingBox.topLeft.x, newBoundingBox.topLeft.x),
-        y: Math.min(oldBoundingBox.topLeft.y, newBoundingBox.topLeft.y),
+      startPoint: {
+        x: Math.min(
+          oldBoundingBox.startPoint.x - oldPadding[0],
+          newBoundingBox.startPoint.x - newPadding[0],
+        ),
+        y: Math.min(
+          oldBoundingBox.startPoint.y - oldPadding[1],
+          newBoundingBox.startPoint.y - newPadding[1],
+        ),
       },
       width:
         Math.max(
-          oldBoundingBox.topLeft.x + oldBoundingBox.width,
-          newBoundingBox.topLeft.x + newBoundingBox.width,
-        ) - Math.min(oldBoundingBox.topLeft.x, newBoundingBox.topLeft.x),
+          oldBoundingBox.startPoint.x + oldBoundingBox.width + oldPadding[0],
+          newBoundingBox.startPoint.x + newBoundingBox.width + newPadding[0],
+        ) -
+        Math.min(
+          oldBoundingBox.startPoint.x - oldPadding[0],
+          newBoundingBox.startPoint.x - newPadding[0],
+        ),
       height:
         Math.max(
-          oldBoundingBox.topLeft.y + oldBoundingBox.height,
-          newBoundingBox.topLeft.y + newBoundingBox.height,
-        ) - Math.min(oldBoundingBox.topLeft.y, newBoundingBox.topLeft.y),
+          oldBoundingBox.startPoint.y + oldBoundingBox.height + oldPadding[1],
+          newBoundingBox.startPoint.y + newBoundingBox.height + newPadding[1],
+        ) -
+        Math.min(
+          oldBoundingBox.startPoint.y - oldPadding[1],
+          newBoundingBox.startPoint.y - newPadding[1],
+        ),
       lineWidth: 2,
     };
 
     clearRect(
       canvas,
-      combinedBox.topLeft.x - 2,
-      combinedBox.topLeft.y - 2,
-      combinedBox.width + 4,
-      combinedBox.height + 4,
+      combinedBox.startPoint.x,
+      combinedBox.startPoint.y,
+      combinedBox.width,
+      combinedBox.height,
     );
 
     const shapesNeedReDraw = reDrawController.findShapesNeedReDraw(combinedBox);
-    console.log("onMOve: Shapes to re-draw: ", shapesNeedReDraw.length);
     shapesNeedReDraw.forEach((shape) => {
       shape.draw(0, 0);
     });
@@ -101,7 +130,7 @@ export function createSelectTool(deps: ToolDeps): Tool {
     dispatcher.updateShape(selectedShape.getId(), selectedShape);
   };
 
-  const throttledOnMove = throttle((pos: { x: number; y: number }) => {
+  const onMove = (pos: { x: number; y: number }) => {
     const isHover = !refs.isDraggingShapeRef.current;
 
     if (isHover) {
@@ -109,7 +138,7 @@ export function createSelectTool(deps: ToolDeps): Tool {
     } else {
       handleDrag(pos);
     }
-  }, 16);
+  };
 
   return {
     onDown: (pos) => {
@@ -129,7 +158,7 @@ export function createSelectTool(deps: ToolDeps): Tool {
       refs.setDraftStartPosition(pos);
     },
 
-    onMove: throttledOnMove,
+    onMove: onMove,
 
     onUp: (pos) => {
       refs.isDraggingShapeRef.current = false;

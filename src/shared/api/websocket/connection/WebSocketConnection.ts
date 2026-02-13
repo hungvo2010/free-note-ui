@@ -14,8 +14,16 @@ export class WebSocketConnection {
   private allHandler: WebSocketHandler = {};
   private messageQueue: string[] = [];
   private isConnected = false;
+  private sessionId: string | null = null;
 
-  constructor() {
+  constructor() {}
+
+  public setSessionId(id: string): void {
+    this.sessionId = id;
+  }
+
+  public getSessionId(): string | null {
+    return this.sessionId;
   }
 
   public async connect(
@@ -58,7 +66,7 @@ export class WebSocketConnection {
           const text = await event.data.text();
           this.allHandler.onMessage?.(this.socket, text);
         } else {
-          console.log("Message inside websocket connection:", event.data);
+          console.log("Message Receival: [RAW_TEXT]: ", event.data);
           this.allHandler.onMessage?.(this.socket, event.data);
         }
       };

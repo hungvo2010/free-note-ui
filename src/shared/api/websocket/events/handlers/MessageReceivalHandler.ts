@@ -3,12 +3,15 @@ import {
   shapesFromResponseData,
 } from "@features/draft/mappers/draftResponseMapper";
 import { ReDrawController } from "@features/whiteboard/controllers/ReDrawController";
+import { RequestType } from "@features/whiteboard/hooks/machine/types";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { WebSocketConnection } from "../../connection/WebSocketConnection";
 import { MessageObserver } from "../subjects/MessageSubject";
 
 interface MessageHandlerConfig {
   draftId: string;
   roughCanvas: RoughCanvas | undefined;
+  webSocketConnection: WebSocketConnection;
   reDrawController: ReDrawController;
   onDraftChange: (newDraftId: string) => void;
 }
@@ -37,8 +40,36 @@ export class MessageReceivalHandler implements MessageObserver {
       shape.setRoughCanvas(this.config.roughCanvas);
       this.config.reDrawController.mergeShape(shape);
     }
-    this.config.reDrawController.reDraw(0, 0);
+    if (
+      sentFromOtherSender(
+        this.config.webSocketConnection,
+        draftResponse?.senderId,
+        draftResponse?.requestType,
+      )
+    ) {
+      console.log(
+        "[] current senderId: ",
+        this.config.webSocketConnection.getSessionId(),
+      );
+      console.log("[] messages senderId: ", draftResponse?.senderId);
+      console.log(
+        "[MessageReceivalHandler] RE-DRAW all due to messages from other sender OR CONNECT request",
+      );
+      this.config.reDrawController.reDraw(0, 0);
+    }
+    console.log("End observers message-receival");
   }
 }
 
 export type { MessageHandlerConfig };
+function sentFromOtherSender(
+  webSocketConnection: WebSocketConnection,
+  senderId: string | undefined,
+  requestType: number | undefined,
+) {
+  console.log("request type: ", requestType);
+  return (
+    webSocketConnection.getSessionId() !== senderId ||
+    requestType === RequestType.CONNECT
+  );
+}

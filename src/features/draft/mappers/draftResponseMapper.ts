@@ -22,5 +22,6 @@ export function parseDraftResponseData(
     draftName: jsonData?.draftName,
     requestType,
     data: { shapes: shapes || [] },
+    senderId: jsonData?.senderId,
   };
 }

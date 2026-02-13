@@ -140,8 +140,8 @@ export class ReDrawController {
   }
 
   public updateLastShape(
-    x: number,
-    y: number,
+    startX: number,
+    startY: number,
     currentX: number,
     currentY: number,
   ) {
@@ -149,12 +149,12 @@ export class ReDrawController {
     let nextX = currentX,
       nextY = currentY;
     if (lastShape instanceof CircleAdapter) {
-      nextX = (currentX + x) / 2;
-      nextY = (currentY + y) / 2;
+      nextX = (currentX + startX) / 2;
+      nextY = (currentY + startY) / 2;
     }
     const newShape = lastShape.clone(nextX, nextY);
     if (newShape instanceof CircleAdapter) {
-      newShape.updateRadius(distance(nextX, nextY, x, y));
+      newShape.updateRadius(distance(nextX, nextY, startX, startY));
     }
     this.shapes[this.shapes.length - 1] = newShape;
   }
@@ -178,6 +178,7 @@ export class ReDrawController {
       ctx.clearRect(0, 0, this.canvas?.width || 0, this.canvas?.height || 0);
     }
     console.log("Redrawing shapes total length: ", this.shapes.length);
+    console.log(`[REDRAW-CONTROLLER] RE-DRAW ${this.shapes.length} SHAPES`);
     for (const shape of this.shapes || []) {
       shape.setRoughCanvas(this.roughCanvas);
       shape.draw(offsetX, offsetY);
@@ -221,6 +222,7 @@ export class ReDrawController {
     }
     return results;
   }
+
   isCollide(boundRect: Rectangle, boundingBox: BoundingBox): boolean {
     const sX = boundRect.getStartPoint().x;
     const sY = boundRect.getStartPoint().y;
@@ -232,10 +234,10 @@ export class ReDrawController {
     const sMinY = Math.min(sY, sY + sH);
     const sMaxY = Math.max(sY, sY + sH);
 
-    const bMinX = boundingBox.topLeft.x;
-    const bMaxX = boundingBox.topLeft.x + boundingBox.width;
-    const bMinY = boundingBox.topLeft.y;
-    const bMaxY = boundingBox.topLeft.y + boundingBox.height;
+    const bMinX = boundingBox.startPoint.x;
+    const bMaxX = boundingBox.startPoint.x + boundingBox.width;
+    const bMinY = boundingBox.startPoint.y;
+    const bMaxY = boundingBox.startPoint.y + boundingBox.height;
 
     return !(
       sMaxX <= bMinX ||

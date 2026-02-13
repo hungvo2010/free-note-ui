@@ -111,15 +111,15 @@ export class RectangleAdapter extends Shape {
     );
   }
 
-  clone(x: number, y: number): Shape {
+  clone(newX: number, newY: number): Shape {
     return new RectangleAdapter(
       this.roughCanvas,
       new Rectangle(
         this.roughCanvas,
         this.rectangle.getStartPoint().x,
         this.rectangle.getStartPoint().y,
-        x - this.rectangle.getStartPoint().x,
-        y - this.rectangle.getStartPoint().y,
+        newX - this.rectangle.getStartPoint().x,
+        newY - this.rectangle.getStartPoint().y,
       ),
       this.id,
     );

@@ -8,7 +8,7 @@ export function isInLine(
   x: number,
   y: number,
   start: [number, number],
-  end: [number, number]
+  end: [number, number],
 ) {
   const minX = Math.min(start[0], end[0]);
   const maxX = Math.max(start[0], end[0]);
@@ -22,38 +22,29 @@ export function distanceToLine(
   x0: number,
   y0: number,
   start: [number, number],
-  end: [number, number]
+  end: [number, number],
 ) {
   const [x1, y1] = start;
   const [x2, y2] = end;
   const numerator = Math.abs(
-    (y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1
+    (y2 - y1) * x0 - (x2 - x1) * y0 + x2 * y1 - y2 * x1,
   );
   const denominator = Math.sqrt((y2 - y1) ** 2 + (x2 - x1) ** 2);
   return numerator / denominator;
 }
 
 export function calculatePadding(
-  angle: number,
-  lineWidth: number
+  _width: number,
+  _height: number,
+  lineWidth: number,
 ): [number, number] {
-  if (angle >= 0 && angle <= 90) {
-    // bottom right corner
-    return [lineWidth, lineWidth];
-  } else if (angle > 90 && angle <= 180) {
-    // top right corner
-    return [-lineWidth, lineWidth];
-  } else if (angle <= -90 && angle >= -180) {
-    // top left corner
-    return [-lineWidth, -lineWidth];
-  } else if (angle >= -90 && angle < 0) {
-    // bottom left corner
-    return [lineWidth, -lineWidth];
-  }
-  return [0, 0];
+  return [Math.abs(lineWidth), Math.abs(lineWidth)];
 }
 
-export function getCanvasCoordinates(e: MouseEvent, canvas: HTMLCanvasElement | undefined) {
+export function getCanvasCoordinates(
+  e: MouseEvent,
+  canvas: HTMLCanvasElement | undefined,
+) {
   if (!canvas) {
     return { x: 0, y: 0 };
   }
@@ -75,7 +66,7 @@ export const checkSelectedShape = (shapes: Shape[], x: number, y: number) => {
 export function getShapesUnderPoint(
   shapes: Shape[],
   x: number,
-  y: number
+  y: number,
 ): Shape[] {
-  return shapes.filter(shape => shape.isPointInShape(x, y));
+  return shapes.filter((shape) => shape.isPointInShape(x, y));
 }

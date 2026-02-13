@@ -1,4 +1,5 @@
 import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
+import { calculatePadding } from "@shared/utils/geometry/GeometryUtils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { BoundingBox } from "../BoundingBox";
 import { Rectangle } from "./Rectangle";
@@ -59,8 +60,8 @@ export abstract class Shape {
       const boundingBox = this.getBoundingBox();
       console.log("Bounding Box:", boundingBox);
       ctx.strokeRect(
-        boundingBox.topLeft.x,
-        boundingBox.topLeft.y,
+        boundingBox.startPoint.x,
+        boundingBox.startPoint.y,
         boundingBox.width,
         boundingBox.height,
       );
@@ -71,25 +72,22 @@ export abstract class Shape {
 
   public getBoundingBox(): BoundingBox {
     const lineWidth = 2;
-    const padding = 4;
     const boundingRect = this.getBoundingRect();
     const startPoint = boundingRect.getStartPoint();
-    
-    const width = boundingRect.getWidth;
-    const height = boundingRect.getHeight;
-    
-    const absWidth = Math.abs(width);
-    const absHeight = Math.abs(height);
-    const minX = startPoint.x + (width < 0 ? width : 0);
-    const minY = startPoint.y + (height < 0 ? height : 0);
+    const width = Math.abs(boundingRect.getWidth);
+    const height = Math.abs(boundingRect.getHeight);
+
+    const padding = calculatePadding(width, height, 4);
+    const minX = startPoint.x;
+    const minY = startPoint.y;
 
     return {
-      topLeft: {
-        x: minX - padding,
-        y: minY - padding,
+      startPoint: {
+        x: minX - padding[0],
+        y: minY - padding[1],
       },
-      width: absWidth + padding * 2,
-      height: absHeight + padding * 2,
+      width: minX + padding[0] * 2,
+      height: minX + padding[1] * 2,
       lineWidth,
     };
   }

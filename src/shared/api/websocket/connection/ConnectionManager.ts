@@ -25,6 +25,7 @@ export class ConnectionManager {
     }
 
     const connection = new WebSocketConnection();
+    connection.setSessionId(sessionId);
     ConnectionManager.connectionsMap.set(sessionId, connection);
     return connection;
   }
