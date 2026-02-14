@@ -80,11 +80,11 @@ export abstract class Shape {
 
     return {
       startPoint: {
-        x: startPoint.x - padding[0] * 4,
-        y: startPoint.y - padding[1] * 4,
+        x: startPoint.x - padding[0],
+        y: startPoint.y - padding[1],
       },
-      width: boundingRect.getWidth + padding[0] * 8,
-      height: boundingRect.getHeight + padding[1] * 8,
+      width: boundingRect.getWidth + padding[0] * 2,
+      height: boundingRect.getHeight + padding[1] * 2,
       lineWidth,
     };
   }
