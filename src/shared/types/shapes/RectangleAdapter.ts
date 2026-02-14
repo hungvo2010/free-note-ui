@@ -1,5 +1,4 @@
 import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
-import { toVirtualX, toVirtualY } from "@shared/utils/CommonUtils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
@@ -21,15 +20,15 @@ export class RectangleAdapter extends Shape {
   }
 
   tryReUse(offsetX: number, offsetY: number): boolean {
-    if (Object.is(this.roughCanvas, this.rectangle.getRoughCanvas())) {
-      this.rectangle.drawRectangle(offsetX, offsetY);
+    if (this.roughCanvas) {
+      this.rectangle.drawRectangle(this.roughCanvas, offsetX, offsetY);
       return true;
     }
     return false;
   }
 
   fullDrawShape(offsetX: number, offsetY: number): void {
-    this.rectangle.drawRectangle(offsetX, offsetY);
+    this.rectangle.drawRectangle(this.roughCanvas, offsetX, offsetY);
   }
 
   private rectangle: Rectangle;

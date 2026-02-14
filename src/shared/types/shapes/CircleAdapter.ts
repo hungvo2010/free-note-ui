@@ -7,14 +7,14 @@ import { Shape } from "./Shape";
 
 export class CircleAdapter extends Shape {
   tryReUse(offsetX: number, offsetY: number): boolean {
-    if (Object.is(this.roughCanvas, this.circle.getRoughCanvas())) {
-      this.circle.drawCircle(offsetX, offsetY);
+    if (this.roughCanvas) {
+      this.circle.drawCircle(this.roughCanvas, offsetX, offsetY);
       return true;
     }
     return false;
   }
   fullDrawShape(offsetX: number, offsetY: number): void {
-    this.circle.drawCircle(offsetX, offsetY);
+    this.circle.drawCircle(this.roughCanvas, offsetX, offsetY);
   }
   updateRadius(radius: number) {
     this.circle.setRadius(radius);

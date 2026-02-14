@@ -18,17 +18,23 @@ export class Circle {
     this.y = y;
   }
 
-  drawCircle(offsetX: number = 0, offsetY: number = 0) {
-    if (this.radius < 3 || !this.roughCanvas) {
+  drawCircle(
+    roughCanvas: RoughCanvas | undefined,
+    offsetX: number = 0,
+    offsetY: number = 0,
+  ) {
+    if (this.radius < 3 || !roughCanvas) {
       return;
     }
 
-    const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+    const canvas =
+      (roughCanvas as any).canvas ||
+      (document.getElementById("myCanvas") as HTMLCanvasElement);
     const ctx = canvas?.getContext("2d");
 
     if (!this.drawable) {
       // Create geometry at origin (0,0) using generator to avoid immediate drawing
-      this.drawable = this.roughCanvas.generator.circle(0, 0, this.radius * 2, {
+      this.drawable = roughCanvas.generator.circle(0, 0, this.radius * 2, {
         roughness: 1,
         seed: 1,
       });
@@ -37,7 +43,7 @@ export class Circle {
     if (ctx && this.drawable) {
       ctx.save();
       ctx.translate(this.x + offsetX, this.y + offsetY);
-      this.roughCanvas.draw(this.drawable);
+      roughCanvas.draw(this.drawable);
       ctx.restore();
     }
   }

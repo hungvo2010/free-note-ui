@@ -8,7 +8,7 @@ export class Rectangle {
     private x: number,
     private y: number,
     private width: number,
-    private height: number
+    private height: number,
   ) {}
 
   public setPosition(x: number, y: number) {
@@ -38,7 +38,6 @@ export class Rectangle {
     const ctx = canvas?.getContext("2d");
 
     if (!this.drawable) {
-      // Create geometry at origin (0,0) using generator to avoid immediate drawing
       this.drawable = roughCanvas.generator.rectangle(
         0,
         0,
@@ -53,7 +52,6 @@ export class Rectangle {
 
     if (ctx && this.drawable) {
       ctx.save();
-      // Translate to the target position (including board offset)
       ctx.translate(this.x + offsetX, this.y + offsetY);
       roughCanvas.draw(this.drawable);
       ctx.restore();

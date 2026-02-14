@@ -35,27 +35,23 @@ export class MessageReceivalHandler implements MessageObserver {
     }
 
     const draftResponse = parseDraftResponseData(jsonData);
-    const shapesToUpdate = shapesFromResponseData(draftResponse);
-    for (const shape of shapesToUpdate) {
-      shape.refreshCanvas(this.config.roughCanvas);
-      this.config.reDrawController.mergeShape(shape);
-    }
-    if (
-      sentFromOtherSender(
-        this.config.webSocketConnection,
-        draftResponse?.senderId,
-        draftResponse?.requestType,
-      )
-    ) {
-      // console.log(
-      //   "[] current senderId: ",
-      //   this.config.webSocketConnection.getSessionId(),
-      // );
-      // console.log("[] messages senderId: ", draftResponse?.senderId);
+    const isFromOther = sentFromOtherSender(
+      this.config.webSocketConnection,
+      draftResponse?.senderId,
+      draftResponse?.requestType,
+    );
+
+    if (isFromOther) {
       console.log(
-        "[MessageReceivalHandler] RE-DRAW all due to messages from other sender OR CONNECT request",
+        "[MessageReceivalHandler] RE-DRAW due to messages from other sender OR CONNECT request",
       );
-      this.config.reDrawController.reDraw(0, 0);
+      const shapesToUpdate = shapesFromResponseData(draftResponse);
+      for (const shape of shapesToUpdate) {
+        shape.refreshCanvas(this.config.roughCanvas);
+        this.config.reDrawController.mergeShape(shape);
+        shape.draw(0, 0);
+      }
+      // this.config.reDrawController.reDraw(0, 0);
     }
     console.log("End observers message-receival");
   }
