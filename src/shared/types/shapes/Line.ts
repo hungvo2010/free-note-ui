@@ -24,32 +24,51 @@ export class Line extends Shape {
     if (!this.x2 || !this.y2) {
       return true;
     }
-    if (this.drawable && offsetX === 0 && offsetY === 0) {
-      this.roughCanvas?.draw(this.drawable);
+    if (this.drawable) {
+      this.drawCachedLine(offsetX, offsetY);
       return true;
     }
     return false;
   }
 
   fullDrawShape(offsetX: number, offsetY: number): void {
-    this.drawable = this.roughCanvas?.line(
-      toVirtualX(this.x1, offsetX, 1),
-      toVirtualY(this.y1, offsetY, 1),
-      toVirtualX(this.x2 || 0, offsetX, 1),
-      toVirtualY(this.y2 || 0, offsetY, 1),
-      {
-        roughness: 3,
-        seed: 1,
-        strokeWidth: 1,
-      }
-    );
+    this.drawCachedLine(offsetX, offsetY);
+  }
+
+  private drawCachedLine(offsetX: number, offsetY: number) {
+    if (!this.roughCanvas) return;
+
+    const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+    const ctx = canvas?.getContext("2d");
+
+    if (!this.drawable) {
+      // Create at origin (0,0) using generator to avoid immediate drawing
+      this.drawable = this.roughCanvas.generator.line(
+        0,
+        0,
+        this.x2 - this.x1,
+        this.y2 - this.y1,
+        {
+          roughness: 3,
+          seed: 1,
+          strokeWidth: 1,
+        },
+      );
+    }
+
+    if (ctx && this.drawable) {
+      ctx.save();
+      ctx.translate(this.x1 + offsetX, this.y1 + offsetY);
+      this.roughCanvas.draw(this.drawable);
+      ctx.restore();
+    }
   }
 
   /**
    * Override to clear cached drawable when canvas changes.
    */
-  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
-    super.setRoughCanvas(roughCanvas);
+  public refreshCanvas(roughCanvas: RoughCanvas | undefined): void {
+    super.refreshCanvas(roughCanvas);
     this.drawable = undefined;
   }
 
@@ -82,7 +101,7 @@ export class Line extends Shape {
     this.y1 += offsetY;
     this.x2 += offsetX;
     this.y2 += offsetY;
-    this.drawable = undefined;
+    // Cache is preserved as the relative geometry hasn't changed
   }
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {

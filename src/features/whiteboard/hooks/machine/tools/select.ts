@@ -21,30 +21,8 @@ export function createSelectTool(deps: ToolDeps): Tool {
 
   const clearHoverHighlight = () => {
     if (boundingBox) {
-      const padding = calculatePadding(
-        boundingBox.width,
-        boundingBox.height,
-        PADDING,
-      );
-      clearRect(
-        canvas,
-        new Rectangle(
-          undefined,
-          boundingBox.startPoint.x - padding[0],
-          boundingBox.startPoint.y - padding[1],
-          boundingBox.width + padding[0] * 2,
-          boundingBox.height + padding[1] * 2,
-        ),
-      );
-      const shapesNeedReDraw =
-        reDrawController.findShapesNeedReDraw(boundingBox);
-      console.log(
-        "shapes need to be re-draw:onHover: ",
-        shapesNeedReDraw.length,
-      );
-      shapesNeedReDraw.forEach((shape) => {
-        shape.draw(0, 0);
-      });
+      clearBoundingBox(boundingBox);
+      reDrawChangeShapes(boundingBox);
       boundingBox = null;
     }
   };
@@ -94,9 +72,11 @@ export function createSelectTool(deps: ToolDeps): Tool {
         y: Math.min(oldEnds.minY, newEnds.minY),
       },
       width:
-        Math.max(oldEnds.maxX, newEnds.maxX) - Math.min(oldEnds.minX, newEnds.minX),
+        Math.max(oldEnds.maxX, newEnds.maxX) -
+        Math.min(oldEnds.minX, newEnds.minX),
       height:
-        Math.max(oldEnds.maxY, newEnds.maxY) - Math.min(oldEnds.minY, newEnds.minY),
+        Math.max(oldEnds.maxY, newEnds.maxY) -
+        Math.min(oldEnds.minY, newEnds.minY),
       lineWidth: 2,
     };
 
@@ -157,7 +137,10 @@ export function createSelectTool(deps: ToolDeps): Tool {
     boundingBox: BoundingBox,
     excludedShapes: Shape[] = [],
   ) {
-    const shapesNeedReDraw = reDrawController.findShapesNeedReDraw(boundingBox);
+    const shapesNeedReDraw = reDrawController.findShapesNeedReDraw(
+      boundingBox,
+      excludedShapes,
+    );
     shapesNeedReDraw.forEach((shape) => {
       shape.draw(0, 0);
     });
@@ -178,7 +161,13 @@ export function createSelectTool(deps: ToolDeps): Tool {
 
     clearRect(
       canvas,
-      new Rectangle(undefined, x1 - margin, y1 - margin, w + margin * 2, h + margin * 2),
+      new Rectangle(
+        undefined,
+        x1 - margin,
+        y1 - margin,
+        w + margin * 2,
+        h + margin * 2,
+      ),
     );
   }
 }

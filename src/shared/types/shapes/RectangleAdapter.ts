@@ -21,25 +21,15 @@ export class RectangleAdapter extends Shape {
   }
 
   tryReUse(offsetX: number, offsetY: number): boolean {
-    const result =
-      Object.is(this.roughCanvas, this.rectangle.getRoughCanvas()) &&
-      offsetX === 0 &&
-      offsetY === 0;
-    if (result) {
-      this.rectangle.drawRectangle();
+    if (Object.is(this.roughCanvas, this.rectangle.getRoughCanvas())) {
+      this.rectangle.drawRectangle(offsetX, offsetY);
+      return true;
     }
-    return result;
+    return false;
   }
 
   fullDrawShape(offsetX: number, offsetY: number): void {
-    const newRectangle = new Rectangle(
-      this.roughCanvas,
-      toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
-      toVirtualY(this.rectangle.getStartPoint().y, offsetY, 1),
-      this.rectangle.getWidth,
-      this.rectangle.getHeight,
-    );
-    newRectangle.drawRectangle();
+    this.rectangle.drawRectangle(offsetX, offsetY);
   }
 
   private rectangle: Rectangle;
@@ -126,12 +116,9 @@ export class RectangleAdapter extends Shape {
   }
 
   applyVirtualCoordinates(offsetX: number, offsetY: number): void {
-    this.rectangle = new Rectangle(
-      this.roughCanvas,
+    this.rectangle.setPosition(
       this.rectangle.getStartPoint().x + offsetX,
-      this.rectangle.getStartPoint().y + offsetY,
-      this.rectangle.getWidth,
-      this.rectangle.getHeight,
+      this.rectangle.getStartPoint().y + offsetY
     );
   }
 

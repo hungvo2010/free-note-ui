@@ -13,20 +13,33 @@ export class Circle {
     private radius: number,
   ) {}
 
-  drawCircle() {
-    if (this.radius < 3) {
-      console.log("radius < 3");
+  public setPosition(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+
+  drawCircle(offsetX: number = 0, offsetY: number = 0) {
+    if (this.radius < 3 || !this.roughCanvas) {
       return;
     }
-    if (this.drawable) {
-      console.log("Circle: reuse drawable");
-      this.roughCanvas?.draw(this.drawable);
-      return;
+
+    const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+    const ctx = canvas?.getContext("2d");
+
+    if (!this.drawable) {
+      // Create geometry at origin (0,0) using generator to avoid immediate drawing
+      this.drawable = this.roughCanvas.generator.circle(0, 0, this.radius * 2, {
+        roughness: 1,
+        seed: 1,
+      });
     }
-    this.drawable = this.roughCanvas?.circle(this.x, this.y, this.radius * 2, {
-      roughness: 1,
-      seed: 1,
-    });
+
+    if (ctx && this.drawable) {
+      ctx.save();
+      ctx.translate(this.x + offsetX, this.y + offsetY);
+      this.roughCanvas.draw(this.drawable);
+      ctx.restore();
+    }
   }
   getCenterPoint(): { x: number; y: number } {
     return { x: this.x, y: this.y };

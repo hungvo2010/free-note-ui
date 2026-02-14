@@ -42,8 +42,8 @@ export class TextShape extends Shape implements TextEditor {
    * Override to update text color based on theme.
    * Text shapes need to respond to theme changes for proper visibility.
    */
-  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
-    super.setRoughCanvas(roughCanvas);
+  public refreshCanvas(roughCanvas: RoughCanvas | undefined): void {
+    super.refreshCanvas(roughCanvas);
     // Note: Theme is handled separately via ReDrawController.getTheme()
     // This could be improved by passing theme directly
   }

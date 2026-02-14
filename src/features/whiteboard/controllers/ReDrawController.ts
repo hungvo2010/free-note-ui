@@ -88,7 +88,7 @@ export class ReDrawController {
    */
   public syncShapesWithCanvasState(): void {
     for (const shape of this.shapes) {
-      shape.setRoughCanvas(this.roughCanvas);
+      shape.refreshCanvas(this.roughCanvas);
     }
   }
 
@@ -133,7 +133,7 @@ export class ReDrawController {
       );
       return false;
     }
-    shape.setRoughCanvas(this.roughCanvas);
+    shape.refreshCanvas(this.roughCanvas);
     this.shapes.push(shape);
     return true;
   }
@@ -184,7 +184,7 @@ export class ReDrawController {
     // console.log("Redrawing shapes total length: ", this.shapes.length);
     console.log(`[REDRAW-CONTROLLER] RE-DRAW ${this.shapes.length} SHAPES`);
     for (const shape of this.shapes || []) {
-      shape.setRoughCanvas(this.roughCanvas);
+      shape.refreshCanvas(this.roughCanvas);
       shape.draw(offsetX, offsetY);
     }
   }

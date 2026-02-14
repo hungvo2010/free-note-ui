@@ -1,17 +1,17 @@
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
+import { distance, isInLine } from "@shared/utils/geometry/GeometryUtils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
-import { distance, isInLine } from "@shared/utils/geometry/GeometryUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 
 export class Diamond extends Shape {
   tryReUse(offsetX: number, offsetY: number): boolean {
     if (!this.x2 || !this.y2) {
       return true;
     }
-    if (this.drawable && offsetX === 0 && offsetY === 0) {
-      this.roughCanvas?.draw(this.drawable);
+    if (this.drawable) {
+      this.drawCachedDiamond(offsetX, offsetY);
       return true;
     }
     return false;
@@ -20,18 +20,32 @@ export class Diamond extends Shape {
   /**
    * Override to clear cached drawable when canvas changes.
    */
-  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
-    super.setRoughCanvas(roughCanvas);
+  public refreshCanvas(roughCanvas: RoughCanvas | undefined): void {
+    super.refreshCanvas(roughCanvas);
     this.drawable = undefined;
   }
 
   fullDrawShape(offsetX: number, offsetY: number): void {
-    this.drawable = this.drawDiamond(
-      this.x1 + offsetX,
-      this.y1 + offsetY,
-      this.x2 + offsetX,
-      this.y2 + offsetY
-    );
+    this.drawCachedDiamond(offsetX, offsetY);
+  }
+
+  private drawCachedDiamond(offsetX: number, offsetY: number) {
+    if (!this.x2 || !this.y2 || !this.roughCanvas) return;
+
+    const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+    const ctx = canvas?.getContext("2d");
+
+    if (!this.drawable) {
+      // Generate at relative origin (0, 0)
+      this.drawable = this.drawDiamond(0, 0, this.x2 - this.x1, this.y2 - this.y1);
+    }
+
+    if (ctx && this.drawable) {
+      ctx.save();
+      ctx.translate(this.x1 + offsetX, this.y1 + offsetY);
+      this.roughCanvas.draw(this.drawable);
+      ctx.restore();
+    }
   }
   private drawable: Drawable | undefined;
   public x2: number = 0;
@@ -40,7 +54,7 @@ export class Diamond extends Shape {
     roughCanvas: RoughCanvas | undefined,
     public x1: number,
     public y1: number,
-    id?: string
+    id?: string,
   ) {
     super(roughCanvas, id);
   }
@@ -50,7 +64,7 @@ export class Diamond extends Shape {
       this.x1,
       this.y1,
       this.x2 - this.x1,
-      this.y2 - this.y1
+      this.y2 - this.y1,
     );
   }
   isPointInShape(x: number, y: number): boolean {
@@ -76,16 +90,16 @@ export class Diamond extends Shape {
   applyVirtualCoordinates(x: number, y: number): void {
     this.x1 += x;
     this.y1 += y;
-    this.drawable = undefined;
     this.x2 += x;
     this.y2 += y;
+    // Cache is preserved as the relative geometry hasn't changed
   }
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {
     const newDiamond = new Diamond(
       this.roughCanvas,
       this.x1 + changeX,
-      this.y1 + changeY
+      this.y1 + changeY,
     );
     newDiamond.x2 = this.x2 + changeX;
     newDiamond.y2 = this.y2 + changeY;
@@ -93,7 +107,12 @@ export class Diamond extends Shape {
   }
 
   clone(x: number, y: number): Shape {
-    const newDiamond = new Diamond(this.roughCanvas, this.x1, this.y1, this.getId());
+    const newDiamond = new Diamond(
+      this.roughCanvas,
+      this.x1,
+      this.y1,
+      this.getId(),
+    );
     newDiamond.x2 = x;
     newDiamond.y2 = y;
     return newDiamond;
@@ -122,7 +141,7 @@ export class Diamond extends Shape {
       x: mainPoint.x,
       y: mainPoint.y + distanceInY,
     };
-    return this.roughCanvas?.linearPath(
+    return this.roughCanvas?.generator.linearPath(
       [
         [left.x, left.y],
         [top.x, top.y],
@@ -133,15 +152,20 @@ export class Diamond extends Shape {
       {
         roughness: 1,
         seed: 1,
-      }
+      },
     );
   }
 
-
   serialize(): SerializedShape {
     return {
-        type: "diamond",
-        data: { id: this.getId(), x1: this.x1, y1: this.y1, x2: this.x2, y2: this.y2 },
-      };
+      type: "diamond",
+      data: {
+        id: this.getId(),
+        x1: this.x1,
+        y1: this.y1,
+        x2: this.x2,
+        y2: this.y2,
+      },
+    };
   }
 }

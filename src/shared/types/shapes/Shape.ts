@@ -43,14 +43,13 @@ export abstract class Shape {
    * Called when canvas context changes (e.g., theme switch, canvas resize).
    * Subclasses should override to clear cached drawables.
    */
-  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
+  public refreshCanvas(roughCanvas: RoughCanvas | undefined): void {
     this.roughCanvas = roughCanvas;
   }
 
   public drawBoundingBox(
     canvas: HTMLCanvasElement | undefined,
   ): BoundingBox | null {
-    const boundingRect = this.getBoundingRect();
     const ctx = canvas?.getContext("2d");
     if (ctx) {
       const lineWidth = 2;
@@ -81,11 +80,11 @@ export abstract class Shape {
 
     return {
       startPoint: {
-        x: startPoint.x - padding[0],
-        y: startPoint.y - padding[1],
+        x: startPoint.x - padding[0] * 4,
+        y: startPoint.y - padding[1] * 4,
       },
-      width: boundingRect.getWidth + padding[0] * 2,
-      height: boundingRect.getHeight + padding[1] * 2,
+      width: boundingRect.getWidth + padding[0] * 8,
+      height: boundingRect.getHeight + padding[1] * 8,
       lineWidth,
     };
   }

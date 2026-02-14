@@ -37,7 +37,7 @@ export class MessageReceivalHandler implements MessageObserver {
     const draftResponse = parseDraftResponseData(jsonData);
     const shapesToUpdate = shapesFromResponseData(draftResponse);
     for (const shape of shapesToUpdate) {
-      shape.setRoughCanvas(this.config.roughCanvas);
+      shape.refreshCanvas(this.config.roughCanvas);
       this.config.reDrawController.mergeShape(shape);
     }
     if (
