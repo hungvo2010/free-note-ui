@@ -19,12 +19,17 @@ export class ConnectionManager {
     // Clean up stale connections before creating new one
     this.cleanupStaleConnections();
 
-    if (ConnectionManager.connectionsMap.size >= ConnectionManager.MAX_CONNECTIONS) {
-      console.warn(`Connection limit reached (${ConnectionManager.MAX_CONNECTIONS})`);
+    if (
+      ConnectionManager.connectionsMap.size >= ConnectionManager.MAX_CONNECTIONS
+    ) {
+      console.warn(
+        `Connection limit reached (${ConnectionManager.MAX_CONNECTIONS})`,
+      );
       return null;
     }
 
     const connection = new WebSocketConnection();
+    connection.setSessionId(sessionId);
     ConnectionManager.connectionsMap.set(sessionId, connection);
     return connection;
   }
@@ -35,7 +40,7 @@ export class ConnectionManager {
   getConnectionById(sid: string): WebSocketConnection {
     const key = sid || "default";
     let connection = ConnectionManager.connectionsMap.get(key);
-    
+
     if (!connection) {
       const newConnection = this.createConnection(key);
       if (!newConnection) {
@@ -50,7 +55,7 @@ export class ConnectionManager {
         connection = newConnection;
       }
     }
-    
+
     return connection;
   }
 
@@ -66,14 +71,14 @@ export class ConnectionManager {
    */
   private cleanupStaleConnections(): void {
     const toRemove: string[] = [];
-    
+
     ConnectionManager.connectionsMap.forEach((connection, sessionId) => {
       if (!connection.isHealthy()) {
         toRemove.push(sessionId);
       }
     });
 
-    toRemove.forEach(sessionId => {
+    toRemove.forEach((sessionId) => {
       ConnectionManager.connectionsMap.delete(sessionId);
       console.log(`Cleaned up stale connection: ${sessionId}`);
     });
@@ -85,7 +90,7 @@ export class ConnectionManager {
   private forceCleanup(): void {
     const entries = Array.from(ConnectionManager.connectionsMap.entries());
     const toRemove = Math.ceil(entries.length * 0.2); // Remove 20% oldest
-    
+
     for (let i = 0; i < toRemove && i < entries.length; i++) {
       const [sessionId] = entries[i];
       ConnectionManager.connectionsMap.delete(sessionId);

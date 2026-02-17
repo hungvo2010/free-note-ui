@@ -34,7 +34,7 @@ const WhiteboardContent: React.FC<DrawTypeProps> = ({
   }, [handleMouseDown, handleMouseMove, handleMouseUp, canvas]);
 
   return (
-    <div style={{ position: "relative" }}>
+    <div className="whiteboard-container">
       <canvas
         id="myCanvas"
         className={`full-canvas ${isLocked ? "locked-canvas" : ""}`}

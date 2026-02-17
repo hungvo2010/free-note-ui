@@ -1,6 +1,8 @@
 import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
+import { PADDING } from "@shared/utils/Constant";
 import { calculatePadding } from "@shared/utils/geometry/GeometryUtils";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { BoundingBox } from "../BoundingBox";
 import { Rectangle } from "./Rectangle";
 
 /**
@@ -41,27 +43,49 @@ export abstract class Shape {
    * Called when canvas context changes (e.g., theme switch, canvas resize).
    * Subclasses should override to clear cached drawables.
    */
-  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
+  public refreshCanvas(roughCanvas: RoughCanvas | undefined): void {
     this.roughCanvas = roughCanvas;
   }
 
-  public drawBoundingBox(canvas: HTMLCanvasElement | undefined) {
-    const boundingRect = this.getBoundingRect();
+  public drawBoundingBox(
+    canvas: HTMLCanvasElement | undefined,
+  ): BoundingBox | null {
     const ctx = canvas?.getContext("2d");
     if (ctx) {
+      const lineWidth = 2;
       ctx.strokeStyle = "red"; // Highlight color
-      ctx.lineWidth = 2;
-      const startPoint = boundingRect.getStartPoint();
-      const angle =
-        (Math.atan2(boundingRect.getHeight, boundingRect.getWidth) * 180) /
-        Math.PI;
-      const padding = calculatePadding(angle, 4);
+      ctx.lineWidth = lineWidth;
+      const boundingBox = this.getBoundingBox();
       ctx.strokeRect(
-        startPoint.x - padding[0],
-        startPoint.y - padding[1],
-        boundingRect.getWidth + padding[0] * 2,
-        boundingRect.getHeight + padding[1] * 2,
+        boundingBox.startPoint.x,
+        boundingBox.startPoint.y,
+        boundingBox.width,
+        boundingBox.height,
       );
+      return boundingBox;
     }
+    return null;
+  }
+
+  public getBoundingBox(): BoundingBox {
+    const lineWidth = 2;
+    const boundingRect = this.getBoundingRect();
+    const startPoint = boundingRect.getStartPoint();
+    const padding = calculatePadding(
+      boundingRect.getWidth,
+      boundingRect.getHeight,
+      PADDING,
+    );
+    // console.log("[Padding of getBoundingBox]: ", padding);
+
+    return {
+      startPoint: {
+        x: startPoint.x - padding[0],
+        y: startPoint.y - padding[1],
+      },
+      width: boundingRect.getWidth + padding[0] * 2,
+      height: boundingRect.getHeight + padding[1] * 2,
+      lineWidth,
+    };
   }
 }

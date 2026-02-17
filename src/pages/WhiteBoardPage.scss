@@ -1,0 +1,10 @@
+.whiteboard-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.whiteboard-canvas-wrapper {
+  flex: 1;
+  overflow: hidden;
+}

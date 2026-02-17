@@ -1,15 +1,17 @@
-import EventBus from "./EventBus";
-import { MessageHandler } from "../handlers/MessageHandler";
-import { ConnectionReadyHandler } from "../handlers/ConnectionReadyHandler";
-import { ConnectionStateHandler } from "../handlers/ConnectionStateHandler";
+import { DraftSyncClient } from "@features/draft/api/DraftSyncClient";
 import { ReDrawController } from "@features/whiteboard/controllers/ReDrawController";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { DraftSyncClient } from "@features/draft/api/DraftSyncClient";
+import { WebSocketConnection } from "../../connection/WebSocketConnection";
+import { ConnectionReadyHandler } from "../handlers/ConnectionReadyHandler";
+import { ConnectionStateHandler } from "../handlers/ConnectionStateHandler";
+import { MessageReceivalHandler } from "../handlers/MessageReceivalHandler";
+import EventBus from "./EventBus";
 
 interface EventHandlerCoordinatorConfig {
   draftId: string;
   roughCanvas: RoughCanvas | undefined;
   reDrawController: ReDrawController;
+  webSocketConnection: WebSocketConnection;
   onDraftChange: (newDraftId: string) => void;
 }
 
@@ -21,12 +23,12 @@ interface EventHandlerCoordinatorConfig {
  * - Cleaning up handlers when no longer needed
  */
 export class EventHandlerCoordinator {
-  private messageHandler: MessageHandler;
+  private messageHandler: MessageReceivalHandler;
   private connectionReadyHandler?: ConnectionReadyHandler;
   private connectionStateHandler?: ConnectionStateHandler;
 
   constructor(private config: EventHandlerCoordinatorConfig) {
-    this.messageHandler = new MessageHandler(config);
+    this.messageHandler = new MessageReceivalHandler(config);
   }
 
   /**
@@ -35,10 +37,10 @@ export class EventHandlerCoordinator {
   register(dispatcher: DraftSyncClient): void {
     this.connectionReadyHandler = new ConnectionReadyHandler(
       dispatcher,
-      this.config.draftId
+      this.config.draftId,
     );
     this.connectionStateHandler = new ConnectionStateHandler(
-      this.connectionReadyHandler
+      this.connectionReadyHandler,
     );
 
     EventBus.addMessageHandler(this.messageHandler);

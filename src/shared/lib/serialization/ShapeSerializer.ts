@@ -1,6 +1,6 @@
 import { Shape } from "@shared/types/shapes/Shape";
-import { shapeToJson, ShapeJson, LegacyShapeJson } from "./ShapeToJson";
-import { jsonToShape, jsonToShapes } from "./JsonToShape";
+import { jsonToShapes } from "./JsonToShape";
+import { LegacyShapeJson, ShapeJson, shapeToJson } from "./ShapeToJson";
 
 // Re-export types for backward compatibility
 export type SerializedShape = ShapeJson | LegacyShapeJson;
@@ -12,26 +12,6 @@ export const ShapeSerialization = {
   deserialize(serializedShape: Record<string, any>): Shape[] {
     // New schema: expecting { shapes: [{ shapeId, type, content }] }
     if (Array.isArray(serializedShape.shapes)) {
-      return jsonToShapes(serializedShape.shapes);
-    }
-
-    // Legacy format support: { op: 'add', shape: {...} }
-    const op = serializedShape?.op;
-    if (!op) return [];
-
-    const build = (payload: any): Shape[] => {
-      if (!payload || !payload.type) return [];
-      const shape = jsonToShape(payload);
-      return shape ? [shape] : [];
-    };
-
-    if (op === "add") {
-      return build(serializedShape.shape);
-    }
-    if (op === "update") {
-      return build(serializedShape.patch);
-    }
-    if (op === "init" && Array.isArray(serializedShape.shapes)) {
       return jsonToShapes(serializedShape.shapes);
     }
     return [];

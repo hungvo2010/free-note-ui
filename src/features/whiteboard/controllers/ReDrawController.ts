@@ -1,12 +1,18 @@
-import { RoughCanvas } from "roughjs/bin/canvas";
+import { BoundingBox } from "@shared/types/BoundingBox";
 import { CircleAdapter } from "@shared/types/shapes/CircleAdapter";
+import { Rectangle } from "@shared/types/shapes/Rectangle";
 import { Shape } from "@shared/types/shapes/Shape";
-import { distance, isPointInShape } from "@shared/utils/geometry/GeometryUtils";
+import {
+  distance,
+  isPointInShape,
+  normalizeRect,
+} from "@shared/utils/geometry/GeometryUtils";
+import { RoughCanvas } from "roughjs/bin/canvas";
 
 /**
  * Controller for managing whiteboard shapes and canvas rendering.
  * Handles shape lifecycle, rendering, and coordinate transformations.
- * 
+ *
  * Note: This class does NOT implement the Observer pattern.
  * React Context and hooks handle reactivity for theme/canvas updates.
  */
@@ -17,7 +23,7 @@ export class ReDrawController {
   constructor(
     public roughCanvas: RoughCanvas | undefined,
     public canvas: HTMLCanvasElement | undefined,
-    public shapes: Shape[] = []
+    public shapes: Shape[] = [],
   ) {}
 
   /**
@@ -58,7 +64,7 @@ export class ReDrawController {
    */
   mergeShape(shape: Shape): void {
     const existingIndex = this.shapes.findIndex(
-      (s) => s.getId() === shape.getId()
+      (s) => s.getId() === shape.getId(),
     );
     if (existingIndex >= 0) {
       this.shapes[existingIndex] = shape;
@@ -82,7 +88,7 @@ export class ReDrawController {
    */
   public syncShapesWithCanvasState(): void {
     for (const shape of this.shapes) {
-      shape.setRoughCanvas(this.roughCanvas);
+      shape.refreshCanvas(this.roughCanvas);
     }
   }
 
@@ -93,7 +99,7 @@ export class ReDrawController {
   private syncShapesWithTheme(): void {
     for (const shape of this.shapes) {
       // TextShape has a setTheme method for color updates
-      if ('setTheme' in shape && typeof shape.setTheme === 'function') {
+      if ("setTheme" in shape && typeof shape.setTheme === "function") {
         shape.setTheme(this.theme);
       }
     }
@@ -122,10 +128,12 @@ export class ReDrawController {
    */
   public addShape(shape: Shape): boolean {
     if (this.isShapeLimitReached()) {
-      console.warn(`Shape limit reached (${ReDrawController.MAX_SHAPES}). Cannot add more shapes.`);
+      console.warn(
+        `Shape limit reached (${ReDrawController.MAX_SHAPES}). Cannot add more shapes.`,
+      );
       return false;
     }
-    shape.setRoughCanvas(this.roughCanvas);
+    shape.refreshCanvas(this.roughCanvas);
     this.shapes.push(shape);
     return true;
   }
@@ -136,21 +144,21 @@ export class ReDrawController {
   }
 
   public updateLastShape(
-    x: number,
-    y: number,
+    startX: number,
+    startY: number,
     currentX: number,
-    currentY: number
+    currentY: number,
   ) {
     const lastShape = this.shapes[this.shapes.length - 1];
     let nextX = currentX,
       nextY = currentY;
     if (lastShape instanceof CircleAdapter) {
-      nextX = (currentX + x) / 2;
-      nextY = (currentY + y) / 2;
+      nextX = (currentX + startX) / 2;
+      nextY = (currentY + startY) / 2;
     }
     const newShape = lastShape.clone(nextX, nextY);
     if (newShape instanceof CircleAdapter) {
-      newShape.updateRadius(distance(nextX, nextY, x, y));
+      newShape.updateRadius(distance(nextX, nextY, startX, startY));
     }
     this.shapes[this.shapes.length - 1] = newShape;
   }
@@ -173,9 +181,10 @@ export class ReDrawController {
     if (ctx) {
       ctx.clearRect(0, 0, this.canvas?.width || 0, this.canvas?.height || 0);
     }
-    console.log("Redrawing shapes total length: ", this.shapes.length);
+    // console.log("Redrawing shapes total length: ", this.shapes.length);
+    console.log(`[REDRAW-CONTROLLER] RE-DRAW ${this.shapes.length} SHAPES`);
     for (const shape of this.shapes || []) {
-      shape.setRoughCanvas(this.roughCanvas);
+      shape.refreshCanvas(this.roughCanvas);
       shape.draw(offsetX, offsetY);
     }
   }
@@ -204,6 +213,55 @@ export class ReDrawController {
       if (shapesToRemove.includes(this.shapes[i])) {
         this.shapes.splice(i, 1);
       }
+    }
+  }
+
+  public findShapesNeedReDraw(
+    boundingBox: BoundingBox,
+    excludedShapes: Shape[] = [],
+  ): Shape[] {
+    const results = [];
+    for (const shape of this.shapes) {
+      if (excludedShapes.includes(shape)) {
+        continue;
+      }
+      const shapeBox = shape.getBoundingBox();
+      if (this.isCollide(shapeBox, boundingBox)) {
+        results.push(shape);
+      }
+    }
+    return results;
+  }
+
+  isCollide(box1: BoundingBox, box2: BoundingBox): boolean {
+    const normalized1 = normalizeRect({
+      ...box1.startPoint,
+      w: box1.width,
+      h: box1.height,
+    });
+    const normalized2 = normalizeRect({
+      ...box2.startPoint,
+      w: box2.width,
+      h: box2.height,
+    });
+    return (
+      normalized1.x < normalized2.x + normalized2.width &&
+      normalized1.x + normalized1.width > normalized2.x &&
+      normalized1.y < normalized2.y + normalized2.height &&
+      normalized1.y + normalized1.height > normalized2.y
+    );
+  }
+
+  public clearBoundingBox(shape: Shape): void {
+    const ctx = this.canvas?.getContext("2d");
+    const boundingRect = shape.getBoundingRect();
+    if (ctx) {
+      ctx.clearRect(
+        boundingRect.getStartPoint().x,
+        boundingRect.getStartPoint().y,
+        boundingRect.getWidth,
+        boundingRect.getHeight,
+      );
     }
   }
 }

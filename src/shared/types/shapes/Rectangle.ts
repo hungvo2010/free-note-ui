@@ -8,23 +8,54 @@ export class Rectangle {
     private x: number,
     private y: number,
     private width: number,
-    private height: number
+    private height: number,
   ) {}
-  drawRectangle() {
-    if (this.drawable) {
-      this.roughCanvas?.draw(this.drawable);
-      return;
+
+  public setPosition(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+
+  public setSize(width: number, height: number) {
+    if (this.width !== width || this.height !== height) {
+      this.width = width;
+      this.height = height;
+      this.drawable = undefined; // Invalidate cache on size change
     }
-    this.drawable = this.roughCanvas?.rectangle(
-      this.x,
-      this.y,
-      this.width,
-      this.height,
-      {
-        roughness: 1,
-        seed: 1,
-      }
-    );
+  }
+
+  drawRectangle(
+    roughCanvas: RoughCanvas | undefined,
+    offsetX: number = 0,
+    offsetY: number = 0,
+  ) {
+    if (!roughCanvas) return;
+
+    // Use the canvas from roughCanvas if possible, otherwise fallback to DOM
+    const canvas =
+      (roughCanvas as any).canvas ||
+      (document.getElementById("myCanvas") as HTMLCanvasElement);
+    const ctx = canvas?.getContext("2d");
+
+    if (!this.drawable) {
+      this.drawable = roughCanvas.generator.rectangle(
+        0,
+        0,
+        this.width,
+        this.height,
+        {
+          roughness: 1,
+          seed: 1,
+        },
+      );
+    }
+
+    if (ctx && this.drawable) {
+      ctx.save();
+      ctx.translate(this.x + offsetX, this.y + offsetY);
+      roughCanvas.draw(this.drawable);
+      ctx.restore();
+    }
   }
 
   getStartPoint(): { x: number; y: number } {

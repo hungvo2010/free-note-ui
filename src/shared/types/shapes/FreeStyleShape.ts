@@ -1,10 +1,10 @@
+import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
+import { toVirtualX, toVirtualY } from "@shared/utils/CommonUtils";
+import { distance } from "@shared/utils/geometry/GeometryUtils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Drawable } from "roughjs/bin/core";
-import { toVirtualX, toVirtualY } from "@shared/utils/CommonUtils";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
-import { distance } from "@shared/utils/geometry/GeometryUtils";
-import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
 
 export class FreeStyleShape extends Shape {
   serialize(): SerializedShape {
@@ -15,8 +15,8 @@ export class FreeStyleShape extends Shape {
   }
 
   tryReUse(offsetX: number, offsetY: number): boolean {
-    if (this.drawable && offsetX === 0 && offsetY === 0) {
-      this.roughCanvas?.draw(this.drawable);
+    if (this.drawable) {
+      this.drawCachedFreeStyle(offsetX, offsetY);
       return true;
     }
     return false;
@@ -25,28 +25,48 @@ export class FreeStyleShape extends Shape {
   /**
    * Override to clear cached drawable when canvas changes.
    */
-  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
-    super.setRoughCanvas(roughCanvas);
+  public refreshCanvas(roughCanvas: RoughCanvas | undefined): void {
+    super.refreshCanvas(roughCanvas);
     this.drawable = undefined;
   }
+
   fullDrawShape(offsetX: number, offsetY: number): void {
-    const newPoints = this.points.map(
-      (point) =>
-        [
-          toVirtualX(point[0], offsetX, 1),
-          toVirtualY(point[1], offsetY, 1),
-        ] as [number, number]
-    );
-    this.drawable = this.roughCanvas?.curve(newPoints, {
-      roughness: 0.1,
-      strokeWidth: 2,
-    });
+    this.drawCachedFreeStyle(offsetX, offsetY);
   }
+
+  private drawCachedFreeStyle(offsetX: number, offsetY: number) {
+    if (!this.roughCanvas || this.points.length === 0) return;
+
+    const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+    const ctx = canvas?.getContext("2d");
+
+    if (!this.drawable) {
+      // Generate points relative to the first point (origin)
+      const origin = this.points[0];
+      const relativePoints = this.points.map(
+        (p) => [p[0] - origin[0], p[1] - origin[1]] as [number, number],
+      );
+      this.drawable = this.roughCanvas.generator.curve(relativePoints, {
+        roughness: 0.1,
+        strokeWidth: 2,
+        seed: 1,
+      });
+    }
+
+    if (ctx && this.drawable) {
+      const origin = this.points[0];
+      ctx.save();
+      ctx.translate(origin[0] + offsetX, origin[1] + offsetY);
+      this.roughCanvas.draw(this.drawable);
+      ctx.restore();
+    }
+  }
+
   private drawable: Drawable | undefined;
   constructor(
     roughCanvas: RoughCanvas | undefined,
     public points: [number, number][],
-    id?: string
+    id?: string,
   ) {
     super(roughCanvas, id);
   }
@@ -60,7 +80,7 @@ export class FreeStyleShape extends Shape {
       minX,
       minY,
       maxX - minX,
-      maxY - minY
+      maxY - minY,
     );
   }
   isPointInShape(x: number, y: number): boolean {
@@ -74,14 +94,14 @@ export class FreeStyleShape extends Shape {
 
   applyVirtualCoordinates(x: number, y: number): void {
     this.points = this.points.map(
-      (point) => [point[0] + x, point[1] + y] as [number, number]
+      (point) => [point[0] + x, point[1] + y] as [number, number],
     );
-    this.drawable = undefined;
+    // Cache is preserved as the relative geometry hasn't changed
   }
 
   applyNewCoordinates(changeX: number, changeY: number): Shape {
     const newPoints = this.points.map(
-      (point) => [point[0] + changeX, point[1] + changeY] as [number, number]
+      (point) => [point[0] + changeX, point[1] + changeY] as [number, number],
     );
     return new FreeStyleShape(this.roughCanvas, newPoints);
   }

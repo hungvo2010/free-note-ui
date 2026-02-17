@@ -8,16 +8,8 @@ import { Shape } from "./Shape";
 
 export default class Arrow extends Shape {
   tryReUse(offsetX: number, offsetY: number): boolean {
-    if (
-      this.mainDrawable &&
-      this.leftDrawable &&
-      this.rightDrawable &&
-      offsetX === 0 &&
-      offsetY === 0
-    ) {
-      this.roughCanvas?.draw(this.mainDrawable);
-      this.roughCanvas?.draw(this.leftDrawable);
-      this.roughCanvas?.draw(this.rightDrawable);
+    if (this.mainDrawable && this.leftDrawable && this.rightDrawable) {
+      this.drawCachedArrow(offsetX, offsetY);
       return true;
     }
     if (!this.x1 || !this.y1 || !this.x2 || !this.y2) {
@@ -29,8 +21,8 @@ export default class Arrow extends Shape {
   /**
    * Override to clear cached drawables when canvas changes.
    */
-  public setRoughCanvas(roughCanvas: RoughCanvas | undefined): void {
-    super.setRoughCanvas(roughCanvas);
+  public refreshCanvas(roughCanvas: RoughCanvas | undefined): void {
+    super.refreshCanvas(roughCanvas);
     this.clearDrawableCache();
   }
 
@@ -50,7 +42,7 @@ export default class Arrow extends Shape {
     roughCanvas: RoughCanvas | undefined,
     public x1: number,
     public y1: number,
-    id?: string
+    id?: string,
   ) {
     super(roughCanvas, id);
   }
@@ -61,17 +53,12 @@ export default class Arrow extends Shape {
       this.x1,
       this.y1,
       this.x2 - this.x1,
-      this.y2 - this.y1
+      this.y2 - this.y1,
     );
   }
 
   isPointInShape(x: number, y: number): boolean {
-    const dToLine = distanceToLine(
-      x,
-      y,
-      [this.x1, this.y1],
-      [this.x2, this.y2]
-    );
+    const dToLine = distanceToLine(x, y, [this.x1, this.y1], [this.x2, this.y2]);
     return dToLine <= 4;
   }
 
@@ -80,14 +67,14 @@ export default class Arrow extends Shape {
     this.y1 += offsetY;
     this.x2 += offsetX;
     this.y2 += offsetY;
-    this.clearDrawableCache();
+    // Cache is preserved as the relative geometry hasn't changed
   }
 
   applyNewCoordinates(offsetX: number, offsetY: number): Shape {
     const newArrow = new Arrow(
       this.roughCanvas,
       this.x1 + offsetX,
-      this.y1 + offsetY
+      this.y1 + offsetY,
     );
     newArrow.x2 = this.x2 + offsetX;
     newArrow.y2 = this.y2 + offsetY;
@@ -95,43 +82,58 @@ export default class Arrow extends Shape {
   }
 
   clone(x: number, y: number): Shape {
-    const newArrow = new Arrow(
-      this.roughCanvas,
-      this.x1,
-      this.y1,
-      this.getId()
-    );
+    const newArrow = new Arrow(this.roughCanvas, this.x1, this.y1, this.getId());
     newArrow.x2 = x;
     newArrow.y2 = y;
     return newArrow;
   }
 
   fullDrawShape(offsetX: number, offsetY: number): void {
-    this.mainDrawable = drawLine(
-      this.roughCanvas,
-      this.x1 + offsetX,
-      this.y1 + offsetY,
-      this.x2 + offsetX,
-      this.y2 + offsetY
-    );
-    // if (distance(this.x1, this.y1, this.x2, this.y2) < 20) return;
+    this.drawCachedArrow(offsetX, offsetY);
+  }
 
-    const headLength = 15;
-    const angle = Math.atan2(this.y2 - this.y1, this.x2 - this.x1);
-    this.leftDrawable = drawLine(
-      this.roughCanvas,
-      this.x2 + offsetX,
-      this.y2 + offsetY,
-      this.x2 + offsetX - headLength * Math.cos(angle - Math.PI / 6),
-      this.y2 + offsetY - headLength * Math.sin(angle - Math.PI / 6)
-    );
-    this.rightDrawable = drawLine(
-      this.roughCanvas,
-      this.x2 + offsetX,
-      this.y2 + offsetY,
-      this.x2 + offsetX - headLength * Math.cos(angle + Math.PI / 6),
-      this.y2 + offsetY - headLength * Math.sin(angle + Math.PI / 6)
-    );
+  private drawCachedArrow(offsetX: number, offsetY: number) {
+    if (!this.roughCanvas) return;
+
+    const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
+    const ctx = canvas?.getContext("2d");
+
+    if (!this.mainDrawable || !this.leftDrawable || !this.rightDrawable) {
+      // Generate relative coordinates
+      const dx = this.x2 - this.x1;
+      const dy = this.y2 - this.y1;
+
+      this.mainDrawable = this.roughCanvas.generator.line(0, 0, dx, dy, {
+        roughness: 1,
+        seed: 3,
+      });
+
+      const headLength = 15;
+      const angle = Math.atan2(dy, dx);
+      this.leftDrawable = this.roughCanvas.generator.line(
+        dx,
+        dy,
+        dx - headLength * Math.cos(angle - Math.PI / 6),
+        dy - headLength * Math.sin(angle - Math.PI / 6),
+        { roughness: 1, seed: 3 },
+      );
+      this.rightDrawable = this.roughCanvas.generator.line(
+        dx,
+        dy,
+        dx - headLength * Math.cos(angle + Math.PI / 6),
+        dy - headLength * Math.sin(angle + Math.PI / 6),
+        { roughness: 1, seed: 3 },
+      );
+    }
+
+    if (ctx && this.mainDrawable && this.leftDrawable && this.rightDrawable) {
+      ctx.save();
+      ctx.translate(this.x1 + offsetX, this.y1 + offsetY);
+      this.roughCanvas.draw(this.mainDrawable);
+      this.roughCanvas.draw(this.leftDrawable);
+      this.roughCanvas.draw(this.rightDrawable);
+      ctx.restore();
+    }
   }
 
   serialize(): SerializedShape {

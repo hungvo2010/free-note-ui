@@ -41,7 +41,7 @@ export const WhiteboardProvider: React.FC<{
 
   const whiteboardStyles = useMemo(
     () => ({
-      strokeColor: theme === "dark" ? "white" : "#000000",
+      strokeColor: theme === "dark" ? "white" : "#4dabf7",
       strokeWidth: 3,
       fillColor: "none",
     }),

@@ -7,20 +7,14 @@ import { Shape } from "./Shape";
 
 export class CircleAdapter extends Shape {
   tryReUse(offsetX: number, offsetY: number): boolean {
-    const result = Object.is(this.roughCanvas, this.circle.getRoughCanvas()) && offsetX === 0 && offsetY === 0;
-    if (result) {
-      this.circle.drawCircle();
+    if (this.roughCanvas) {
+      this.circle.drawCircle(this.roughCanvas, offsetX, offsetY);
+      return true;
     }
-    return result;
+    return false;
   }
   fullDrawShape(offsetX: number, offsetY: number): void {
-    const newCircle = new Circle(
-      this.roughCanvas,
-      this.circle.getX + offsetX,
-      this.circle.getY + offsetY,
-      this.circle.getRadius,
-    );
-    newCircle.drawCircle();
+    this.circle.drawCircle(this.roughCanvas, offsetX, offsetY);
   }
   updateRadius(radius: number) {
     this.circle.setRadius(radius);
@@ -52,11 +46,9 @@ export class CircleAdapter extends Shape {
   }
 
   applyVirtualCoordinates(offsetX: number, offsetY: number): void {
-    this.circle = new Circle(
-      this.roughCanvas,
+    this.circle.setPosition(
       this.circle.getX + offsetX,
-      this.circle.getY + offsetY,
-      this.circle.getRadius,
+      this.circle.getY + offsetY
     );
   }
 

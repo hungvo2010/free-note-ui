@@ -50,6 +50,7 @@ export class DraftSyncClient {
     const wireMessage: DraftRequestData = {
       draftId: this.currentDraft.draftId,
       draftName: this.currentDraft.draftName,
+      senderId: this.socket.getSessionId() || undefined,
       requestType: RequestType.ADD,
       content: {
         shapes: [payload],
@@ -71,6 +72,7 @@ export class DraftSyncClient {
     const wireMessage: DraftRequestData = {
       draftId: this.currentDraft.draftId,
       draftName: this.currentDraft.draftName,
+      senderId: this.socket.getSessionId() || undefined,
       requestType: RequestType.UPDATE,
       content: {
         shapes: serializedShapes,
@@ -90,6 +92,7 @@ export class DraftSyncClient {
     const wireMessage: DraftRequestData = {
       draftId: this.currentDraft.draftId,
       draftName: this.currentDraft.draftName,
+      senderId: this.socket.getSessionId() || undefined,
       requestType: RequestType.NOOP,
       content: {
         shapes: [],
@@ -112,6 +115,7 @@ export class DraftSyncClient {
     const wireMessage: DraftRequestData = {
       draftId: this.currentDraft.draftId,
       draftName: this.currentDraft.draftName,
+      senderId: this.socket.getSessionId() || undefined,
       requestType: RequestType.REMOVE,
       content: {
         shapes,
@@ -126,6 +130,7 @@ export class DraftSyncClient {
     const wireMessage: DraftRequestData = {
       draftId: this.currentDraft.draftId,
       draftName: this.currentDraft.draftName,
+      senderId: this.socket.getSessionId() || undefined,
       requestType: RequestType.CONNECT,
       content: {
         shapes: [],

@@ -2,6 +2,7 @@ import {
   DraftRequestData,
   DraftResponseData,
   ShapeData,
+  RequestType,
 } from "@features/whiteboard/hooks/machine/types";
 import { WebSocketConnection } from "@shared/api/websocket/connection/WebSocketConnection";
 
@@ -22,16 +23,6 @@ export type DraftRequest = {
   socket: WebSocketConnection;
 };
 
-// RequestType enum aligned with AsyncAPI schema
-export enum RequestType {
-  CONNECT = 1,
-  ADD = 2,
-  UPDATE = 3,
-  REMOVE = 4,
-  NOOP = 5,
-  INVALID = -1,
-}
-
 // MsgType enum for heartbeat messages
 export enum MsgType {
   PING = "PING",
@@ -39,4 +30,5 @@ export enum MsgType {
 }
 
 // Re-export schema types for convenience
+export { RequestType };
 export type { DraftRequestData, DraftResponseData };

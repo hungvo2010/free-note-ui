@@ -1,5 +1,4 @@
 import { SerializedShape } from "@shared/lib/serialization/ShapeSerializer";
-import { toVirtualX, toVirtualY } from "@shared/utils/CommonUtils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Rectangle } from "./Rectangle";
 import { Shape } from "./Shape";
@@ -21,25 +20,15 @@ export class RectangleAdapter extends Shape {
   }
 
   tryReUse(offsetX: number, offsetY: number): boolean {
-    const result =
-      Object.is(this.roughCanvas, this.rectangle.getRoughCanvas()) &&
-      offsetX === 0 &&
-      offsetY === 0;
-    if (result) {
-      this.rectangle.drawRectangle();
+    if (this.roughCanvas) {
+      this.rectangle.drawRectangle(this.roughCanvas, offsetX, offsetY);
+      return true;
     }
-    return result;
+    return false;
   }
 
   fullDrawShape(offsetX: number, offsetY: number): void {
-    const newRectangle = new Rectangle(
-      this.roughCanvas,
-      toVirtualX(this.rectangle.getStartPoint().x, offsetX, 1),
-      toVirtualY(this.rectangle.getStartPoint().y, offsetY, 1),
-      this.rectangle.getWidth,
-      this.rectangle.getHeight,
-    );
-    newRectangle.drawRectangle();
+    this.rectangle.drawRectangle(this.roughCanvas, offsetX, offsetY);
   }
 
   private rectangle: Rectangle;
@@ -111,27 +100,24 @@ export class RectangleAdapter extends Shape {
     );
   }
 
-  clone(x: number, y: number): Shape {
+  clone(newX: number, newY: number): Shape {
     return new RectangleAdapter(
       this.roughCanvas,
       new Rectangle(
         this.roughCanvas,
         this.rectangle.getStartPoint().x,
         this.rectangle.getStartPoint().y,
-        x - this.rectangle.getStartPoint().x,
-        y - this.rectangle.getStartPoint().y,
+        newX - this.rectangle.getStartPoint().x,
+        newY - this.rectangle.getStartPoint().y,
       ),
       this.id,
     );
   }
 
   applyVirtualCoordinates(offsetX: number, offsetY: number): void {
-    this.rectangle = new Rectangle(
-      this.roughCanvas,
+    this.rectangle.setPosition(
       this.rectangle.getStartPoint().x + offsetX,
-      this.rectangle.getStartPoint().y + offsetY,
-      this.rectangle.getWidth,
-      this.rectangle.getHeight,
+      this.rectangle.getStartPoint().y + offsetY
     );
   }
 

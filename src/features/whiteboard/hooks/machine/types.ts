@@ -45,6 +45,16 @@ export type ToolDeps = {
 
 export type DraftEntity = { draftId?: string; draftName?: string };
 
+// RequestType enum aligned with AsyncAPI schema
+export enum RequestType {
+  CONNECT = 1,
+  ADD = 2,
+  UPDATE = 3,
+  REMOVE = 4,
+  NOOP = 5,
+  INVALID = -1,
+}
+
 // Schema-aligned types from AsyncAPI registry
 export type ShapeData = {
   shapeId: string;
@@ -55,7 +65,8 @@ export type ShapeData = {
 export type DraftRequestData = {
   draftId?: string;
   draftName?: string;
-  requestType: number; // 0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP
+  senderId?: string;
+  requestType: RequestType;
   content?: {
     shapes?: ShapeData[];
   };
@@ -64,7 +75,8 @@ export type DraftRequestData = {
 export type DraftResponseData = {
   draftId?: string;
   draftName?: string;
-  requestType?: number; // 0=INIT, 1=CONNECT, 2=ADD, 3=UPDATE, 4=REMOVE, 5=NOOP
+  senderId?: string;
+  requestType?: RequestType;
   data?: {
     shapes?: ShapeData[];
   };
