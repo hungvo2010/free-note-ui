@@ -21,7 +21,7 @@ export class ConnectionStateSubject {
   }
 
   notifyDisconnect(): void {
-    console.log("Notifying observers of disconnect");
+    // console.log("Notifying observers of disconnect");
     for (const observer of this.observers) {
       observer.onDisconnect();
     }

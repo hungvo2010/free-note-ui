@@ -26,9 +26,12 @@ export const WebSocketProvider: React.FC<{
   const sessionId = getOrCreateSessionId(storage);
   const connection = connectionManager.getConnectionById(sessionId);
   const heartbeatRef = useRef<Heartbeat | null>(null);
+  const connectionRetryMaps = useRef<Map<WebSocketConnection, boolean>>(
+    new Map()
+  );
 
   useEffect(() => {
-    initializeConnection(connection, heartbeatRef);
+    initializeConnection(connection, heartbeatRef, connectionRetryMaps);
 
     return () => {
       // Cleanup heartbeat on unmount
@@ -61,11 +64,12 @@ function getOrCreateSessionId(
 function initializeConnection(
   connection: WebSocketConnection,
   heartbeatRef: React.MutableRefObject<Heartbeat | null>,
+  connectionRetryMaps: React.MutableRefObject<Map<WebSocketConnection, boolean>>,
 ): void {
   console.log("healthy status of connection: " + connection.isHealthy());
 
   // Setup handlers once - they'll be reused for all connections/reconnections
-  setupConnectionHandlers(connection, heartbeatRef);
+  setupConnectionHandlers(connection, heartbeatRef, connectionRetryMaps);
 
   if (!connection.isHealthy()) {
     connection.connect();
@@ -78,29 +82,32 @@ function initializeConnection(
 function setupConnectionHandlers(
   connection: WebSocketConnection,
   heartbeatRef: React.MutableRefObject<Heartbeat | null>,
+  connectionRetryMaps: React.MutableRefObject<Map<WebSocketConnection, boolean>>,
 ): void {
   // Handler for successful connection/reconnection
   connection.setOpenHandler(() => {
     console.log("WebSocket connection opened successfully");
+    // Clear retry flag on successful connection
+    connectionRetryMaps.current.delete(connection);
     EventBus.notifyReconnect();
     EventBus.publishReadyConnection();
     startHeartbeat(connection, heartbeatRef);
   });
 
   connection.setCloseHandler(() => {
-    console.log("WebSocket closed - will attempt reconnect");
+    console.log("[CLOSE-EVENT] WebSocket closed - will attempt reconnect");
     stopHeartbeat(heartbeatRef);
     EventBus.notifyDisconnect();
     EventBus.resetConnectionState();
-    attemptReconnect(connection);
+    attemptReconnect(connection, connectionRetryMaps);
   });
 
   connection.setErrorHandler(() => {
-    console.log("WebSocket error - will attempt reconnect");
+    console.log("[ERROR-EVENT] WebSocket error - will attempt reconnect");
     stopHeartbeat(heartbeatRef);
     EventBus.notifyDisconnect();
     EventBus.resetConnectionState();
-    attemptReconnect(connection);
+    attemptReconnect(connection, connectionRetryMaps);
   });
 
   connection.setHandler((_socket, message) => {
@@ -108,32 +115,45 @@ function setupConnectionHandlers(
   });
 }
 
-function attemptReconnect(connection: WebSocketConnection): void {
+
+function attemptReconnect(
+  connection: WebSocketConnection,
+  connectionRetryMaps: React.MutableRefObject<Map<WebSocketConnection, boolean>>,
+): void {
+  // Check if a retry is already in progress for this connection
+  if (connectionRetryMaps.current.get(connection)) {
+    console.log("Reconnection already in progress for this connection, skipping");
+    return;
+  }
+
+  // Mark this connection as having an active retry
+  connectionRetryMaps.current.set(connection, true);
+
   let retryCount = 0;
   const maxRetries = 10;
-  const backOff = 5000;
+  const backOff = 5000; // miliseconds
 
-  const intervalId = setInterval(
-    () => {
-      if (retryCount >= maxRetries) {
-        console.error("Max reconnection attempts reached");
-        clearInterval(intervalId);
-        return;
-      }
+  const execute = async (): Promise<void> => {
+    const connectionStatus = connection.isHealthy();
+    if (connectionStatus) {
+      console.log("connect successfully");
+      connectionRetryMaps.current.delete(connection);
+      return;
+    }
 
-      console.log(`Attempting reconnection: ${++retryCount}/${maxRetries}`);
-      connection.connect();
-
-      // Check if connection succeeded
-      setTimeout(() => {
-        if (connection.isHealthy()) {
-          console.log("Reconnection successful");
-          clearInterval(intervalId);
-        }
-      }, 1000);
-    },
-    Math.pow(2, retryCount) * backOff + 1,
-  );
+    if (retryCount >= maxRetries) {
+      console.error("Max reconnection attempts reached");
+      connectionRetryMaps.current.delete(connection);
+      return;
+    }
+    console.log(`Number of retry count: ${++retryCount}, at: ${new Date()}`);
+    const nextDelay = Math.pow(2, retryCount) * backOff;
+    const jitter = Math.random() * 100;
+    const finalDelay = nextDelay + jitter;
+    await new Promise((resolve) => setTimeout(resolve, finalDelay));
+    return execute();
+  };
+  execute();
 }
 
 function startHeartbeat(
