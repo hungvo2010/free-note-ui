@@ -111,25 +111,29 @@ function setupConnectionHandlers(
 function attemptReconnect(connection: WebSocketConnection): void {
   let retryCount = 0;
   const maxRetries = 10;
-  
-  const intervalId = setInterval(() => {
-    if (retryCount >= maxRetries) {
-      console.error("Max reconnection attempts reached");
-      clearInterval(intervalId);
-      return;
-    }
-    
-    console.log(`Attempting reconnection: ${++retryCount}/${maxRetries}`);
-    connection.connect();
-    
-    // Check if connection succeeded
-    setTimeout(() => {
-      if (connection.isHealthy()) {
-        console.log("Reconnection successful");
+  const backOff = 5000;
+
+  const intervalId = setInterval(
+    () => {
+      if (retryCount >= maxRetries) {
+        console.error("Max reconnection attempts reached");
         clearInterval(intervalId);
+        return;
       }
-    }, 1000);
-  }, 5000);
+
+      console.log(`Attempting reconnection: ${++retryCount}/${maxRetries}`);
+      connection.connect();
+
+      // Check if connection succeeded
+      setTimeout(() => {
+        if (connection.isHealthy()) {
+          console.log("Reconnection successful");
+          clearInterval(intervalId);
+        }
+      }, 1000);
+    },
+    Math.pow(2, retryCount) * backOff + 1,
+  );
 }
 
 function startHeartbeat(
@@ -139,7 +143,7 @@ function startHeartbeat(
   if (!heartbeatRef.current) {
     heartbeatRef.current = new Heartbeat(connection, 30000); // 30 seconds
   }
-  
+
   if (!heartbeatRef.current.isRunning()) {
     heartbeatRef.current.start();
   }
