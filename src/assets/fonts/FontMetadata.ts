@@ -1,11 +1,4 @@
 import type { JSX } from "react";
-import {
-  FreedrawIcon,
-  FontFamilyNormalIcon,
-  FontFamilyHeadingIcon,
-  FontFamilyCodeIcon,
-} from "@shared/components/icons";
-import { FONT_FAMILY, FONT_FAMILY_FALLBACKS } from "@config/constants";
 
 /**
  * Encapsulates font metrics with additional font metadata.
@@ -33,105 +26,6 @@ export interface FontMetadata {
   /** flag to indicate a fallback font */
   fallback?: true;
 }
-
-export const FONT_METADATA: Record<number, FontMetadata> = {
-  [FONT_FAMILY.Excalifont]: {
-    metrics: {
-      unitsPerEm: 1000,
-      ascender: 886,
-      descender: -374,
-      lineHeight: 1.25,
-    },
-    icon: FreedrawIcon,
-  },
-  [FONT_FAMILY.Nunito]: {
-    metrics: {
-      unitsPerEm: 1000,
-      ascender: 1011,
-      descender: -353,
-      lineHeight: 1.35,
-    },
-    icon: FontFamilyNormalIcon,
-  },
-  [FONT_FAMILY["Lilita One"]]: {
-    metrics: {
-      unitsPerEm: 1000,
-      ascender: 923,
-      descender: -220,
-      lineHeight: 1.15,
-    },
-    icon: FontFamilyHeadingIcon,
-  },
-  [FONT_FAMILY["Comic Shanns"]]: {
-    metrics: {
-      unitsPerEm: 1000,
-      ascender: 750,
-      descender: -250,
-      lineHeight: 1.25,
-    },
-    icon: FontFamilyCodeIcon,
-  },
-  [FONT_FAMILY.Virgil]: {
-    metrics: {
-      unitsPerEm: 1000,
-      ascender: 886,
-      descender: -374,
-      lineHeight: 1.25,
-    },
-    icon: FreedrawIcon,
-    deprecated: true,
-  },
-  [FONT_FAMILY.Helvetica]: {
-    metrics: {
-      unitsPerEm: 2048,
-      ascender: 1577,
-      descender: -471,
-      lineHeight: 1.15,
-    },
-    icon: FontFamilyNormalIcon,
-    deprecated: true,
-    local: true,
-  },
-  [FONT_FAMILY.Cascadia]: {
-    metrics: {
-      unitsPerEm: 2048,
-      ascender: 1900,
-      descender: -480,
-      lineHeight: 1.2,
-    },
-    icon: FontFamilyCodeIcon,
-    deprecated: true,
-  },
-  [FONT_FAMILY["Liberation Sans"]]: {
-    metrics: {
-      unitsPerEm: 2048,
-      ascender: 1854,
-      descender: -434,
-      lineHeight: 1.15,
-    },
-    serverSide: true,
-  },
-  [FONT_FAMILY_FALLBACKS.Xiaolai]: {
-    metrics: {
-      unitsPerEm: 1000,
-      ascender: 880,
-      descender: -144,
-      lineHeight: 1.15,
-    },
-    fallback: true,
-  },
-  [FONT_FAMILY_FALLBACKS["Segoe UI Emoji"]]: {
-    metrics: {
-      // reusing Excalifont metrics
-      unitsPerEm: 1000,
-      ascender: 886,
-      descender: -374,
-      lineHeight: 1.25,
-    },
-    local: true,
-    fallback: true,
-  },
-};
 
 /** Unicode ranges defined by google fonts */
 export const GOOGLE_FONTS_RANGES = {
