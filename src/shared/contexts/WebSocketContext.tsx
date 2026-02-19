@@ -133,7 +133,7 @@ function attemptReconnect(
   const maxRetries = 10;
   const backOff = 5000; // miliseconds
 
-  const execute = async () => {
+  const execute = async (): Promise<void> => {
     const connectionStatus = connection.isHealthy();
     if (connectionStatus) {
       console.log("connect successfully");
