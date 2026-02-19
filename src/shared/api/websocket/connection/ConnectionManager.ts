@@ -38,15 +38,15 @@ export class ConnectionManager {
    * Gets or creates a connection by session ID.
    */
   getConnectionById(sid: string): WebSocketConnection {
-    const key = sid || "default";
-    let connection = ConnectionManager.connectionsMap.get(key);
+    const sessionKey = sid || "default";
+    let connection = ConnectionManager.connectionsMap.get(sessionKey);
 
     if (!connection) {
-      const newConnection = this.createConnection(key);
+      const newConnection = this.createConnection(sessionKey);
       if (!newConnection) {
         // Fallback: force cleanup and try again
         this.forceCleanup();
-        const retryConnection = this.createConnection(key);
+        const retryConnection = this.createConnection(sessionKey);
         if (!retryConnection) {
           throw new Error("Unable to create connection: limit reached");
         }

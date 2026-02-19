@@ -6,13 +6,17 @@ export class ConnectionReadyHandler implements ConnectionReadyObserver {
 
   constructor(
     private dispatcher: DraftSyncClient,
-    private draftId: string
+    private draftId: string,
   ) {}
 
   update(): void {
     // Idempotent: only send CONNECT once per connection cycle
     if (this.hasConnected) {
-      console.log("Already sent CONNECT request for draft:", this.draftId, "- skipping");
+      console.log(
+        "Already sent CONNECT request for draft:",
+        this.draftId,
+        "- skipping",
+      );
       return;
     }
 
@@ -23,7 +27,7 @@ export class ConnectionReadyHandler implements ConnectionReadyObserver {
 
   reset(): void {
     // Reset for reconnection scenarios
-    console.log("Resetting ConnectionReadyHandler for draft:", this.draftId);
+    // console.log("Resetting ConnectionReadyHandler for draft:", this.draftId);
     this.hasConnected = false;
   }
 }

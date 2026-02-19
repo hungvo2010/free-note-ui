@@ -110,7 +110,7 @@ export class WebSocketConnection {
         action.substring(0, 100) + "...",
       );
       this.messageQueue.push(action);
-      console.log(`Total queued messages: ${this.messageQueue.length}`);
+      // console.log(`Total queued messages: ${this.messageQueue.length}`);
       return;
     }
     this.trySendMessage(action);

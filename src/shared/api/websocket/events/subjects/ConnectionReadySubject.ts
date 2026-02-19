@@ -49,7 +49,7 @@ export class ConnectionReadySubject {
   }
 
   reset(): void {
-    console.log("ConnectionReadySubject: Resetting state for reconnection");
+    // console.log("ConnectionReadySubject: Resetting state for reconnection");
     this.hasNotified = false;
     this.notifiedObservers = new WeakSet<ConnectionReadyObserver>();
   }
